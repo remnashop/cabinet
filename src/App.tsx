@@ -4,8 +4,10 @@ import { useEffect } from "react";
 import { setUnauthorizedHandler } from "@/api/client";
 import { useSessionStore } from "@/store/session";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AppLayout } from "@/components/AppLayout";
 import LoginPage from "@/pages/LoginPage";
 import SubscriptionPage from "@/pages/SubscriptionPage";
+import DevicesPage from "@/pages/DevicesPage";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -31,13 +33,15 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route
-            path="/"
             element={
               <ProtectedRoute>
-                <SubscriptionPage />
+                <AppLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route path="/" element={<SubscriptionPage />} />
+            <Route path="/devices" element={<DevicesPage />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
