@@ -1,0 +1,25 @@
+{
+  "auth": {
+    "title": "Вход",
+    "email": "Email",
+    "password": "Пароль",
+    "login": "Войти",
+    "register": "Зарегистрироваться",
+    "or": "или",
+    "telegram": "Войти через Telegram",
+    "error": "Неверный email или пароль"
+  },
+  "subscription": {
+    "title": "Подписка",
+    "status": "Статус",
+    "plan": "План",
+    "expires": "Действует до",
+    "daysLeft": "Осталось дней: {{count}}",
+    "traffic": "Трафик",
+    "unlimited": "Безлимит",
+    "devices": "Устройства",
+    "configLink": "Ссылка конфигурации",
+    "none": "Подписка отсутствует",
+    "logout": "Выйти"
+  }
+}
