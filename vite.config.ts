@@ -29,6 +29,19 @@ export default defineConfig(({ mode }) => {
           // Strip the cookie Domain so the browser stores the session cookie
           // for localhost in dev (the backend may set it for another host).
           cookieDomainRewrite: "",
+          configure: (proxy) => {
+            // The backend sets the session cookie with `Secure`, which some
+            // browsers refuse to store over http://localhost. Strip it in dev
+            // only so the cookie persists; prod serves https and keeps Secure.
+            proxy.on("proxyRes", (proxyRes) => {
+              const cookies = proxyRes.headers["set-cookie"];
+              if (cookies) {
+                proxyRes.headers["set-cookie"] = cookies.map((c) =>
+                  c.replace(/;\s*Secure/gi, ""),
+                );
+              }
+            });
+          },
         },
       },
     },
