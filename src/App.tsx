@@ -5,6 +5,7 @@ import { setUnauthorizedHandler } from "@/api/client";
 import { useSessionStore } from "@/store/session";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import LoginPage from "@/pages/LoginPage";
+import SubscriptionPage from "@/pages/SubscriptionPage";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -33,7 +34,7 @@ export default function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <div className="p-6">Subscription placeholder</div>
+                <SubscriptionPage />
               </ProtectedRoute>
             }
           />
