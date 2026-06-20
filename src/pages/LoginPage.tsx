@@ -39,8 +39,13 @@ export default function LoginPage() {
   }
 
   async function onTelegram(user: TelegramAuthRequest) {
-    await authApi.loginTelegram(user);
-    await afterAuth();
+    setError(false);
+    try {
+      await authApi.loginTelegram(user);
+      await afterAuth();
+    } catch {
+      setError(true);
+    }
   }
 
   const { attempting } = useMiniAppAutoLogin(afterAuth);

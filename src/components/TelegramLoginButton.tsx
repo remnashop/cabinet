@@ -17,9 +17,11 @@ export function TelegramLoginButton({
   onAuth: (user: TelegramAuthRequest) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
+  const onAuthRef = useRef(onAuth);
+  onAuthRef.current = onAuth;
 
   useEffect(() => {
-    window.onTelegramAuth = onAuth;
+    window.onTelegramAuth = (user) => onAuthRef.current(user);
     const script = document.createElement("script");
     script.src = "https://telegram.org/js/telegram-widget.js?22";
     script.async = true;
@@ -33,7 +35,7 @@ export function TelegramLoginButton({
       node?.replaceChildren();
       delete window.onTelegramAuth;
     };
-  }, [botUsername, onAuth]);
+  }, [botUsername]);
 
   return <div ref={container} />;
 }

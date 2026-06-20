@@ -14,10 +14,17 @@ export function useMiniAppAutoLogin(onSuccess: () => void): { attempting: boolea
       setAttempting(false);
       return;
     }
-    authApi
-      .loginTelegramWebApp(initData)
-      .then(onSuccess)
-      .catch(() => setAttempting(false));
+    void (async () => {
+      try {
+        await authApi.loginTelegramWebApp(initData);
+      } catch {
+        setAttempting(false);
+        return;
+      }
+      // Login succeeded — navigation errors must not drop the user back to the
+      // login form, so onSuccess runs outside the login try/catch.
+      onSuccess();
+    })();
   }, [onSuccess]);
 
   return { attempting };

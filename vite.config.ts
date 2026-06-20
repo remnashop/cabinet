@@ -15,8 +15,12 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "http://localhost:5000",
+        target: "https://your-domain.example",
         changeOrigin: true,
+        secure: true,
+        // Strip the cookie Domain so the browser stores the session cookie for
+        // localhost during dev (the backend sets it for the prod domain).
+        cookieDomainRewrite: "",
       },
     },
   },
