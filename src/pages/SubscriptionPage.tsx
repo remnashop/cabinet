@@ -45,7 +45,8 @@ export default function SubscriptionPage() {
             value={
               data.traffic_limit === 0
                 ? t("subscription.unlimited")
-                : `${formatBytes(data.used_traffic_bytes ?? 0)} / ${formatBytes(data.traffic_limit)}`
+                : // traffic_limit is in GB (used_traffic_bytes is in bytes) — normalize to bytes.
+                  `${formatBytes(data.used_traffic_bytes ?? 0)} / ${formatBytes(data.traffic_limit * 1024 ** 3)}`
             }
           />
           <Row label={t("subscription.devices")} value={String(data.device_limit)} />
