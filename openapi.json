@@ -1,0 +1,1940 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Remnashop API",
+    "version": "0.8.1"
+  },
+  "paths": {
+    "/api/v1/public/plans/public": {
+      "get": {
+        "tags": [
+          "Public - Plans"
+        ],
+        "summary": "Get Public Landing Plans",
+        "operationId": "get_public_landing_plans_api_v1_public_plans_public_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicPlanLandingListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/register": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Register Public User",
+        "operationId": "register_public_user_api_v1_public_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/login": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Login Public User",
+        "operationId": "login_public_user_api_v1_public_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/refresh": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Refresh Access Token",
+        "operationId": "refresh_access_token_api_v1_public_auth_refresh_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/logout": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Logout",
+        "operationId": "logout_api_v1_public_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/telegram": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Telegram Login",
+        "operationId": "telegram_login_api_v1_public_auth_telegram_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelegramAuthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/telegram/webapp": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Telegram Webapp Login",
+        "operationId": "telegram_webapp_login_api_v1_public_auth_telegram_webapp_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelegramWebAppAuthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/telegram/link": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Link Telegram Account",
+        "operationId": "link_telegram_account_api_v1_public_auth_telegram_link_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelegramAuthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/me": {
+      "get": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Get Public User Profile",
+        "operationId": "get_public_user_profile_api_v1_public_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/change-password": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Change Public User Password",
+        "operationId": "change_public_user_password_api_v1_public_auth_change_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangePasswordResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/email/change": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Change Email",
+        "operationId": "change_email_api_v1_public_auth_email_change_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeEmailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeEmailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/email/request-verification": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Request Email Verification Code",
+        "operationId": "request_email_verification_code_api_v1_public_auth_email_request_verification_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestEmailVerificationCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestEmailVerificationCodeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/auth/email/confirm": {
+      "post": {
+        "tags": [
+          "Public - Auth"
+        ],
+        "summary": "Confirm Email Verification",
+        "operationId": "confirm_email_verification_api_v1_public_auth_email_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmEmailVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmEmailVerificationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subscription/current": {
+      "get": {
+        "tags": [
+          "Public - Subscription"
+        ],
+        "summary": "Get Current Subscription",
+        "operationId": "get_current_subscription_api_v1_public_subscription_current_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/SubscriptionInfoResponse"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Current Subscription Api V1 Public Subscription Current Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subscription/devices": {
+      "get": {
+        "tags": [
+          "Public - Subscription"
+        ],
+        "summary": "Get Subscription Devices",
+        "operationId": "get_subscription_devices_api_v1_public_subscription_devices_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DevicesResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Public - Subscription"
+        ],
+        "summary": "Delete All Subscription Devices",
+        "operationId": "delete_all_subscription_devices_api_v1_public_subscription_devices_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DevicesDeleteAllResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subscription/devices/{hwid}": {
+      "delete": {
+        "tags": [
+          "Public - Subscription"
+        ],
+        "summary": "Delete Subscription Device",
+        "operationId": "delete_subscription_device_api_v1_public_subscription_devices__hwid__delete",
+        "parameters": [
+          {
+            "name": "hwid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Hwid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceDeleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subscription/reissue": {
+      "post": {
+        "tags": [
+          "Public - Subscription"
+        ],
+        "summary": "Reissue Current Subscription",
+        "operationId": "reissue_current_subscription_api_v1_public_subscription_reissue_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReissueResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subscription/promocode": {
+      "post": {
+        "tags": [
+          "Public - Subscription"
+        ],
+        "summary": "Activate Promocode Web",
+        "operationId": "activate_promocode_web_api_v1_public_subscription_promocode_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromocodeActivateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromocodeActivateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subscription/trial": {
+      "post": {
+        "tags": [
+          "Public - Subscription"
+        ],
+        "summary": "Activate Trial Web",
+        "operationId": "activate_trial_web_api_v1_public_subscription_trial_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrialActivateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subscription/purchase": {
+      "post": {
+        "tags": [
+          "Public - Subscription"
+        ],
+        "summary": "Purchase Subscription",
+        "operationId": "purchase_subscription_api_v1_public_subscription_purchase_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchaseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentInitResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subscription/extend": {
+      "post": {
+        "tags": [
+          "Public - Subscription"
+        ],
+        "summary": "Extend Subscription",
+        "operationId": "extend_subscription_api_v1_public_subscription_extend_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtendRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentInitResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subscription/offers": {
+      "get": {
+        "tags": [
+          "Public - Subscription"
+        ],
+        "summary": "Get Subscription Offers",
+        "operationId": "get_subscription_offers_api_v1_public_subscription_offers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionOffersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/referral/program": {
+      "get": {
+        "tags": [
+          "Public - Referral"
+        ],
+        "summary": "Get Referral Program",
+        "operationId": "get_referral_program_api_v1_public_referral_program_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferralProgramResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuthResponse": {
+        "properties": {
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "refresh_expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Refresh Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expires_at",
+          "refresh_expires_at"
+        ],
+        "title": "AuthResponse"
+      },
+      "AuthType": {
+        "type": "string",
+        "enum": [
+          "telegram",
+          "email",
+          "google",
+          "yandex",
+          "vk"
+        ],
+        "title": "AuthType"
+      },
+      "ChangeEmailRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "ChangeEmailRequest"
+      },
+      "ChangeEmailResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "pending_email": {
+            "type": "string",
+            "title": "Pending Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "pending_email"
+        ],
+        "title": "ChangeEmailResponse"
+      },
+      "ChangePasswordRequest": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Current Password"
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 8,
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "ChangePasswordRequest"
+      },
+      "ChangePasswordResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "ChangePasswordResponse"
+      },
+      "ConfirmEmailVerificationRequest": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 6,
+            "minLength": 6,
+            "pattern": "^\\d{6}$",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "ConfirmEmailVerificationRequest"
+      },
+      "ConfirmEmailVerificationResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "email"
+        ],
+        "title": "ConfirmEmailVerificationResponse"
+      },
+      "DeviceDeleteResponse": {
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "title": "Deleted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deleted"
+        ],
+        "title": "DeviceDeleteResponse"
+      },
+      "DeviceResponse": {
+        "properties": {
+          "hwid": {
+            "type": "string",
+            "title": "Hwid"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "device_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Model"
+          },
+          "os_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Os Version"
+          },
+          "user_agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Agent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hwid"
+        ],
+        "title": "DeviceResponse"
+      },
+      "DevicesDeleteAllResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "DevicesDeleteAllResponse"
+      },
+      "DevicesResponse": {
+        "properties": {
+          "devices": {
+            "items": {
+              "$ref": "#/components/schemas/DeviceResponse"
+            },
+            "type": "array",
+            "title": "Devices"
+          },
+          "current_count": {
+            "type": "integer",
+            "title": "Current Count"
+          },
+          "max_count": {
+            "type": "integer",
+            "title": "Max Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "devices",
+          "current_count",
+          "max_count"
+        ],
+        "title": "DevicesResponse"
+      },
+      "DurationGatewayPriceResponse": {
+        "properties": {
+          "gateway_type": {
+            "$ref": "#/components/schemas/PaymentGatewayType"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "currency_symbol": {
+            "type": "string",
+            "title": "Currency Symbol"
+          },
+          "original_amount": {
+            "type": "string",
+            "title": "Original Amount"
+          },
+          "discount_percent": {
+            "type": "integer",
+            "title": "Discount Percent"
+          },
+          "final_amount": {
+            "type": "string",
+            "title": "Final Amount"
+          },
+          "is_free": {
+            "type": "boolean",
+            "title": "Is Free"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gateway_type",
+          "currency",
+          "currency_symbol",
+          "original_amount",
+          "discount_percent",
+          "final_amount",
+          "is_free"
+        ],
+        "title": "DurationGatewayPriceResponse"
+      },
+      "DurationOfferResponse": {
+        "properties": {
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "prices": {
+            "items": {
+              "$ref": "#/components/schemas/DurationGatewayPriceResponse"
+            },
+            "type": "array",
+            "title": "Prices"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "prices"
+        ],
+        "title": "DurationOfferResponse"
+      },
+      "ExtendRequest": {
+        "properties": {
+          "duration_days": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Duration Days"
+          },
+          "gateway_type": {
+            "$ref": "#/components/schemas/PaymentGatewayType"
+          }
+        },
+        "type": "object",
+        "required": [
+          "duration_days",
+          "gateway_type"
+        ],
+        "title": "ExtendRequest"
+      },
+      "GatewayOfferResponse": {
+        "properties": {
+          "gateway_type": {
+            "$ref": "#/components/schemas/PaymentGatewayType"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "currency_symbol": {
+            "type": "string",
+            "title": "Currency Symbol"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gateway_type",
+          "currency",
+          "currency_symbol"
+        ],
+        "title": "GatewayOfferResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "LogoutResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "LogoutResponse"
+      },
+      "MeResponse": {
+        "properties": {
+          "telegram_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telegram Id"
+          },
+          "auth_type": {
+            "$ref": "#/components/schemas/AuthType"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "is_email_verified": {
+            "type": "boolean",
+            "title": "Is Email Verified"
+          },
+          "pending_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pending Email"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "telegram_id",
+          "auth_type",
+          "email",
+          "is_email_verified",
+          "pending_email",
+          "name",
+          "username",
+          "language"
+        ],
+        "title": "MeResponse"
+      },
+      "PaymentGatewayType": {
+        "type": "string",
+        "enum": [
+          "TELEGRAM_STARS",
+          "YOOKASSA",
+          "YOOMONEY",
+          "VALUTIX",
+          "CRYPTOMUS",
+          "HELEKET",
+          "CRYPTOPAY",
+          "FREEKASSA",
+          "MULENPAY",
+          "PAYMASTER",
+          "PLATEGA",
+          "ROBOKASSA",
+          "URLPAY",
+          "WATA"
+        ],
+        "title": "PaymentGatewayType"
+      },
+      "PaymentInitResponse": {
+        "properties": {
+          "payment_id": {
+            "type": "string",
+            "title": "Payment Id"
+          },
+          "payment_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Url"
+          },
+          "purchase_type": {
+            "type": "string",
+            "title": "Purchase Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "is_free": {
+            "type": "boolean",
+            "title": "Is Free"
+          },
+          "final_amount": {
+            "type": "string",
+            "title": "Final Amount"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payment_id",
+          "purchase_type",
+          "status",
+          "is_free",
+          "final_amount",
+          "currency"
+        ],
+        "title": "PaymentInitResponse"
+      },
+      "PlanOfferResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "public_code": {
+            "type": "string",
+            "title": "Public Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "traffic_limit": {
+            "type": "integer",
+            "title": "Traffic Limit"
+          },
+          "device_limit": {
+            "type": "integer",
+            "title": "Device Limit"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "recommended_purchase_type": {
+            "type": "string",
+            "title": "Recommended Purchase Type"
+          },
+          "durations": {
+            "items": {
+              "$ref": "#/components/schemas/DurationOfferResponse"
+            },
+            "type": "array",
+            "title": "Durations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "public_code",
+          "name",
+          "traffic_limit",
+          "device_limit",
+          "type",
+          "recommended_purchase_type",
+          "durations"
+        ],
+        "title": "PlanOfferResponse"
+      },
+      "PromocodeActivateRequest": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "PromocodeActivateRequest"
+      },
+      "PromocodeActivateResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "reward_type": {
+            "type": "string",
+            "title": "Reward Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "reward_type"
+        ],
+        "title": "PromocodeActivateResponse"
+      },
+      "PublicPlanLandingListResponse": {
+        "properties": {
+          "plans": {
+            "items": {
+              "$ref": "#/components/schemas/PublicPlanLandingResponse"
+            },
+            "type": "array",
+            "title": "Plans"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plans"
+        ],
+        "title": "PublicPlanLandingListResponse"
+      },
+      "PublicPlanLandingResponse": {
+        "properties": {
+          "public_code": {
+            "type": "string",
+            "title": "Public Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "traffic_limit": {
+            "type": "integer",
+            "title": "Traffic Limit"
+          },
+          "device_limit": {
+            "type": "integer",
+            "title": "Device Limit"
+          },
+          "monthly_from_rub": {
+            "type": "string",
+            "title": "Monthly From Rub"
+          },
+          "max_duration_days": {
+            "type": "integer",
+            "title": "Max Duration Days"
+          },
+          "max_duration_price_rub": {
+            "type": "string",
+            "title": "Max Duration Price Rub"
+          }
+        },
+        "type": "object",
+        "required": [
+          "public_code",
+          "name",
+          "traffic_limit",
+          "device_limit",
+          "monthly_from_rub",
+          "max_duration_days",
+          "max_duration_price_rub"
+        ],
+        "title": "PublicPlanLandingResponse"
+      },
+      "PurchaseRequest": {
+        "properties": {
+          "plan_code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 3,
+            "title": "Plan Code"
+          },
+          "duration_days": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Duration Days"
+          },
+          "gateway_type": {
+            "$ref": "#/components/schemas/PaymentGatewayType"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan_code",
+          "duration_days",
+          "gateway_type"
+        ],
+        "title": "PurchaseRequest"
+      },
+      "ReferralProgramResponse": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "referral_code": {
+            "type": "string",
+            "title": "Referral Code"
+          },
+          "invited_count": {
+            "type": "integer",
+            "title": "Invited Count"
+          },
+          "invited_with_payment_count": {
+            "type": "integer",
+            "title": "Invited With Payment Count"
+          },
+          "reward_type": {
+            "type": "string",
+            "title": "Reward Type"
+          },
+          "reward_strategy": {
+            "type": "string",
+            "title": "Reward Strategy"
+          },
+          "accrual_strategy": {
+            "type": "string",
+            "title": "Accrual Strategy"
+          },
+          "max_level": {
+            "type": "integer",
+            "title": "Max Level"
+          },
+          "reward_levels": {
+            "items": {
+              "$ref": "#/components/schemas/ReferralRewardLevelResponse"
+            },
+            "type": "array",
+            "title": "Reward Levels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "referral_code",
+          "invited_count",
+          "invited_with_payment_count",
+          "reward_type",
+          "reward_strategy",
+          "accrual_strategy",
+          "max_level",
+          "reward_levels"
+        ],
+        "title": "ReferralProgramResponse"
+      },
+      "ReferralRewardLevelResponse": {
+        "properties": {
+          "level": {
+            "type": "integer",
+            "title": "Level"
+          },
+          "value": {
+            "type": "integer",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "value"
+        ],
+        "title": "ReferralRewardLevelResponse"
+      },
+      "RegisterRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 8,
+            "title": "Password"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "referral_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64,
+                "minLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referral Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "RegisterRequest"
+      },
+      "ReissueResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "ReissueResponse"
+      },
+      "RequestEmailVerificationCodeRequest": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "title": "RequestEmailVerificationCodeRequest"
+      },
+      "RequestEmailVerificationCodeResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "target_email": {
+            "type": "string",
+            "title": "Target Email"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "target_email",
+          "expires_at"
+        ],
+        "title": "RequestEmailVerificationCodeResponse"
+      },
+      "SubscriptionInfoResponse": {
+        "properties": {
+          "user_remna_id": {
+            "type": "string",
+            "title": "User Remna Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "is_trial": {
+            "type": "boolean",
+            "title": "Is Trial"
+          },
+          "traffic_limit": {
+            "type": "integer",
+            "title": "Traffic Limit"
+          },
+          "device_limit": {
+            "type": "integer",
+            "title": "Device Limit"
+          },
+          "traffic_limit_strategy": {
+            "type": "string",
+            "title": "Traffic Limit Strategy"
+          },
+          "expire_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expire At"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "plan_name": {
+            "type": "string",
+            "title": "Plan Name"
+          },
+          "plan_duration_days": {
+            "type": "integer",
+            "title": "Plan Duration Days"
+          },
+          "used_traffic_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Used Traffic Bytes"
+          },
+          "lifetime_used_traffic_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lifetime Used Traffic Bytes"
+          },
+          "online_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Online At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_remna_id",
+          "status",
+          "is_trial",
+          "traffic_limit",
+          "device_limit",
+          "traffic_limit_strategy",
+          "expire_at",
+          "url",
+          "plan_name",
+          "plan_duration_days"
+        ],
+        "title": "SubscriptionInfoResponse"
+      },
+      "SubscriptionOffersResponse": {
+        "properties": {
+          "gateways": {
+            "items": {
+              "$ref": "#/components/schemas/GatewayOfferResponse"
+            },
+            "type": "array",
+            "title": "Gateways"
+          },
+          "plans": {
+            "items": {
+              "$ref": "#/components/schemas/PlanOfferResponse"
+            },
+            "type": "array",
+            "title": "Plans"
+          },
+          "has_current_subscription": {
+            "type": "boolean",
+            "title": "Has Current Subscription"
+          },
+          "current_subscription_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Subscription Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gateways",
+          "plans",
+          "has_current_subscription"
+        ],
+        "title": "SubscriptionOffersResponse"
+      },
+      "TelegramAuthRequest": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "first_name": {
+            "type": "string",
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          },
+          "photo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photo Url"
+          },
+          "auth_date": {
+            "type": "integer",
+            "title": "Auth Date"
+          },
+          "hash": {
+            "type": "string",
+            "title": "Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "first_name",
+          "auth_date",
+          "hash"
+        ],
+        "title": "TelegramAuthRequest"
+      },
+      "TelegramWebAppAuthRequest": {
+        "properties": {
+          "init_data": {
+            "type": "string",
+            "title": "Init Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "init_data"
+        ],
+        "title": "TelegramWebAppAuthRequest"
+      },
+      "TrialActivateResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "TrialActivateResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
