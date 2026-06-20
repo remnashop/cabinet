@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 const tabs = [
   { to: "/", key: "nav.subscription" },
   { to: "/devices", key: "nav.devices" },
+  { to: "/buy", key: "nav.buy" },
+  { to: "/referral", key: "nav.referral" },
+  { to: "/profile", key: "nav.profile" },
 ];
 
 export function NavBar() {

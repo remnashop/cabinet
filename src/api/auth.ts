@@ -6,6 +6,8 @@ type AuthResponse = components["schemas"]["AuthResponse"];
 type LoginRequest = components["schemas"]["LoginRequest"];
 type RegisterRequest = components["schemas"]["RegisterRequest"];
 type TelegramAuthRequest = components["schemas"]["TelegramAuthRequest"];
+type ChangePasswordResponse = components["schemas"]["ChangePasswordResponse"];
+type ChangeEmailResponse = components["schemas"]["ChangeEmailResponse"];
 
 export const authApi = {
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -29,6 +31,16 @@ export const authApi = {
   },
   async me(): Promise<Me> {
     const { data } = await api.get<Me>("/auth/me");
+    return data;
+  },
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await api.post<ChangePasswordResponse>("/auth/change-password", {
+      current_password: currentPassword,
+      new_password: newPassword,
+    });
+  },
+  async changeEmail(email: string): Promise<ChangeEmailResponse> {
+    const { data } = await api.post<ChangeEmailResponse>("/auth/email/change", { email });
     return data;
   },
   async logout(): Promise<void> {

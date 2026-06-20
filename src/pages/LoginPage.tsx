@@ -1,8 +1,8 @@
 import { type FormEvent, useState } from "react";
-import { useNavigate } from "react-router";
+import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import { authApi } from "@/api/auth";
-import { useSessionStore } from "@/store/session";
+import { useAfterAuth } from "@/hooks/useAfterAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -16,16 +16,10 @@ const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? "";
 
 export default function LoginPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const setMe = useSessionStore((s) => s.setMe);
+  const afterAuth = useAfterAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
-
-  async function afterAuth() {
-    setMe(await authApi.me());
-    navigate("/", { replace: true });
-  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -78,6 +72,9 @@ export default function LoginPage() {
             {t("auth.login")}
           </Button>
         </form>
+        <Link to="/register" className="mt-3 block text-center text-sm text-slate-500">
+          {t("login.noAccount")}
+        </Link>
         {botUsername && (
           <div className="mt-4 flex flex-col items-center gap-2">
             <span className="text-xs text-slate-400">{t("auth.or")}</span>
