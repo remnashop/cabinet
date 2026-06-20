@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { TelegramLoginButton } from "@/components/TelegramLoginButton";
+import { useMiniAppAutoLogin } from "@/hooks/useMiniAppAutoLogin";
 import type { components } from "@/api-types";
 
 type TelegramAuthRequest = components["schemas"]["TelegramAuthRequest"];
@@ -40,6 +41,12 @@ export default function LoginPage() {
   async function onTelegram(user: TelegramAuthRequest) {
     await authApi.loginTelegram(user);
     await afterAuth();
+  }
+
+  const { attempting } = useMiniAppAutoLogin(afterAuth);
+
+  if (attempting) {
+    return <div className="mx-auto mt-16 max-w-sm p-6 text-center text-slate-400">…</div>;
   }
 
   return (
