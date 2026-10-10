@@ -1,0 +1,42 @@
+{
+  "app": { "name": "Cabinet" },
+  "nav": { "subscription": "Subscription", "purchase": "Purchase", "referral": "Referrals", "profile": "Profile" },
+  "pages": {
+    "subscription": "Subscription",
+    "purchase": "Purchase",
+    "referral": "Referrals",
+    "profile": "Profile",
+    "payments": "Payment history",
+    "paymentResult": "Payment",
+    "notFound": "Page not found",
+    "comingSoon": "Coming soon"
+  },
+  "common": { "back": "Back", "retry": "Retry", "home": "Home", "logout": "Log out" },
+  "auth": {
+    "title": "Sign in",
+    "subtitle": "Sign in or create an account",
+    "telegram": "Continue with Telegram",
+    "continueWith": "Continue with {{provider}}",
+    "or": "or",
+    "emailPlaceholder": "Email",
+    "sendCode": "Get code",
+    "codeSent": "We sent a 6-digit code to {{email}}",
+    "codePlaceholder": "Code",
+    "verify": "Sign in",
+    "resend": "Send again",
+    "resendIn": "Send again in {{seconds}} s",
+    "changeEmail": "Change email",
+    "callbackFailed": "Sign-in was cancelled or failed",
+    "backToLogin": "Back to sign in",
+    "bootFailed": "Couldn't sign you in"
+  },
+  "errors": { "generic": "Something went wrong", "network": "Server is unreachable, try again later" },
+  "apiErrors": {
+    "INVALID_INIT_DATA": "Telegram data is invalid, reopen the app",
+    "EMAIL_CODE_INVALID": "Wrong code",
+    "EMAIL_CODE_EXPIRED": "The code has expired, request a new one",
+    "REGISTRATION_CLOSED": "Registration is closed",
+    "USER_BLOCKED": "Your account is blocked",
+    "RATE_LIMITED": "Too many attempts, try again later"
+  }
+}

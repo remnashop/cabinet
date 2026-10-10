@@ -1,54 +1,35 @@
-import { defineConfig } from "vitest/config";
-import { loadEnv } from "vite";
+import { fileURLToPath, URL } from "node:url";
+
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import path from "node:path";
+import { defineConfig } from "vitest/config";
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
-  // Where `npm run dev` proxies /api. Default targets `make run-local`
-  // (the core is published on 127.0.0.1:5000). Override with API_PROXY_TARGET
-  // in .env to hit a remapped port or a remote instance.
-  const apiTarget = env.API_PROXY_TARGET || "http://localhost:5000";
+const layer = (name: string) => fileURLToPath(new URL(`./src/${name}`, import.meta.url));
 
-  return {
-    plugins: [react()],
-    resolve: {
-      alias: { "@": path.resolve(__dirname, "src") },
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      "@app": layer("app"),
+      "@pages": layer("pages"),
+      "@widgets": layer("widgets"),
+      "@features": layer("features"),
+      "@entities": layer("entities"),
+      "@shared": layer("shared"),
     },
-    server: {
-      port: 5173,
-      host: true,
-      headers: {
-        "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
-      },
-      proxy: {
-        "/api": {
-          target: apiTarget,
-          changeOrigin: true,
-          secure: false,
-          // Strip the cookie Domain so the browser stores the session cookie
-          // for localhost in dev (the backend may set it for another host).
-          cookieDomainRewrite: "",
-          configure: (proxy) => {
-            // The backend sets the session cookie with `Secure`, which some
-            // browsers refuse to store over http://localhost. Strip it in dev
-            // only so the cookie persists; prod serves https and keeps Secure.
-            proxy.on("proxyRes", (proxyRes) => {
-              const cookies = proxyRes.headers["set-cookie"];
-              if (cookies) {
-                proxyRes.headers["set-cookie"] = cookies.map((c) =>
-                  c.replace(/;\s*Secure/gi, ""),
-                );
-              }
-            });
-          },
-        },
+  },
+  server: {
+    // a tunnel (Mini App testing) arrives under its own hostname
+    allowedHosts: true,
+    proxy: {
+      "/api": {
+        // 127.0.0.1, not localhost: on macOS "localhost" may hit AirPlay's port 5000 over ::1
+        target: process.env.VITE_API_PROXY_TARGET || "http://127.0.0.1:5000",
+        xfwd: true,
       },
     },
-    test: {
-      globals: true,
-      environment: "jsdom",
-      setupFiles: ["./src/tests/setup.ts"],
-    },
-  };
+  },
+  test: {
+    environment: "jsdom",
+  },
 });

@@ -5,52 +5,40 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc -b && vite build && rm -f dist/mockServiceWorker.js",
     "preview": "vite preview",
-    "lint": "eslint .",
-    "type-check": "tsc --noEmit",
-    "test": "vitest run",
-    "dump:api": "bash scripts/dump-openapi.sh",
-    "gen:api": "openapi-typescript ./openapi.json -o src/api-types.ts"
+    "lint": "oxlint && node scripts/check-locales.mjs",
+    "type-check": "tsc -b",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "^1.2.4",
-    "@tanstack/react-query": "^5.62.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/react-query": "^5.104.1",
     "@telegram-apps/sdk-react": "^3.3.9",
-    "axios": "^1.7.9",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "i18next": "^24.2.0",
-    "i18next-browser-languagedetector": "^8.0.2",
-    "qrcode.react": "^4.2.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-i18next": "^15.4.0",
-    "react-router": "^7.1.1",
-    "tailwind-merge": "^2.6.0",
-    "zustand": "^5.0.2"
+    "i18next": "^26.4.3",
+    "lucide-react": "^1.55.0",
+    "motion": "^13.5.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-i18next": "^17.0.16",
+    "react-router": "^7.18.4",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
-    "@eslint/js": "^9.18.0",
-    "@testing-library/react": "^16.1.0",
-    "@types/node": "^22.10.5",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "eslint": "^9.18.0",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "eslint-plugin-react-refresh": "^0.4.18",
-    "globals": "^15.14.0",
-    "jsdom": "^25.0.1",
-    "openapi-typescript": "^7.5.0",
-    "postcss": "^8.4.49",
-    "prettier": "^3.4.2",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.19.1",
-    "vite": "^7.0.0",
-    "vitest": "^3.2.0"
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "jsdom": "^29.1.1",
+    "msw": "^2.15.0",
+    "oxlint": "^1.87.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^4.1.11"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

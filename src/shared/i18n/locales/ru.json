@@ -1,0 +1,42 @@
+{
+  "app": { "name": "Кабинет" },
+  "nav": { "subscription": "Подписка", "purchase": "Покупка", "referral": "Рефералы", "profile": "Профиль" },
+  "pages": {
+    "subscription": "Подписка",
+    "purchase": "Покупка",
+    "referral": "Рефералы",
+    "profile": "Профиль",
+    "payments": "История платежей",
+    "paymentResult": "Оплата",
+    "notFound": "Страница не найдена",
+    "comingSoon": "Скоро здесь что-то будет"
+  },
+  "common": { "back": "Назад", "retry": "Повторить", "home": "На главную", "logout": "Выйти" },
+  "auth": {
+    "title": "Вход",
+    "subtitle": "Войдите или создайте аккаунт",
+    "telegram": "Войти через Telegram",
+    "continueWith": "Войти через {{provider}}",
+    "or": "или",
+    "emailPlaceholder": "Почта",
+    "sendCode": "Получить код",
+    "codeSent": "Мы отправили 6-значный код на {{email}}",
+    "codePlaceholder": "Код",
+    "verify": "Войти",
+    "resend": "Отправить ещё раз",
+    "resendIn": "Отправить ещё раз через {{seconds}} с",
+    "changeEmail": "Изменить почту",
+    "callbackFailed": "Вход отменён или не удался",
+    "backToLogin": "Назад ко входу",
+    "bootFailed": "Не удалось войти"
+  },
+  "errors": { "generic": "Что-то пошло не так", "network": "Сервер недоступен, попробуйте позже" },
+  "apiErrors": {
+    "INVALID_INIT_DATA": "Данные Telegram недействительны, откройте приложение заново",
+    "EMAIL_CODE_INVALID": "Неверный код",
+    "EMAIL_CODE_EXPIRED": "Код истёк, запросите новый",
+    "REGISTRATION_CLOSED": "Регистрация закрыта",
+    "USER_BLOCKED": "Ваш аккаунт заблокирован",
+    "RATE_LIMITED": "Слишком много попыток, попробуйте позже"
+  }
+}

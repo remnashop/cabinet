@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+/* Colors from remnashop.dev's Fumadocs dark theme (.dark CSS vars, --color-fd-*). */
+@theme {
+  --color-canvas: #111111;
+  /* Form input/select fields, separate from --color-canvas so changing the
+     page background doesn't repaint every input. */
+  --color-input: #121212d6;
+  --color-surface: #393c47;
+  --color-popover: #393c47;
+  --color-border: #e8ecfb17;
+  /* Edge for translucent panels over ShaderBackground; --color-border is for
+     opaque UI (inputs, popovers). */
+  --color-glass-border: #e8ecfb17;
+  --color-foreground: #e8ecfb;
+  --color-muted-foreground: #8b93b8;
+  --color-primary: #22d3ee;
+  --color-primary-hover: #67e8f9;
+  --color-primary-foreground: #052024;
+  --color-accent: #22d3ee1f;
+  --color-accent-foreground: #a8f2ff;
+  --color-success: #00c758;
+  --color-warning: #f99c00;
+  --color-error: #fb2c36;
+
+  --radius-popover: 24px;
+  /* popover radius minus its p-1.5 (6px) padding, so item corners nest cleanly;
+     on a 36px (h-9) item that's exactly a pill */
+  --radius-popover-item: 18px;
+  --radius-dialog: 24px;
+}
+
+/* Fallback paint behind ShaderBackground's canvas: before it mounts, and when
+   the canvas hides itself without WebGL2. */
+html {
+  background-color: var(--color-canvas);
+}
+
+/* Replaces the browser's default blue focus ring app-wide. `:focus-visible`
+   only fires for keyboard navigation, not mouse clicks. Scoped to `@layer
+   base`, not unlayered, so a `focus-visible:outline-none` utility (in
+   `@layer utilities`) still wins: unlayered CSS beats any layer. */
+@layer base {
+  :focus-visible {
+    outline: 1px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* app, not document: an arrow over headings and labels, the caret only where
+     text can be typed. Text stays selectable. Base layer, so cursor-* utilities win. */
+  body {
+    cursor: default;
+  }
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="button"], [type="submit"]),
+  textarea,
+  [contenteditable]:not([contenteditable="false"]) {
+    cursor: text;
+  }
+}
+/* App-wide scrollbar styling. `scrollbar-color` covers Firefox; the
+   `::-webkit-scrollbar-*` pseudo-elements cover Chromium/Safari. */
+* {
+  scrollbar-color: var(--color-accent) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-accent);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary);
+}
+
+/* Insets for notches and Telegram's own header/home bar. The --tg-* vars are
+   bound by viewport.bindCssVars() inside a Mini App; elsewhere env() applies. */
+:root {
+  --safe-top: max(
+    env(safe-area-inset-top),
+    calc(var(--tg-viewport-safe-area-inset-top, 0px) + var(--tg-viewport-content-safe-area-inset-top, 0px))
+  );
+  --safe-bottom: max(env(safe-area-inset-bottom), var(--tg-viewport-safe-area-inset-bottom, 0px));
+}
+
+body {
+  margin: 0;
+  color: var(--color-foreground);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
