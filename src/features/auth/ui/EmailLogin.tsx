@@ -11,7 +11,7 @@ const RESEND_SECONDS = 60;
 const CODE_LENGTH = 6;
 
 export function EmailLogin() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
@@ -24,7 +24,7 @@ export function EmailLogin() {
   }, [cooldown]);
 
   const sendCode = useMutation({
-    mutationFn: () => authApi.sendEmailCode(email.trim()),
+    mutationFn: () => authApi.sendEmailCode(email.trim(), i18n.language.startsWith("ru") ? "ru" : "en"),
     onSuccess: () => {
       setStep("code");
       setCode("");

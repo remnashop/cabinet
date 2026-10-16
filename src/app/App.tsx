@@ -20,9 +20,9 @@ const queryClient = new QueryClient({
   },
 });
 
+// no navigate here: RequireAuth sees the cleared token and goes to /login?next=<where the user was>
 setSessionEndHandler(() => {
   queryClient.clear();
-  void router.navigate("/login");
 });
 
 export function App() {

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { authApi, completeLogin } from "@features/auth/api";
 import { EmailLogin } from "@features/auth/ui/EmailLogin";
 import { OAuthButtons } from "@features/auth/ui/OAuthButtons";
+import { TelegramBotLogin } from "@features/auth/ui/TelegramBotLogin";
 import { getErrorMessage } from "@shared/api/http";
 import { getInitDataRaw, isMiniApp } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
@@ -43,11 +44,16 @@ function BrowserLogin() {
       </>
     );
   }
-  const { oauth, email } = methods.data;
+  const { oauth, email, telegram_deeplink } = methods.data;
+  if (!oauth.length && !email && !telegram_deeplink) {
+    return <p className="text-sm text-muted-foreground">{t("auth.unavailable")}</p>;
+  }
   return (
     <>
       {oauth.length > 0 && <OAuthButtons providers={oauth} />}
-      {oauth.length > 0 && email && (
+      {/* the bot leads when there's no Telegram OIDC to sit above it */}
+      {telegram_deeplink && <TelegramBotLogin primary={!oauth.includes("telegram")} />}
+      {(oauth.length > 0 || telegram_deeplink) && email && (
         <div className="flex w-full items-center gap-3 text-xs uppercase text-muted-foreground">
           <span className="h-px flex-1 bg-border" />
           {t("auth.or")}

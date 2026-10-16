@@ -15,3 +15,4 @@ export const LoginPage = lazy(() => import("@pages/login/LoginPage").then((m) =>
 export const LoginCallbackPage = lazy(() =>
   import("@pages/login/LoginCallbackPage").then((m) => ({ default: m.LoginCallbackPage })),
 );
+export const BotSignInPage = lazy(() => import("@pages/login/BotSignInPage").then((m) => ({ default: m.BotSignInPage })));

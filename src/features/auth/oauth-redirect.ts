@@ -7,9 +7,9 @@ const STATE_KEY = "cabinet_oauth_state";
 
 /** Leaves the app for the provider; ?next= and the provider's state survive the round trip in sessionStorage. */
 export async function startOAuth(provider: string, next: string): Promise<void> {
-  const redirectUri = `${window.location.origin}/login/callback/${encodeURIComponent(provider)}`;
-  const { url } = await authApi.oauthAuthorize(provider, redirectUri);
-  // no cookie ties the backend's state to this browser, so the callback checks it here
+  // the backend builds the redirect URI and binds the state to this browser with a cookie;
+  // the callback also checks the state it saw here
+  const { url } = await authApi.oauthAuthorize(provider);
   writeStorage(STATE_KEY, new URL(url).searchParams.get("state") ?? "", "session");
   writeStorage(NEXT_KEY, next, "session");
   window.location.assign(url);

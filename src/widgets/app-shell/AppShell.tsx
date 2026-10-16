@@ -7,7 +7,7 @@ import { Sidebar } from "@widgets/app-shell/Sidebar";
 
 export function AppShell() {
   return (
-    <div className="min-h-dvh lg:flex">
+    <div className="min-h-[var(--tg-viewport-stable-height,100dvh)] lg:flex">
       <Sidebar />
       <main className="mx-auto w-full max-w-[960px] px-4 pt-[calc(var(--safe-top)+16px)] pb-[calc(var(--safe-bottom)+80px)] lg:px-8 lg:pt-8 lg:pb-8">
         <Suspense fallback={<Spinner size="page" />}>

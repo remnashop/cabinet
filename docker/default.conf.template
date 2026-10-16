@@ -1,0 +1,63 @@
+server_tokens off;
+
+# static files only (switched on in their locations): the main chunk is ~580 kB raw and
+# shrinks ~3-4x, while API responses carrying tokens stay uncompressed (BREACH)
+gzip_types text/css text/javascript application/javascript application/json image/svg+xml;
+gzip_min_length 1024;
+gzip_vary on;
+
+# the front proxy (Caddy/Traefik/nginx) on this host or the docker network writes
+# the client into X-Forwarded-For; only its last entry, only from a private peer
+set_real_ip_from 127.0.0.1;
+set_real_ip_from 10.0.0.0/8;
+set_real_ip_from 172.16.0.0/12;
+set_real_ip_from 192.168.0.0/16;
+real_ip_header X-Forwarded-For;
+
+# re-resolve the backend: a recreated remnashop container comes back on a new IP
+resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+
+server {
+    listen 80;
+    # relative Location: behind the TLS-terminating front proxy an absolute one would say http
+    absolute_redirect off;
+    root /usr/share/nginx/html;
+
+    location /api/ {
+        # a variable makes nginx resolve per request instead of once at startup
+        set $backend "${API_URL}";
+        rewrite ^/api/(.*)$ /api/v1/cabinet/$1 break;
+        proxy_pass $backend;
+        proxy_set_header Host $proxy_host;
+        proxy_ssl_server_name on;
+        # the secret and every session token travel this hop
+        proxy_ssl_verify on;
+        proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+        # overwritten, never passed through: the backend trusts these only with the secret
+        proxy_set_header X-Cabinet-Client-IP $remote_addr;
+        proxy_set_header X-Cabinet-Proxy-Secret "${CABINET_PROXY_SECRET}";
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # the backend scopes cookies to its own paths; the browser only sees /api
+        proxy_cookie_path /api/v1/cabinet/ /api/;
+        proxy_redirect ~^(?:https?://[^/]+)?/api/v1/cabinet/(.*)$ /api/$1;
+        proxy_hide_header Server;
+        proxy_hide_header X-Powered-By;
+    }
+
+    # hashed file names: a new build gets new URLs
+    location /assets/ {
+        gzip on;
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    # SPA: every route is index.html, never cached so a deploy is picked up
+    location / {
+        gzip on;
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "no-cache";
+        try_files $uri /index.html;
+    }
+}

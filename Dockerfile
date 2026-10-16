@@ -6,6 +6,9 @@ COPY . .
 RUN npm run build
 
 FROM nginx:1.27-alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --chmod=755 docker/40-cabinet-config.sh /docker-entrypoint.d/40-cabinet-config.sh
+# fills NGINX_LOCAL_RESOLVERS from /etc/resolv.conf for the template's resolver
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
+COPY --chmod=755 docker/10-require-env.sh /docker-entrypoint.d/10-require-env.sh
+COPY docker/default.conf.template /etc/nginx/templates/default.conf.template
+COPY docker/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=build /app/dist /usr/share/nginx/html

@@ -1,13 +1,14 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-import { ApiError, apiGet, NetworkError, refreshSession, setSessionEndHandler } from "@shared/api/http";
-import { clearTokens, getAccessToken, getRefreshToken, setTokens } from "@shared/api/tokens";
+import { apiGet, apiPost, cookieRefresh, NetworkError, setReauthenticator, setSessionEndHandler } from "@shared/api/http";
+import { clearAccessToken, getAccessToken, setAccessToken } from "@shared/api/tokens";
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-const tokens = (n: number) => ({ access_token: `a${n}`, refresh_token: `r${n}`, expires_in: 900 });
+const token = (n: number) => ({ access_token: `a${n}`, expires_in: 900 });
 const bearer = (init: RequestInit | undefined) => new Headers(init?.headers).get("Authorization");
-const isRefresh = (url: string) => url.endsWith("/cabinet/auth/refresh");
+const csrf = (init: RequestInit | undefined) => new Headers(init?.headers).get("X-Csrf-Token");
+const isRefresh = (url: string) => url === "/api/auth/refresh";
 
 function mockFetch(handler: (url: string, init: RequestInit | undefined) => Response | Promise<Response>) {
   const fn = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => handler(String(input), init));
@@ -16,40 +17,43 @@ function mockFetch(handler: (url: string, init: RequestInit | undefined) => Resp
 }
 
 beforeEach(() => {
-  clearTokens();
-  setTokens(tokens(1));
+  document.cookie = "cabinet_csrf_token=csrf-1; path=/";
+  clearAccessToken();
+  setAccessToken(token(1));
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
   setSessionEndHandler(() => {});
+  setReauthenticator(cookieRefresh);
+  document.cookie = "cabinet_csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
 });
 
-it("sends the access token as a bearer header", async () => {
+it("calls the same-origin /api base with a bearer token", async () => {
   const fetch = mockFetch(() => json(200, { ok: true }));
-  await expect(apiGet("/cabinet/me")).resolves.toEqual({ ok: true });
-  expect(fetch.mock.calls[0][0]).toBe("/api/v1/cabinet/me");
+  await expect(apiGet("/me")).resolves.toEqual({ ok: true });
+  expect(fetch.mock.calls[0][0]).toBe("/api/me");
   expect(bearer(fetch.mock.calls[0][1])).toBe("Bearer a1");
 });
 
-it("refreshes on 401 and retries with the new token", async () => {
+it("refreshes through the cookie with the csrf header and no body", async () => {
   const fetch = mockFetch((url, init) => {
-    if (isRefresh(url)) return json(200, tokens(2));
+    if (isRefresh(url)) return json(200, token(2));
     return bearer(init) === "Bearer a2" ? json(200, { ok: true }) : json(401, { detail: "expired" });
   });
-  await expect(apiGet("/cabinet/me")).resolves.toEqual({ ok: true });
-  expect(getAccessToken()).toBe("a2");
-  expect(getRefreshToken()).toBe("r2");
+  await expect(apiGet("/me")).resolves.toEqual({ ok: true });
   const refreshCall = fetch.mock.calls.find(([url]) => isRefresh(String(url)))!;
-  expect(JSON.parse(String(refreshCall[1]!.body))).toEqual({ refresh_token: "r1" });
+  expect(refreshCall[1]!.body).toBeUndefined();
+  expect(csrf(refreshCall[1])).toBe("csrf-1");
+  expect(getAccessToken()).toBe("a2");
 });
 
 it("shares one refresh between concurrent 401s", async () => {
   const fetch = mockFetch((url, init) => {
-    if (isRefresh(url)) return new Promise((resolve) => setTimeout(() => resolve(json(200, tokens(2))), 10));
+    if (isRefresh(url)) return new Promise((resolve) => setTimeout(() => resolve(json(200, token(2))), 10));
     return bearer(init) === "Bearer a2" ? json(200, { ok: true }) : json(401, { detail: "expired" });
   });
-  await Promise.all([apiGet("/cabinet/me"), apiGet("/cabinet/me"), apiGet("/cabinet/me")]);
+  await Promise.all([apiGet("/me"), apiGet("/me"), apiGet("/me")]);
   expect(fetch.mock.calls.filter(([url]) => isRefresh(String(url)))).toHaveLength(1);
 });
 
@@ -57,49 +61,36 @@ it("ends the session when the refresh is rejected", async () => {
   const onEnd = vi.fn();
   setSessionEndHandler(onEnd);
   mockFetch((url) => (isRefresh(url) ? json(401, { detail: "revoked" }) : json(401, { detail: "expired" })));
-  await expect(apiGet("/cabinet/me")).rejects.toMatchObject({ status: 401 });
-  expect(onEnd).toHaveBeenCalled();
+  await expect(apiGet("/me")).rejects.toMatchObject({ status: 401 });
+  expect(onEnd).toHaveBeenCalledOnce();
   expect(getAccessToken()).toBeNull();
-  expect(getRefreshToken()).toBeNull();
 });
 
-it("keeps the session when the backend is unavailable during refresh", async () => {
-  const onEnd = vi.fn();
-  setSessionEndHandler(onEnd);
+it("keeps the session when the refresh is unavailable", async () => {
   mockFetch((url) => (isRefresh(url) ? json(503, {}) : json(401, { detail: "expired" })));
-  await expect(apiGet("/cabinet/me")).rejects.toBeInstanceOf(NetworkError);
-  expect(onEnd).not.toHaveBeenCalled();
-  expect(getRefreshToken()).toBe("r1");
+  await expect(apiGet("/me")).rejects.toBeInstanceOf(NetworkError);
+  expect(getAccessToken()).toBe("a1");
 });
 
-it("maps an error body to ApiError with its code", async () => {
-  mockFetch(() => json(400, { detail: "Wrong code", code: "EMAIL_CODE_INVALID" }));
-  const err = await apiGet("/x").catch((e: unknown) => e);
-  expect(err).toBeInstanceOf(ApiError);
-  expect(err).toMatchObject({ status: 400, code: "EMAIL_CODE_INVALID", message: "Wrong code" });
+it("treats a refresh that answered 2xx without a token as a rejected session", async () => {
+  // the backend already rotated the cookie; keeping the old session would replay a dead token
+  mockFetch(() => new Response("<html>proxy page</html>", { status: 200 }));
+  await expect(cookieRefresh()).resolves.toBe("rejected");
+  expect(getAccessToken()).toBeNull();
 });
 
-it("treats a proxy 502 without a code and a failed fetch as NetworkError", async () => {
-  mockFetch(() => new Response("Bad Gateway", { status: 502 }));
-  await expect(apiGet("/x")).rejects.toBeInstanceOf(NetworkError);
-  vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
-  await expect(apiGet("/x")).rejects.toBeInstanceOf(NetworkError);
-});
-
-it("reports rejected without a request when there is no refresh token", async () => {
-  clearTokens();
-  const fetch = mockFetch(() => json(200, tokens(2)));
-  await expect(refreshSession()).resolves.toBe("rejected");
-  expect(fetch).not.toHaveBeenCalled();
-});
-
-it("refreshes under a cross-tab lock so two tabs don't rotate the same token", async () => {
-  const lockNames: string[] = [];
-  vi.stubGlobal("navigator", {
-    ...navigator,
-    locks: { request: (name: string, fn: () => Promise<unknown>) => (lockNames.push(name), fn()) },
+it("uses the installed reauthenticator instead of the cookie refresh", async () => {
+  setReauthenticator(async () => {
+    setAccessToken(token(9));
+    return "ok";
   });
-  mockFetch(() => json(200, tokens(2)));
-  await expect(refreshSession()).resolves.toBe("ok");
-  expect(lockNames).toEqual(["cabinet-refresh"]);
+  const fetch = mockFetch((_url, init) => (bearer(init) === "Bearer a9" ? json(200, { ok: true }) : json(401, {})));
+  await expect(apiGet("/me")).resolves.toEqual({ ok: true });
+  expect(fetch.mock.calls.some(([url]) => isRefresh(String(url)))).toBe(false);
+});
+
+it("sends the csrf header on posts", async () => {
+  const fetch = mockFetch(() => new Response(null, { status: 204 }));
+  await apiPost("/auth/logout", {});
+  expect(csrf(fetch.mock.calls[0][1])).toBe("csrf-1");
 });

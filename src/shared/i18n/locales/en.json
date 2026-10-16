@@ -1,6 +1,13 @@
 {
-  "app": { "name": "Cabinet" },
-  "nav": { "subscription": "Subscription", "purchase": "Purchase", "referral": "Referrals", "profile": "Profile" },
+  "app": {
+    "name": "Cabinet"
+  },
+  "nav": {
+    "subscription": "Subscription",
+    "purchase": "Purchase",
+    "referral": "Referrals",
+    "profile": "Profile"
+  },
   "pages": {
     "subscription": "Subscription",
     "purchase": "Purchase",
@@ -11,7 +18,12 @@
     "notFound": "Page not found",
     "comingSoon": "Coming soon"
   },
-  "common": { "back": "Back", "retry": "Retry", "home": "Home", "logout": "Log out" },
+  "common": {
+    "back": "Back",
+    "retry": "Retry",
+    "home": "Home",
+    "logout": "Log out"
+  },
   "auth": {
     "title": "Sign in",
     "subtitle": "Sign in or create an account",
@@ -28,15 +40,40 @@
     "changeEmail": "Change email",
     "callbackFailed": "Sign-in was cancelled or failed",
     "backToLogin": "Back to sign in",
-    "bootFailed": "Couldn't sign you in"
+    "bootFailed": "Couldn't sign you in",
+    "unavailable": "Sign-in is temporarily unavailable",
+    "providers": {
+      "google": "Google",
+      "yandex": "Yandex"
+    },
+    "botLogin": "Sign in with the Telegram bot",
+    "openBot": "Open Telegram",
+    "botHint": "The bot will send you a one-time sign-in link — open it",
+    "newBotLink": "Get a new link",
+    "botLinkExpired": "This sign-in link has expired — request a new one"
   },
-  "errors": { "generic": "Something went wrong", "network": "Server is unreachable, try again later" },
+  "errors": {
+    "generic": "Something went wrong",
+    "network": "Server is unreachable, try again later"
+  },
   "apiErrors": {
     "INVALID_INIT_DATA": "Telegram data is invalid, reopen the app",
     "EMAIL_CODE_INVALID": "Wrong code",
     "EMAIL_CODE_EXPIRED": "The code has expired, request a new one",
     "REGISTRATION_CLOSED": "Registration is closed",
     "USER_BLOCKED": "Your account is blocked",
-    "RATE_LIMITED": "Too many attempts, try again later"
+    "RATE_LIMITED": "Too many attempts, try again later",
+    "DEEPLINK_EXPIRED": "The sign-in link has expired, try again",
+    "REGISTRATION_INVITE_ONLY": "Sign-up is by invitation only",
+    "ACCESS_RESTRICTED": "The service is temporarily closed",
+    "OAUTH_STATE_INVALID": "Sign-in failed, start again",
+    "OAUTH_CODE_EXCHANGE_FAILED": "The provider couldn't confirm the sign-in",
+    "OAUTH_PROVIDER_DISABLED": "This sign-in method is turned off",
+    "OAUTH_PROVIDER_NOT_CONFIGURED": "This sign-in method isn't set up",
+    "OAUTH_PROVIDER_UNREACHABLE": "The sign-in provider isn't responding, try later",
+    "EMAIL_DISPOSABLE": "Temporary email addresses can't be used, use your regular email",
+    "CABINET_EMAIL_DISABLED": "Email sign-in is turned off",
+    "CABINET_TELEGRAM_DISABLED": "Telegram sign-in is turned off",
+    "OAUTH_PROVIDER_UNSUPPORTED": "This sign-in method isn't available"
   }
 }

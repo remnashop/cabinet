@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 
 import { GuestOnly, RequireAuth, Root } from "@app/guards";
 import {
+  BotSignInPage,
   LoginCallbackPage,
   LoginPage,
   NotFoundPage,
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
         ),
       },
       { path: "/login/callback/:provider", element: <LoginCallbackPage /> },
+      { path: "/login/bot", element: <BotSignInPage /> },
       { path: "/payment/result", element: <PaymentResultPage /> },
       {
         element: (

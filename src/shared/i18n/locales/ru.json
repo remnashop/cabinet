@@ -1,6 +1,13 @@
 {
-  "app": { "name": "Кабинет" },
-  "nav": { "subscription": "Подписка", "purchase": "Покупка", "referral": "Рефералы", "profile": "Профиль" },
+  "app": {
+    "name": "Кабинет"
+  },
+  "nav": {
+    "subscription": "Подписка",
+    "purchase": "Покупка",
+    "referral": "Рефералы",
+    "profile": "Профиль"
+  },
   "pages": {
     "subscription": "Подписка",
     "purchase": "Покупка",
@@ -11,7 +18,12 @@
     "notFound": "Страница не найдена",
     "comingSoon": "Скоро здесь что-то будет"
   },
-  "common": { "back": "Назад", "retry": "Повторить", "home": "На главную", "logout": "Выйти" },
+  "common": {
+    "back": "Назад",
+    "retry": "Повторить",
+    "home": "На главную",
+    "logout": "Выйти"
+  },
   "auth": {
     "title": "Вход",
     "subtitle": "Войдите или создайте аккаунт",
@@ -28,15 +40,40 @@
     "changeEmail": "Изменить почту",
     "callbackFailed": "Вход отменён или не удался",
     "backToLogin": "Назад ко входу",
-    "bootFailed": "Не удалось войти"
+    "bootFailed": "Не удалось войти",
+    "unavailable": "Вход временно недоступен",
+    "providers": {
+      "google": "Google",
+      "yandex": "Яндекс"
+    },
+    "botLogin": "Войти через бота Telegram",
+    "openBot": "Открыть Telegram",
+    "botHint": "Бот пришлёт одноразовую ссылку для входа — откройте её",
+    "newBotLink": "Получить новую ссылку",
+    "botLinkExpired": "Ссылка для входа устарела — запросите новую"
   },
-  "errors": { "generic": "Что-то пошло не так", "network": "Сервер недоступен, попробуйте позже" },
+  "errors": {
+    "generic": "Что-то пошло не так",
+    "network": "Сервер недоступен, попробуйте позже"
+  },
   "apiErrors": {
     "INVALID_INIT_DATA": "Данные Telegram недействительны, откройте приложение заново",
     "EMAIL_CODE_INVALID": "Неверный код",
     "EMAIL_CODE_EXPIRED": "Код истёк, запросите новый",
     "REGISTRATION_CLOSED": "Регистрация закрыта",
     "USER_BLOCKED": "Ваш аккаунт заблокирован",
-    "RATE_LIMITED": "Слишком много попыток, попробуйте позже"
+    "RATE_LIMITED": "Слишком много попыток, попробуйте позже",
+    "DEEPLINK_EXPIRED": "Ссылка для входа устарела, попробуйте ещё раз",
+    "REGISTRATION_INVITE_ONLY": "Регистрация только по приглашению",
+    "ACCESS_RESTRICTED": "Сервис временно закрыт",
+    "OAUTH_STATE_INVALID": "Вход не удался, начните заново",
+    "OAUTH_CODE_EXCHANGE_FAILED": "Не удалось подтвердить вход у провайдера",
+    "OAUTH_PROVIDER_DISABLED": "Этот способ входа выключен",
+    "OAUTH_PROVIDER_NOT_CONFIGURED": "Этот способ входа не настроен",
+    "OAUTH_PROVIDER_UNREACHABLE": "Провайдер входа не отвечает, попробуйте позже",
+    "EMAIL_DISPOSABLE": "Временные почтовые адреса не подходят, укажите обычную почту",
+    "CABINET_EMAIL_DISABLED": "Вход по почте выключен",
+    "CABINET_TELEGRAM_DISABLED": "Вход через Telegram выключен",
+    "OAUTH_PROVIDER_UNSUPPORTED": "Этот способ входа недоступен"
   }
 }

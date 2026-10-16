@@ -10,7 +10,8 @@ export function PageHeader({ title, backTo }: { title: string; backTo?: string }
   const { t } = useTranslation();
   const navigate = useNavigate();
   const onBack = useCallback(() => {
-    if (backTo) void navigate(backTo);
+    // replace: a native back that pushed would stack /profile ↔ /profile/payments forever
+    if (backTo) void navigate(backTo, { replace: true });
   }, [backTo, navigate]);
   useTelegramBackButton(backTo ? onBack : null);
 
