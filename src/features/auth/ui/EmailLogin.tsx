@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { authApi, completeLogin } from "@features/auth/api";
+import { isUnlistedDomain } from "@features/auth/email-domain";
 import { getErrorMessage } from "@shared/api/http";
 import { Button } from "@shared/ui/Button";
 import { TextInput } from "@shared/ui/TextInput";
@@ -10,7 +11,7 @@ import { TextInput } from "@shared/ui/TextInput";
 const RESEND_SECONDS = 60;
 const CODE_LENGTH = 6;
 
-export function EmailLogin() {
+export function EmailLogin({ allowedDomains }: { allowedDomains: string[] | null }) {
   const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -59,6 +60,9 @@ export function EmailLogin() {
           onChange={(e) => setEmail(e.target.value)}
           className="w-full"
         />
+        {isUnlistedDomain(email, allowedDomains) && (
+          <p className="text-sm text-muted-foreground">{t("auth.domainHint")}</p>
+        )}
         <Button type="submit" variant="accent" className="w-full" disabled={sendCode.isPending}>
           {t("auth.sendCode")}
         </Button>

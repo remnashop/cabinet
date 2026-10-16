@@ -44,7 +44,7 @@ function BrowserLogin() {
       </>
     );
   }
-  const { oauth, email, telegram_deeplink } = methods.data;
+  const { oauth, email, telegram_deeplink, allowed_email_domains } = methods.data;
   if (!oauth.length && !email && !telegram_deeplink) {
     return <p className="text-sm text-muted-foreground">{t("auth.unavailable")}</p>;
   }
@@ -60,7 +60,7 @@ function BrowserLogin() {
           <span className="h-px flex-1 bg-border" />
         </div>
       )}
-      {email && <EmailLogin />}
+      {email && <EmailLogin allowedDomains={allowed_email_domains ?? null} />}
     </>
   );
 }

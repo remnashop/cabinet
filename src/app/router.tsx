@@ -12,6 +12,7 @@ import {
   PurchasePage,
   ReferralPage,
   SubscriptionPage,
+  UnsubscribePage,
 } from "@app/lazy-pages";
 import { AppShell } from "@widgets/app-shell/AppShell";
 
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
       { path: "/login/callback/:provider", element: <LoginCallbackPage /> },
       { path: "/login/bot", element: <BotSignInPage /> },
       { path: "/payment/result", element: <PaymentResultPage /> },
+      { path: "/unsubscribe", element: <UnsubscribePage /> },
       {
         element: (
           <RequireAuth>

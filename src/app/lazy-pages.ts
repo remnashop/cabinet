@@ -16,3 +16,6 @@ export const LoginCallbackPage = lazy(() =>
   import("@pages/login/LoginCallbackPage").then((m) => ({ default: m.LoginCallbackPage })),
 );
 export const BotSignInPage = lazy(() => import("@pages/login/BotSignInPage").then((m) => ({ default: m.BotSignInPage })));
+export const UnsubscribePage = lazy(() =>
+  import("@pages/unsubscribe/UnsubscribePage").then((m) => ({ default: m.UnsubscribePage })),
+);

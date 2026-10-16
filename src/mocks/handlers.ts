@@ -44,6 +44,7 @@ export const handlers = [
       telegram_deeplink: true,
       email: true,
       oauth: ["telegram", "google", "yandex"],
+      allowed_email_domains: ["gmail.com", "yandex.ru", "mail.ru"],
     }),
   ),
 
@@ -95,6 +96,13 @@ export const handlers = [
     if (request.headers.get("X-Csrf-Token") !== MOCK_CSRF) return apiError(403, "CSRF_FAILED", "CSRF check failed");
     return signedIn();
   }),
+
+  // "bad" stands for a forged or truncated link
+  http.post(`${API}/unsubscribe`, ({ request }) =>
+    new URL(request.url).searchParams.get("token") === "bad"
+      ? apiError(400, "UNSUBSCRIBE_TOKEN_INVALID", "Invalid unsubscribe token")
+      : new HttpResponse(null, { status: 204 }),
+  ),
 
   http.post(`${API}/auth/logout`, () => {
     setSession(false);

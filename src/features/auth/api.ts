@@ -7,6 +7,8 @@ export interface AuthMethods {
   telegram_deeplink: boolean;
   email: boolean;
   oauth: string[];
+  // null: any domain may sign up
+  allowed_email_domains: string[] | null;
 }
 
 export interface Deeplink {

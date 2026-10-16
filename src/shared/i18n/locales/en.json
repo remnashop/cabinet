@@ -38,6 +38,7 @@
     "resend": "Send again",
     "resendIn": "Send again in {{seconds}} s",
     "changeEmail": "Change email",
+    "domainHint": "New accounts can only use common email providers. If you already have an account, the code will still arrive",
     "callbackFailed": "Sign-in was cancelled or failed",
     "backToLogin": "Back to sign in",
     "bootFailed": "Couldn't sign you in",
@@ -51,6 +52,13 @@
     "botHint": "The bot will send you a one-time sign-in link — open it",
     "newBotLink": "Get a new link",
     "botLinkExpired": "This sign-in link has expired — request a new one"
+  },
+  "unsubscribe": {
+    "title": "Unsubscribe from promotional emails?",
+    "hint": "Emails about payments and your subscription will keep coming",
+    "confirm": "Unsubscribe",
+    "done": "You're unsubscribed from promotional emails",
+    "failed": "Couldn't unsubscribe"
   },
   "errors": {
     "generic": "Something went wrong",
@@ -71,9 +79,10 @@
     "OAUTH_PROVIDER_DISABLED": "This sign-in method is turned off",
     "OAUTH_PROVIDER_NOT_CONFIGURED": "This sign-in method isn't set up",
     "OAUTH_PROVIDER_UNREACHABLE": "The sign-in provider isn't responding, try later",
-    "EMAIL_DISPOSABLE": "Temporary email addresses can't be used, use your regular email",
+    "EMAIL_DOMAIN_NOT_ALLOWED": "This email provider isn't supported, use another address",
     "CABINET_EMAIL_DISABLED": "Email sign-in is turned off",
     "CABINET_TELEGRAM_DISABLED": "Telegram sign-in is turned off",
-    "OAUTH_PROVIDER_UNSUPPORTED": "This sign-in method isn't available"
+    "OAUTH_PROVIDER_UNSUPPORTED": "This sign-in method isn't available",
+    "UNSUBSCRIBE_TOKEN_INVALID": "The unsubscribe link is invalid"
   }
 }
