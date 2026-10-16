@@ -26,7 +26,7 @@ server {
     location /api/ {
         # a variable makes nginx resolve per request instead of once at startup
         set $backend "${API_URL}";
-        rewrite ^/api/(.*)$ /api/v1/cabinet/$1 break;
+        rewrite ^/api/(.*)$ /api/v1/$1 break;
         proxy_pass $backend;
         proxy_set_header Host $proxy_host;
         proxy_ssl_server_name on;
@@ -39,8 +39,8 @@ server {
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
         # the backend scopes cookies to its own paths; the browser only sees /api
-        proxy_cookie_path /api/v1/cabinet/ /api/;
-        proxy_redirect ~^(?:https?://[^/]+)?/api/v1/cabinet/(.*)$ /api/$1;
+        proxy_cookie_path /api/v1/ /api/;
+        proxy_redirect ~^(?:https?://[^/]+)?/api/v1/(.*)$ /api/$1;
         proxy_hide_header Server;
         proxy_hide_header X-Powered-By;
     }

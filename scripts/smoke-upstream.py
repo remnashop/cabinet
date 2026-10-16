@@ -8,16 +8,16 @@ class Echo(BaseHTTPRequestHandler):
     sys_version = ""
 
     def _answer(self) -> None:
-        if self.path == "/api/v1/cabinet/redirect":
+        if self.path == "/api/v1/redirect":
             self.send_response(307)
-            self.send_header("Location", "http://smoke-upstream:8000/api/v1/cabinet/me")
+            self.send_header("Location", "http://smoke-upstream:8000/api/v1/users/me")
             self.end_headers()
             return
         body = json.dumps({"path": self.path, "headers": {k.lower(): v for k, v in self.headers.items()}}).encode()
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
-        if self.path == "/api/v1/cabinet/auth/refresh":
-            self.send_header("Set-Cookie", "cabinet_refresh_token=x; Path=/api/v1/cabinet/auth; HttpOnly")
+        if self.path == "/api/v1/auth/refresh":
+            self.send_header("Set-Cookie", "cabinet_refresh_token=x; Path=/api/v1/auth; HttpOnly")
         self.end_headers()
         self.wfile.write(body)
 

@@ -12,5 +12,5 @@ export interface Me {
 }
 
 export function useMeQuery() {
-  return useQuery({ queryKey: ["me"], queryFn: ({ signal }) => apiGet<Me>("/me", signal) });
+  return useQuery({ queryKey: ["me"], queryFn: ({ signal }) => apiGet<Me>("/users/me", signal) });
 }

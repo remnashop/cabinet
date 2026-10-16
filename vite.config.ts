@@ -26,9 +26,9 @@ export default defineConfig({
         // 127.0.0.1, not localhost: on macOS "localhost" may hit AirPlay's port 5000 over ::1
         target: process.env.VITE_API_PROXY_TARGET || "http://127.0.0.1:5000",
         // same rewrite as nginx in the image: the browser only ever sees /api
-        rewrite: (path) => path.replace(/^\/api/, "/api/v1/cabinet"),
-        // exact match, not a prefix: the backend scopes every cabinet cookie to this one path
-        cookiePathRewrite: { "/api/v1/cabinet/auth": "/api/auth" },
+        rewrite: (path) => path.replace(/^\/api/, "/api/v1"),
+        // exact match, not a prefix: the backend scopes every refresh cookie to this one path
+        cookiePathRewrite: { "/api/v1/auth": "/api/auth" },
         xfwd: true,
       },
     },

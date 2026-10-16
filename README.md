@@ -10,13 +10,13 @@ VITE_MOCKS=1 npm run dev   # MSW mocks, no backend needed (email code: 000000)
 npm run dev                # against a local backend on 127.0.0.1:5000
 ```
 
-Against a local backend the dev server proxies `/api` to `/api/v1/cabinet`, cookie paths included, the same way the image does. The backend must run with `APP_SECURE_COOKIES=false`, otherwise the browser drops its `Secure` cookies on plain http.
+Against a local backend the dev server proxies `/api` to `/api/v1`, cookie paths included, the same way the image does. The backend must run with `APP_SECURE_COOKIES=false`, otherwise the browser drops its `Secure` cookies on plain http.
 
 Checks: `npx tsc -b && npm run lint && npm test && npm run build`, and `sh scripts/nginx-smoke.sh` for the image's proxy.
 
 ## Deployment
 
-The image serves the SPA and proxies `/api/*` to the backend's `/api/v1/cabinet/*`, so the browser talks to one origin: the refresh token stays in an httponly cookie and the backend's address never reaches the client.
+The image serves the SPA and proxies `/api/*` to the backend's `/api/v1/*`, so the browser talks to one origin: the refresh token stays in an httponly cookie and the backend's address never reaches the client.
 
 | Variable | Value |
 |---|---|

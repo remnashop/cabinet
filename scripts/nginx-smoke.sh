@@ -18,14 +18,17 @@ req() { docker run --rm --network "$NET" curlimages/curl:8.10.1 -s -i "$@"; }
 
 out=$(req -X POST http://smoke-cabinet/api/auth/refresh -H "X-Forwarded-For: 6.6.6.6, 203.0.113.7" \
   -H "X-Cabinet-Proxy-Secret: forged" -H "X-Cabinet-Client-IP: 6.6.6.6")
-echo "$out" | grep -q '"path": "/api/v1/cabinet/auth/refresh"' || fail "path rewrite" "$out"
+echo "$out" | grep -q '"path": "/api/v1/auth/refresh"' || fail "path rewrite" "$out"
 echo "$out" | grep -q '"x-cabinet-proxy-secret": "s3cret"' || fail "secret overwrite" "$out"
 echo "$out" | grep -q '"x-cabinet-client-ip": "203.0.113.7"' || fail "client ip" "$out"
 echo "$out" | grep -qi 'set-cookie: cabinet_refresh_token=x; Path=/api/auth' || fail "cookie path" "$out"
 if echo "$out" | grep -qi 'uvicorn'; then fail "backend server header leaked" "$out"; fi
 
 out=$(req http://smoke-cabinet/api/redirect)
-echo "$out" | grep -qi '^location: /api/me' || fail "redirect rewrite" "$out"
+echo "$out" | grep -qi '^location: /api/users/me' || fail "redirect rewrite" "$out"
+
+out=$(req -X POST "http://smoke-cabinet/api/unsubscribe?token=t")
+echo "$out" | grep -q '"path": "/api/v1/unsubscribe?token=t"' || fail "unsubscribe path" "$out"
 
 out=$(req http://smoke-cabinet/login)
 echo "$out" | grep -q "frame-ancestors 'self' https://web.telegram.org" || fail "csp" "$out"

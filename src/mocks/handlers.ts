@@ -109,7 +109,7 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 });
   }),
 
-  http.get(`${API}/me`, ({ request }) => {
+  http.get(`${API}/users/me`, ({ request }) => {
     if (!request.headers.get("Authorization")?.startsWith("Bearer mock-access-")) {
       return apiError(401, "UNAUTHORIZED", "Not authenticated");
     }

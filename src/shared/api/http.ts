@@ -3,7 +3,7 @@ import type { ParseKeys } from "i18next";
 import { clearAccessToken, getAccessToken, setAccessToken, type AccessToken } from "@shared/api/tokens";
 import i18n from "@shared/i18n";
 
-// nginx in the cabinet image proxies this to the backend's /api/v1/cabinet
+// nginx in the cabinet image proxies this to the backend's /api/v1
 export const API_BASE = "/api";
 const CSRF_COOKIE = "cabinet_csrf_token";
 
