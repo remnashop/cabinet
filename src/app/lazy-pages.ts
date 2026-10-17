@@ -3,7 +3,11 @@ import { lazy } from "react";
 export const SubscriptionPage = lazy(() =>
   import("@pages/subscription/SubscriptionPage").then((m) => ({ default: m.SubscriptionPage })),
 );
+export const ConnectPage = lazy(() => import("@pages/connect/ConnectPage").then((m) => ({ default: m.ConnectPage })));
 export const PurchasePage = lazy(() => import("@pages/purchase/PurchasePage").then((m) => ({ default: m.PurchasePage })));
+export const PlanWizardPage = lazy(() =>
+  import("@pages/purchase/PlanWizardPage").then((m) => ({ default: m.PlanWizardPage })),
+);
 export const ReferralPage = lazy(() => import("@pages/referral/ReferralPage").then((m) => ({ default: m.ReferralPage })));
 export const ProfilePage = lazy(() => import("@pages/profile/ProfilePage").then((m) => ({ default: m.ProfilePage })));
 export const PaymentsPage = lazy(() => import("@pages/payments/PaymentsPage").then((m) => ({ default: m.PaymentsPage })));
@@ -16,6 +20,8 @@ export const LoginCallbackPage = lazy(() =>
   import("@pages/login/LoginCallbackPage").then((m) => ({ default: m.LoginCallbackPage })),
 );
 export const BotSignInPage = lazy(() => import("@pages/login/BotSignInPage").then((m) => ({ default: m.BotSignInPage })));
+export const LinkBotPage = lazy(() => import("@pages/link/LinkBotPage").then((m) => ({ default: m.LinkBotPage })));
 export const UnsubscribePage = lazy(() =>
   import("@pages/unsubscribe/UnsubscribePage").then((m) => ({ default: m.UnsubscribePage })),
 );
+export const PromoPage = lazy(() => import("@pages/promo/PromoPage").then((m) => ({ default: m.PromoPage })));

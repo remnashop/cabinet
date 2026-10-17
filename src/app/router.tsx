@@ -3,12 +3,16 @@ import { createBrowserRouter } from "react-router";
 import { GuestOnly, RequireAuth, Root } from "@app/guards";
 import {
   BotSignInPage,
+  ConnectPage,
+  LinkBotPage,
   LoginCallbackPage,
   LoginPage,
   NotFoundPage,
   PaymentResultPage,
   PaymentsPage,
+  PlanWizardPage,
   ProfilePage,
+  PromoPage,
   PurchasePage,
   ReferralPage,
   SubscriptionPage,
@@ -30,7 +34,22 @@ export const router = createBrowserRouter([
       },
       { path: "/login/callback/:provider", element: <LoginCallbackPage /> },
       { path: "/login/bot", element: <BotSignInPage /> },
-      { path: "/payment/result", element: <PaymentResultPage /> },
+      {
+        path: "/payment/result",
+        element: (
+          <RequireAuth>
+            <PaymentResultPage />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: "/link/bot",
+        element: (
+          <RequireAuth>
+            <LinkBotPage />
+          </RequireAuth>
+        ),
+      },
       { path: "/unsubscribe", element: <UnsubscribePage /> },
       {
         element: (
@@ -40,7 +59,10 @@ export const router = createBrowserRouter([
         ),
         children: [
           { index: true, element: <SubscriptionPage /> },
+          { path: "subscription/:id/connect", element: <ConnectPage /> },
           { path: "purchase", element: <PurchasePage /> },
+          { path: "purchase/:planId", element: <PlanWizardPage /> },
+          { path: "promo", element: <PromoPage /> },
           { path: "referral", element: <ReferralPage /> },
           { path: "profile", element: <ProfilePage /> },
           { path: "profile/payments", element: <PaymentsPage /> },

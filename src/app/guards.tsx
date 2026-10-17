@@ -1,14 +1,19 @@
 import { Suspense, type ReactNode } from "react";
 import { Navigate, Outlet, useLocation, useSearchParams } from "react-router";
 
+import { stashBotLinkToken } from "@features/auth/bot-signin-token";
 import { useIsAuthenticated } from "@shared/api/tokens";
 import { safeNext } from "@shared/lib/safe-redirect";
 import { Spinner } from "@shared/ui/Spinner";
 
 export function RequireAuth({ children }: { children: ReactNode }) {
   const authed = useIsAuthenticated();
-  const { pathname, search } = useLocation();
-  if (!authed) return <Navigate to={`/login?next=${encodeURIComponent(pathname + search)}`} replace />;
+  const { pathname, search, hash } = useLocation();
+  if (!authed) {
+    // ?next= drops the hash, and /link/bot's token lives there
+    if (pathname === "/link/bot") stashBotLinkToken(hash);
+    return <Navigate to={`/login?next=${encodeURIComponent(pathname + search)}`} replace />;
+  }
   return children;
 }
 

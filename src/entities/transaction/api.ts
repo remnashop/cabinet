@@ -1,0 +1,38 @@
+import { useInfiniteQuery } from "@tanstack/react-query";
+
+import { apiGet } from "@shared/api/http";
+
+export interface Transaction {
+  id: number;
+  status: "PENDING" | "PAID" | "FAILED" | "CANCELED" | "REFUNDED";
+  final_price: string;
+  currency: string;
+  purchase_type: "NEW" | "RENEW" | "CHANGE";
+  gateway_type: string;
+  plan_name: string;
+  duration_days: number;
+  created_at: string | null;
+}
+
+export function getTransaction(id: number | string, signal?: AbortSignal) {
+  return apiGet<Transaction>(`/transactions/me/${id}`, signal);
+}
+
+const PAGE_SIZE = 20;
+
+interface TransactionPage {
+  items: Transaction[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export function useTransactionsInfinite() {
+  return useInfiniteQuery({
+    queryKey: ["transactions"],
+    initialPageParam: 1,
+    queryFn: ({ pageParam, signal }) =>
+      apiGet<TransactionPage>(`/transactions/me?page=${pageParam}&page_size=${PAGE_SIZE}`, signal),
+    getNextPageParam: (last) => (last.page * last.page_size < last.total ? last.page + 1 : undefined),
+  });
+}

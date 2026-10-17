@@ -35,3 +35,19 @@ it("Telegram's back button returns without growing the history", async () => {
   expect(router.state.historyAction).toBe("REPLACE");
   act(() => root.unmount());
 });
+
+it("onBack drives Telegram's back button instead of backTo", async () => {
+  const onBack = vi.fn();
+  const router = createMemoryRouter(
+    [{ path: "/w", element: <PageHeader title="Wizard" backTo="/" onBack={onBack} /> }],
+    { initialEntries: ["/w"] },
+  );
+  const root = createRoot(document.createElement("div"));
+  await act(async () => root.render(<RouterProvider router={router} />));
+
+  await act(async () => telegramBack?.());
+
+  expect(onBack).toHaveBeenCalledOnce();
+  expect(router.state.location.pathname).toBe("/w");
+  act(() => root.unmount());
+});

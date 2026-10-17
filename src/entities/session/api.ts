@@ -9,6 +9,14 @@ export interface Me {
   telegram_id: number | null;
   username: string | null;
   language: string;
+  created_at: string | null;
+  // Decimal string, e.g. "120.00"
+  points: string;
+  bonus_days: number;
+  // percents; 0 = none
+  personal_discount: number;
+  purchase_discount: number;
+  loyalty_discount: number;
 }
 
 export function useMeQuery() {

@@ -178,6 +178,18 @@ export function apiPost<T, B>(path: string, body: B, signal?: AbortSignal, keepa
   });
 }
 
+export function apiPatch<T, B>(path: string, body: B): Promise<T> {
+  return request<T>(path, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+export function apiDelete(path: string): Promise<void> {
+  return request<void>(path, { method: "DELETE" });
+}
+
 export function getErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof NetworkError) return i18n.t("errors.network");
   if (!(err instanceof ApiError)) return fallback;

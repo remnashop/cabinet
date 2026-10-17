@@ -11,7 +11,24 @@ import { TextInput } from "@shared/ui/TextInput";
 const RESEND_SECONDS = 60;
 const CODE_LENGTH = 6;
 
-export function EmailLogin({ allowedDomains }: { allowedDomains: string[] | null }) {
+/** The two calls of an email-code flow; verify also finishes it (signs in, or links in the profile). */
+export interface EmailCodeFlow {
+  sendCode: (email: string, locale: string) => Promise<unknown>;
+  verify: (email: string, code: string) => Promise<void>;
+}
+
+const signInFlow: EmailCodeFlow = {
+  sendCode: authApi.sendEmailCode,
+  verify: (email, code) => authApi.verifyEmail(email, code).then(completeLogin),
+};
+
+export function EmailLogin({
+  allowedDomains,
+  flow = signInFlow,
+}: {
+  allowedDomains: string[] | null;
+  flow?: EmailCodeFlow;
+}) {
   const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -25,18 +42,15 @@ export function EmailLogin({ allowedDomains }: { allowedDomains: string[] | null
   }, [cooldown]);
 
   const sendCode = useMutation({
-    mutationFn: () => authApi.sendEmailCode(email.trim(), i18n.language.startsWith("ru") ? "ru" : "en"),
+    mutationFn: () => flow.sendCode(email.trim(), i18n.language.startsWith("ru") ? "ru" : "en"),
     onSuccess: () => {
       setStep("code");
       setCode("");
       setCooldown(RESEND_SECONDS);
     },
   });
-  // success flips the session; GuestOnly on /login then navigates to ?next=
-  const verify = useMutation({
-    mutationFn: (value: string) => authApi.verifyEmail(email.trim(), value),
-    onSuccess: completeLogin,
-  });
+  // signing in flips the session; GuestOnly on /login then navigates to ?next=
+  const verify = useMutation({ mutationFn: (value: string) => flow.verify(email.trim(), value) });
 
   const onCodeChange = (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, CODE_LENGTH);
