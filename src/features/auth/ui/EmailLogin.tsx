@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useShownLegalLocale } from "@entities/legal/api";
 import { authApi, completeLogin } from "@features/auth/api";
 import { isUnlistedDomain } from "@features/auth/email-domain";
 import { getErrorMessage } from "@shared/api/http";
@@ -17,18 +18,20 @@ export interface EmailCodeFlow {
   verify: (email: string, code: string) => Promise<void>;
 }
 
-const signInFlow: EmailCodeFlow = {
+const signInFlow = (legal?: string): EmailCodeFlow => ({
   sendCode: authApi.sendEmailCode,
-  verify: (email, code) => authApi.verifyEmail(email, code).then(completeLogin),
-};
+  verify: (email, code) => authApi.verifyEmail(email, code, legal).then(completeLogin),
+});
 
 export function EmailLogin({
   allowedDomains,
-  flow = signInFlow,
+  flow: customFlow,
 }: {
   allowedDomains: string[] | null;
   flow?: EmailCodeFlow;
 }) {
+  const legal = useShownLegalLocale();
+  const flow = customFlow ?? signInFlow(legal);
   const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");

@@ -1,6 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
+import { useShownLegalLocale } from "@entities/legal/api";
+import { LegalNotice } from "@entities/legal/LegalNotice";
 import { authApi, completeLogin } from "@features/auth/api";
 import { EmailLogin } from "@features/auth/ui/EmailLogin";
 import { OAuthButtons } from "@features/auth/ui/OAuthButtons";
@@ -15,8 +17,9 @@ import { FullScreen } from "@widgets/full-screen/FullScreen";
 // only after a sign-out or an expired session, with a one-tap way back in.
 function MiniAppLogin() {
   const { t } = useTranslation();
+  const legal = useShownLegalLocale();
   const login = useMutation({
-    mutationFn: () => authApi.telegram(getInitDataRaw() ?? ""),
+    mutationFn: () => authApi.telegram(getInitDataRaw() ?? "", legal),
     onSuccess: completeLogin,
   });
   return (
@@ -74,6 +77,7 @@ export function LoginPage() {
         <p className="mt-1 text-sm text-muted-foreground">{t("auth.subtitle")}</p>
       </div>
       {isMiniApp() ? <MiniAppLogin /> : <BrowserLogin />}
+      <LegalNotice kinds={["USER_AGREEMENT", "PRIVACY_POLICY"]} message="loginNotice" />
     </FullScreen>
   );
 }

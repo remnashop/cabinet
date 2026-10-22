@@ -3,6 +3,8 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { createCheckout, useQuoteQuery, type PaymentMethod, type Plan } from "@entities/plan/api";
+import { useShownLegalLocale } from "@entities/legal/api";
+import { LegalNotice } from "@entities/legal/LegalNotice";
 import { useMeQuery } from "@entities/session/api";
 import { StarsInvoiceError, UnsafePaymentUrlError } from "@features/payment/start-payment";
 import { durationUnit, gatewayLabel, isValidEmail, type PurchaseType } from "@features/purchase/wizard";
@@ -60,6 +62,8 @@ export function SummaryStep({
   const { unit, count } = durationUnit(days);
   const amount = quote.data ? formatMoney(quote.data.final_price, quote.data.currency, locale) : null;
 
+  const legal = useShownLegalLocale();
+
   // isPending only lands on the next render: two taps in one frame would create two orders
   const inFlight = useRef(false);
   const pay = () => {
@@ -73,6 +77,7 @@ export function SummaryStep({
         currency: method.currency,
         purchase_type: type,
         gateway_type: method.gateway_type,
+        ...(legal && { legal_locale: legal }),
         ...(subId !== null && { target_subscription_id: subId }),
         ...(email && { customer_email: email }),
       },
@@ -156,6 +161,7 @@ export function SummaryStep({
         {t("purchase.pay", { amount: amount ?? "…" })}
       </Button>
       <p className="text-center text-[11px] text-muted-foreground">{t("purchase.payNote")}</p>
+      <LegalNotice kinds={["OFFER"]} message="payNotice" />
     </div>
   );
 }

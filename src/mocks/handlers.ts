@@ -275,6 +275,21 @@ export const handlers = [
   }),
 
   // "bad" stands for a forged or truncated link
+  http.get(`${API}/legal/documents`, ({ request }) => {
+    const ru = new URL(request.url).searchParams.get("locale") === "ru";
+    const items = [
+      { kind: "USER_AGREEMENT", title: ru ? "Пользовательское соглашение" : "User agreement", body: "# Terms\n\nMock text.", revision_id: 1 },
+      { kind: "PRIVACY_POLICY", title: ru ? "Политика конфиденциальности" : "Privacy policy", body: "# Privacy\n\nMock text.", revision_id: 1 },
+      { kind: "OFFER", title: ru ? "Оферта" : "Offer", body: "# Offer\n\nMock text.", revision_id: 1 },
+    ];
+    return HttpResponse.json({ items, total: items.length });
+  }),
+
+  http.get(`${API}/cabinet/legal/pending`, () => HttpResponse.json({ items: [], total: 0, is_update: false })),
+  http.post(`${API}/cabinet/legal/actions/accept`, () =>
+    HttpResponse.json({ items: [], total: 0, is_update: false }),
+  ),
+
   http.post(`${API}/unsubscribe`, ({ request }) =>
     new URL(request.url).searchParams.get("token") === "bad"
       ? apiError(400, "UNSUBSCRIBE_TOKEN_INVALID", "Invalid unsubscribe token")

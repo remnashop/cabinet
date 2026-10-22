@@ -374,5 +374,23 @@
     "merged": "Accounts merged",
     "mergeCountdown_one": "The offer is valid for {{count}} minute",
     "mergeCountdown_other": "The offer is valid for {{count}} minutes"
+  },
+  "legal": {
+    "loginNotice": "By continuing, you accept {{documents}}",
+    "payNotice": "By paying, you accept {{documents}}",
+    "and": " and ",
+    "empty": "No documents published",
+    "reaccept": {
+      "title": "We’ve updated our documents",
+      "text": "Review the new version and accept it to keep using the cabinet.",
+      "accept": "I accept",
+      "accepting": "Saving…",
+      "revision": "{{date}}"
+    },
+    "link": {
+      "OFFER": "the Offer",
+      "USER_AGREEMENT": "the User agreement",
+      "PRIVACY_POLICY": "the Privacy policy"
+    }
   }
 }

@@ -17,6 +17,7 @@ import {
   ReferralPage,
   SubscriptionPage,
   UnsubscribePage,
+  LegalPage,
 } from "@app/lazy-pages";
 import { AppShell } from "@widgets/app-shell/AppShell";
 
@@ -51,6 +52,8 @@ export const router = createBrowserRouter([
         ),
       },
       { path: "/unsubscribe", element: <UnsubscribePage /> },
+      { path: "/legal", element: <LegalPage /> },
+      { path: "/legal/:kind", element: <LegalPage /> },
       {
         element: (
           <RequireAuth>

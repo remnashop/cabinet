@@ -18,20 +18,23 @@ export interface Deeplink {
 
 const provider = (name: string) => `/auth/oauth/${encodeURIComponent(name)}`;
 
+// legal_locale goes only with a sign-in that showed the notice (the backend records the acceptance)
+const withLegal = (legal?: string) => (legal ? { legal_locale: legal } : {});
+
 // the first step of every flow that may create a user carries the first-touch ref/ad;
 // the Mini App's codes travel inside the signed initData instead
 export const authApi = {
   methods: () => apiGet<AuthMethods>("/auth/methods"),
-  telegram: (initData: string) =>
-    apiPost<AccessToken, object>("/auth/telegram", { init_data: initData }),
+  telegram: (initData: string, legal?: string) =>
+    apiPost<AccessToken, object>("/auth/telegram", { init_data: initData, ...withLegal(legal) }),
   sendEmailCode: (email: string, locale: string) =>
     apiPost<null, object>("/auth/email/code", {
       email,
       locale,
       ...readAttribution(),
     }),
-  verifyEmail: (email: string, code: string) =>
-    apiPost<AccessToken, object>("/auth/email/verify", { email, code }),
+  verifyEmail: (email: string, code: string, legal?: string) =>
+    apiPost<AccessToken, object>("/auth/email/verify", { email, code, ...withLegal(legal) }),
   oauthAuthorize: (name: string) =>
     apiPost<{ url: string }, object>(`${provider(name)}/authorize`, {
       audience: "cabinet",

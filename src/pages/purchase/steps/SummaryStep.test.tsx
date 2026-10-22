@@ -92,12 +92,37 @@ afterEach(() => {
 });
 
 describe("SummaryStep", () => {
+  it("sends legal_locale and links the offer when it is published", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json({ items: [{ kind: "OFFER", title: "Offer", body: "x", revision_id: 3 }], total: 1 })),
+    );
+    await render("NEW", null);
+    await until(() => expect(container.textContent).toContain("By paying, you accept the Offer"));
+    const pay = [...container.querySelectorAll("button")].find((b) => b.textContent?.startsWith("Pay"))!;
+    await until(() => expect((pay as HTMLButtonElement).disabled).toBe(false));
+    await act(async () => pay.click());
+    await until(() => expect(createCheckout).toHaveBeenCalled());
+    expect(checkoutBody()).toMatchObject({ legal_locale: "en" });
+    vi.unstubAllGlobals();
+  });
+
   it("sends no target subscription for NEW", async () => {
     await render("NEW", null);
     await until(() => expect(payButton().disabled).toBe(false));
     await act(async () => payButton().click());
     await until(() => expect(createCheckout).toHaveBeenCalled());
     expect(checkoutBody()).not.toHaveProperty("target_subscription_id");
+  });
+
+  it("sends no legal_locale when the documents failed to load", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 500 })));
+    await render("NEW", null);
+    await until(() => expect(payButton().disabled).toBe(false));
+    await act(async () => payButton().click());
+    await until(() => expect(createCheckout).toHaveBeenCalled());
+    expect(checkoutBody()).not.toHaveProperty("legal_locale");
+    vi.unstubAllGlobals();
   });
 
   it.each(["RENEW", "CHANGE"] as const)("sends the target subscription for %s", async (type) => {

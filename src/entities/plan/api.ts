@@ -52,6 +52,7 @@ export interface CheckoutInput {
   gateway_type: string;
   target_subscription_id?: number;
   customer_email?: string;
+  legal_locale?: string;
 }
 
 export interface PromocodeActivation {

@@ -24,4 +24,5 @@ export const LinkBotPage = lazy(() => import("@pages/link/LinkBotPage").then((m)
 export const UnsubscribePage = lazy(() =>
   import("@pages/unsubscribe/UnsubscribePage").then((m) => ({ default: m.UnsubscribePage })),
 );
+export const LegalPage = lazy(() => import("@pages/legal/LegalPage").then((m) => ({ default: m.LegalPage })));
 export const PromoPage = lazy(() => import("@pages/promo/PromoPage").then((m) => ({ default: m.PromoPage })));
