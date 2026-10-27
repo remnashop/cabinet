@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
 import { isMiniApp, useTelegramBackButton } from "@shared/telegram";
+import { HeaderSlot } from "@widgets/page-header/HeaderSlot";
 
 const BACK_CLASS = "flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/[0.06]";
 
@@ -26,7 +27,7 @@ export function PageHeader({ title, backTo, onBack }: PageHeaderProps) {
   useTelegramBackButton(handler);
 
   return (
-    <header className="mb-4 flex items-center gap-2">
+    <HeaderSlot>
       {handler &&
         !isMiniApp() &&
         (onBack ? (
@@ -38,7 +39,7 @@ export function PageHeader({ title, backTo, onBack }: PageHeaderProps) {
             <ChevronLeft className="size-5" />
           </Link>
         ))}
-      <h1 className="text-xl font-semibold">{title}</h1>
-    </header>
+      <h1 className="min-w-0 truncate text-[21px] font-bold tracking-tight">{title}</h1>
+    </HeaderSlot>
   );
 }

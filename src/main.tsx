@@ -16,6 +16,9 @@ async function start(): Promise<void> {
   if (import.meta.env.DEV && import.meta.env.VITE_MOCKS === "1") {
     const { enableMocks } = await import("./mocks/browser");
     await enableMocks();
+    const { DebugPanel } = await import("./mocks/DebugPanel");
+    const host = document.body.appendChild(document.createElement("div"));
+    createRoot(host).render(<DebugPanel />);
   }
   initTelegram(CANVAS_COLOR);
   captureAttribution(window.location.search, getStartParam());

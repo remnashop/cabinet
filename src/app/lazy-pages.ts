@@ -4,6 +4,9 @@ export const SubscriptionPage = lazy(() =>
   import("@pages/subscription/SubscriptionPage").then((m) => ({ default: m.SubscriptionPage })),
 );
 export const ConnectPage = lazy(() => import("@pages/connect/ConnectPage").then((m) => ({ default: m.ConnectPage })));
+export const OpenInAppPage = lazy(() =>
+  import("@pages/connect/OpenInAppPage").then((m) => ({ default: m.OpenInAppPage })),
+);
 export const PurchasePage = lazy(() => import("@pages/purchase/PurchasePage").then((m) => ({ default: m.PurchasePage })));
 export const PlanWizardPage = lazy(() =>
   import("@pages/purchase/PlanWizardPage").then((m) => ({ default: m.PlanWizardPage })),
@@ -25,4 +28,3 @@ export const UnsubscribePage = lazy(() =>
   import("@pages/unsubscribe/UnsubscribePage").then((m) => ({ default: m.UnsubscribePage })),
 );
 export const LegalPage = lazy(() => import("@pages/legal/LegalPage").then((m) => ({ default: m.LegalPage })));
-export const PromoPage = lazy(() => import("@pages/promo/PromoPage").then((m) => ({ default: m.PromoPage })));

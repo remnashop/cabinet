@@ -1,30 +1,15 @@
-/* The card's slowly rotating blurred conic gradient (a cheap stand-in for a live shader). */
+/* The card's static diagonal gradient, one palette per neighbour. */
 .sub-card-bg {
   position: absolute;
-  inset: -40%;
-  filter: blur(28px);
-  opacity: 0.95;
-  animation: sub-card-spin 14s linear infinite;
+  inset: 0;
 }
 
 .sub-card-bg[data-palette="0"] {
-  background: conic-gradient(from 0deg, #0e7490, #22d3ee, #155e75, #0891b2, #164e63, #0e7490);
+  background: linear-gradient(135deg, #164e63, #0e7490 45%, #22d3ee);
 }
 .sub-card-bg[data-palette="1"] {
-  background: conic-gradient(from 0deg, #4c1d95, #7c3aed, #22d3ee, #312e81, #4c1d95);
+  background: linear-gradient(135deg, #312e81, #4c1d95 40%, #7c3aed 75%, #22d3ee);
 }
 .sub-card-bg[data-palette="2"] {
-  background: conic-gradient(from 0deg, #78350f, #f59e0b, #b45309, #22d3ee55, #78350f);
-}
-
-@keyframes sub-card-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sub-card-bg {
-    animation: none;
-  }
+  background: linear-gradient(135deg, #78350f, #b45309 45%, #f59e0b);
 }

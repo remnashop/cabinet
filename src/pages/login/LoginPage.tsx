@@ -47,7 +47,7 @@ function BrowserLogin() {
       </>
     );
   }
-  const { oauth, email, telegram_deeplink, allowed_email_domains } = methods.data;
+  const { oauth, email, telegram_deeplink, allowed_email_domains, captcha } = methods.data;
   if (!oauth.length && !email && !telegram_deeplink) {
     return <p className="text-sm text-muted-foreground">{t("auth.unavailable")}</p>;
   }
@@ -55,15 +55,15 @@ function BrowserLogin() {
     <>
       {oauth.length > 0 && <OAuthButtons providers={oauth} />}
       {/* the bot leads when there's no Telegram OIDC to sit above it */}
-      {telegram_deeplink && <TelegramBotLogin primary={!oauth.includes("telegram")} />}
+      {telegram_deeplink && <TelegramBotLogin />}
       {(oauth.length > 0 || telegram_deeplink) && email && (
-        <div className="flex w-full items-center gap-3 text-xs uppercase text-muted-foreground">
+        <div className="flex w-full items-center gap-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
           <span className="h-px flex-1 bg-border" />
           {t("auth.or")}
           <span className="h-px flex-1 bg-border" />
         </div>
       )}
-      {email && <EmailLogin allowedDomains={allowed_email_domains ?? null} />}
+      {email && <EmailLogin allowedDomains={allowed_email_domains ?? null} captcha={captcha ?? null} />}
     </>
   );
 }
@@ -72,9 +72,9 @@ export function LoginPage() {
   const { t } = useTranslation();
   return (
     <FullScreen>
-      <div>
-        <h1 className="text-2xl font-semibold">{t("auth.title")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t("auth.subtitle")}</p>
+      <div className="mb-2">
+        <h1 className="text-2xl font-bold tracking-tight">{t("auth.title")}</h1>
+        <p className="mt-2.5 text-sm text-muted-foreground">{t("auth.subtitle")}</p>
       </div>
       {isMiniApp() ? <MiniAppLogin /> : <BrowserLogin />}
       <LegalNotice kinds={["USER_AGREEMENT", "PRIVACY_POLICY"]} message="loginNotice" />

@@ -20,8 +20,8 @@ The image serves the SPA and proxies `/api/*` to the backend's `/api/v1/*`, so t
 
 | Variable | Value |
 |---|---|
-| `API_URL` | the remnashop API, no trailing slash: `http://remnashop:5000` on the same server, `https://api.example.com` on another one |
-| `CABINET_PROXY_SECRET` | the same value as the backend's `CABINET_PROXY_SECRET`; the backend trusts the client IP the cabinet passes only with it |
+| `API_URL` | the remnashop API, no trailing slash: `http://remnashop:5000` on the same server, `https://api.example.com` on another one (plain `http://` is refused for anything but a container name) |
+| `CABINET_PROXY_SECRET` | the same value as the backend's `CABINET_PROXY_SECRET`; the backend trusts the client IP the cabinet passes only with it. Letters, digits, `_` and `-` only, at least 32 characters: `openssl rand -hex 32` |
 
 The container refuses to start without either.
 

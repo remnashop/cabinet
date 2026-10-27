@@ -89,7 +89,7 @@ export function PurchasePage() {
     body = (
       <>
         {blocked && (
-          <div className="flex gap-2 rounded-xl border border-warning/25 bg-warning/10 px-3 py-2.5 text-[12.5px] text-warning">
+          <div className="flex gap-2 rounded-2xl border border-warning/25 bg-warning/10 px-3 py-2.5 text-[12.5px] text-warning">
             <TriangleAlert className="mt-0.5 size-4 shrink-0" />
             {t("purchase.limit", { count: max ?? 0 })}
           </div>
@@ -117,7 +117,7 @@ export function PurchasePage() {
   return (
     <>
       <PageHeader title={title} backTo={change ? "/" : undefined} />
-      <div className="flex flex-col gap-2.5">{body}</div>
+      <div className="flex flex-col gap-4">{body}</div>
     </>
   );
 }

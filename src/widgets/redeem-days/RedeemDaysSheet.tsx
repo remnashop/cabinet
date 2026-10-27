@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { redeemDays, type RedeemDaysResult } from "@entities/referral/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
+import { redeemTargets } from "@entities/subscription/lib";
 import { getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
 import { BottomSheet } from "@shared/ui/BottomSheet";
@@ -29,9 +30,7 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
   const [result, setResult] = useState<RedeemDaysResult | null>(null);
 
   const max = Math.min(bonusDays, MAX_DAYS);
-  // the backend renews EXPIRED ones too; it refuses trials, disabled and deleted
-  const targets =
-    subscriptions.data?.items.filter((s) => !s.is_trial && s.status !== "DELETED" && s.status !== "DISABLED") ?? [];
+  const targets = redeemTargets(subscriptions.data?.items ?? []);
   const subscriptionId = picked ?? (targets.length === 1 ? targets[0].id : null);
   const count = days === "" ? max : Number(days);
   const valid = Number.isInteger(count) && count >= 1 && count <= max;

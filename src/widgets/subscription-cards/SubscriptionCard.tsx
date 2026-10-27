@@ -3,8 +3,10 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { OwnSubscription } from "@entities/subscription/api";
-import { daysLeft, trafficColor, trafficRatio, urgency } from "@entities/subscription/lib";
+import { daysLeft, STATUS_TONE, trafficColor, trafficRatio, urgency } from "@entities/subscription/lib";
 import { formatBytes, formatDate, formatGb } from "@shared/lib/format";
+import { Badge } from "@shared/ui/Badge";
+import { BrandLogo } from "@shared/ui/BrandLogo";
 
 import "@widgets/subscription-cards/card.css";
 
@@ -40,17 +42,16 @@ export function SubscriptionCard({ sub, index, devicesUsed, compact }: Subscript
     >
       <div className="sub-card-bg" data-palette={index % 3} />
       <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/35" />
-      <div className="pointer-events-none absolute -bottom-4 -right-1.5 text-[90px] font-black leading-none tracking-[-4px] opacity-[0.07]">
-        {t("app.name").charAt(0)}
-      </div>
+      <BrandLogo className="pointer-events-none absolute -bottom-3 -right-3 size-24 opacity-[0.07]" />
 
-      <div className="relative flex items-start justify-between gap-2">
+      <div className="relative flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">
           <Icon className="size-4 shrink-0" />
           <span className="truncate">{sub.plan_name}</span>
         </div>
-        <span className="shrink-0 rounded-full border border-white/[0.18] bg-black/25 px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.08em] backdrop-blur-sm">
-          {t(`home.status.${sub.status}`)}
+        {/* a dark plate under the badge's translucent tint: it sits on a bright gradient, not a dark card */}
+        <span className="flex shrink-0 rounded-full bg-black/40 backdrop-blur-sm">
+          <Badge tone={STATUS_TONE[sub.status]}>{t(`home.status.${sub.status}`)}</Badge>
         </span>
       </div>
 

@@ -95,6 +95,28 @@ html {
 body {
   margin: 0;
   color: var(--color-foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
+}
+
+/* rows rise in one after another, as the panel's lists (LIST_BODY_CLASS there) */
+@keyframes list-row-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+.list-rows > * {
+  animation: list-row-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.list-rows > :nth-child(2) { animation-delay: 25ms; }
+.list-rows > :nth-child(3) { animation-delay: 50ms; }
+.list-rows > :nth-child(4) { animation-delay: 75ms; }
+.list-rows > :nth-child(5) { animation-delay: 100ms; }
+.list-rows > :nth-child(6) { animation-delay: 125ms; }
+.list-rows > :nth-child(7) { animation-delay: 150ms; }
+.list-rows > :nth-child(8) { animation-delay: 175ms; }
+.list-rows > :nth-child(n + 9) { animation-delay: 200ms; }
+@media (prefers-reduced-motion: reduce) {
+  .list-rows > * {
+    animation: none;
+  }
 }

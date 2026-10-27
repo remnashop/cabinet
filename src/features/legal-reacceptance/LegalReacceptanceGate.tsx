@@ -42,8 +42,8 @@ export function LegalReacceptanceGate() {
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
-      <div className="flex w-full max-w-[420px] flex-col gap-4 rounded-3xl border border-glass-border bg-surface p-6 shadow-2xl">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/55 p-4 backdrop-blur-3xl">
+      <div className="flex w-full max-w-[420px] flex-col gap-4 rounded-dialog border border-white/[0.14] bg-popover/60 p-6 shadow-[0_24px_48px_-20px_rgba(4,8,20,0.6),inset_0_1px_0_rgba(232,236,251,0.16)] backdrop-blur-2xl backdrop-saturate-150">
         <div className="flex size-10 items-center justify-center rounded-full bg-accent text-primary">
           <FileText className="size-[18px]" />
         </div>

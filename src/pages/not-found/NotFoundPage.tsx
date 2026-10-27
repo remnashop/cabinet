@@ -7,7 +7,7 @@ export function NotFoundPage() {
   const { t } = useTranslation();
   return (
     <FullScreen>
-      <h1 className="text-xl font-semibold">{t("pages.notFound")}</h1>
+      <h1 className="text-lg font-bold">{t("pages.notFound")}</h1>
       <Link to="/" className="text-sm text-primary">
         {t("common.home")}
       </Link>

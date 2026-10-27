@@ -9,6 +9,13 @@ export interface AuthMethods {
   oauth: string[];
   // null: any domain may sign up
   allowed_email_domains: string[] | null;
+  // null: no captcha before an email code
+  captcha: CaptchaConfig | null;
+}
+
+export interface CaptchaConfig {
+  provider: "TURNSTILE" | "HCAPTCHA";
+  site_key: string;
 }
 
 export interface Deeplink {
@@ -27,10 +34,11 @@ export const authApi = {
   methods: () => apiGet<AuthMethods>("/auth/methods"),
   telegram: (initData: string, legal?: string) =>
     apiPost<AccessToken, object>("/auth/telegram", { init_data: initData, ...withLegal(legal) }),
-  sendEmailCode: (email: string, locale: string) =>
+  sendEmailCode: (email: string, locale: string, captchaToken?: string) =>
     apiPost<null, object>("/auth/email/code", {
       email,
       locale,
+      ...(captchaToken && { captcha_token: captchaToken }),
       ...readAttribution(),
     }),
   verifyEmail: (email: string, code: string, legal?: string) =>

@@ -14,6 +14,8 @@ import {
 } from "@telegram-apps/sdk-react";
 import { useEffect, useRef } from "react";
 
+import { isHttpsUrl } from "@shared/lib/safe-redirect";
+
 let active = false;
 
 /** Call once before render. Outside Telegram it's a no-op and isMiniApp() stays false. */
@@ -114,6 +116,8 @@ export function haptic(): void {
 }
 
 export function openExternal(url: string): void {
+  // the URLs come from the backend and the panel; whatever they hold, only https leaves
+  if (!isHttpsUrl(url)) return;
   // t.me links belong to Telegram itself; openLink would bounce them through the browser
   if (active && url.startsWith("https://t.me/") && openTelegramLink.isAvailable()) openTelegramLink(url);
   else if (active && openLink.isAvailable()) openLink(url);

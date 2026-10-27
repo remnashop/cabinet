@@ -7,6 +7,7 @@ import { authApi, completeLogin } from "@features/auth/api";
 import { readBotSignInToken } from "@features/auth/bot-signin-token";
 import { getErrorMessage } from "@shared/api/http";
 import { getAccessToken } from "@shared/api/tokens";
+import { INTRO_STATE } from "@shared/lib/intro";
 import { Spinner } from "@shared/ui/Spinner";
 import { FullScreen } from "@widgets/full-screen/FullScreen";
 
@@ -20,7 +21,7 @@ export function BotSignInPage() {
     mutationFn: (value: string) => authApi.botSignin(value),
     onSuccess: (accessToken) => {
       completeLogin(accessToken);
-      void navigate("/", { replace: true });
+      void navigate("/", { replace: true, state: INTRO_STATE });
     },
   });
 
@@ -51,7 +52,7 @@ export function BotSignInPage() {
     <FullScreen>
       {/* a failed exchange has its own reason (blocked, rate-limited, expired...); only a
           missing token is plainly an expired link */}
-      <h1 className="text-xl font-semibold">{t(exchange.isError ? "auth.bootFailed" : "auth.botLinkExpired")}</h1>
+      <h1 className="text-lg font-bold">{t(exchange.isError ? "auth.bootFailed" : "auth.botLinkExpired")}</h1>
       {exchange.isError && (
         <p className="text-sm text-muted-foreground">{getErrorMessage(exchange.error, t("errors.generic"))}</p>
       )}

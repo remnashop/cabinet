@@ -20,6 +20,7 @@ const sub = (overrides: Partial<OwnSubscription> = {}): OwnSubscription => ({
   plan_id: 10,
   used_traffic: 0,
   link_reset_at: null,
+  connect_signature: "",
   ...overrides,
 });
 

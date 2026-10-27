@@ -8,6 +8,7 @@ import { readOAuthState, takeOAuthNext } from "@features/auth/oauth-redirect";
 import { linkApi } from "@features/link-identity/api";
 import { takeOAuthLink } from "@shared/lib/oauth-link-marker";
 import { getErrorMessage } from "@shared/api/http";
+import { INTRO_STATE } from "@shared/lib/intro";
 import { parseOAuthCallback } from "@shared/lib/oauth-callback";
 import { Spinner } from "@shared/ui/Spinner";
 import { FullScreen } from "@widgets/full-screen/FullScreen";
@@ -28,7 +29,7 @@ export function LoginCallbackPage() {
         void navigate(takeOAuthNext(), { replace: true, state: { linkResult } });
       } else {
         completeLogin(await authApi.oauthCallback(provider, code, state));
-        void navigate(takeOAuthNext(), { replace: true });
+        void navigate(takeOAuthNext(), { replace: true, state: INTRO_STATE });
       }
     },
   });
@@ -54,7 +55,7 @@ export function LoginCallbackPage() {
   }
   return (
     <FullScreen>
-      <h1 className="text-xl font-semibold">{t(linking ? "link.failed" : "auth.callbackFailed")}</h1>
+      <h1 className="text-lg font-bold">{t(linking ? "link.failed" : "auth.callbackFailed")}</h1>
       {exchange.isError && (
         <p className="text-sm text-muted-foreground">{getErrorMessage(exchange.error, t("errors.generic"))}</p>
       )}

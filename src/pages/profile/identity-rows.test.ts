@@ -17,6 +17,7 @@ const methods = (over: Partial<AuthMethods>): AuthMethods => ({
   email: false,
   oauth: [],
   allowed_email_domains: null,
+  captcha: null,
   ...over,
 });
 const kinds = (m: AuthMethods) => visibleIdentities(items, m).map((i) => i.kind);

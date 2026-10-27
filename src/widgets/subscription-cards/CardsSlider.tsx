@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { OwnSubscription } from "@entities/subscription/api";
+import { useDevicesQuery, type OwnSubscription } from "@entities/subscription/api";
 import { SubscriptionCard } from "@widgets/subscription-cards/SubscriptionCard";
 
 interface CardsSliderProps {
@@ -12,12 +12,17 @@ interface CardsSliderProps {
   onSelect: (id: number) => void;
   canBuy: boolean;
   onBuy: () => void;
-  /** devices of the selected card, once loaded */
-  devicesUsed?: number;
 }
 
 // a slide is ~85% of the track, so only one can be 60% visible at a time
-const SLIDE = "w-[85%] max-w-[340px] shrink-0 snap-center";
+// desktop: three across, more scroll sideways
+const SLIDE = "w-[85%] max-w-[340px] shrink-0 snap-center lg:w-[calc((100%-1.5rem)/3)] lg:max-w-none";
+
+// every card counts its own devices; the selected one shares the query with the devices list
+export function SlideCard({ sub, index }: { sub: OwnSubscription; index: number }) {
+  const devices = useDevicesQuery(sub.id);
+  return <SubscriptionCard sub={sub} index={index} devicesUsed={devices.data?.total} />;
+}
 
 function scrollToSlide(track: HTMLElement, index: number, behavior: ScrollBehavior) {
   const slide = track.children[index] as HTMLElement | undefined;
@@ -25,7 +30,7 @@ function scrollToSlide(track: HTMLElement, index: number, behavior: ScrollBehavi
 }
 
 /** Swipeable cards; the last slide buys a new subscription. */
-export function CardsSlider({ subscriptions, selectedId, onSelect, canBuy, onBuy, devicesUsed }: CardsSliderProps) {
+export function CardsSlider({ subscriptions, selectedId, onSelect, canBuy, onBuy }: CardsSliderProps) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const trackRef = useRef<HTMLDivElement>(null);
@@ -57,6 +62,8 @@ export function CardsSlider({ subscriptions, selectedId, onSelect, canBuy, onBuy
     if (!track) return;
     const observer = new IntersectionObserver(
       (entries) => {
+        // desktop shows the cards side by side: a click picks one, not what scrolled into view
+        if (matchMedia("(min-width: 64rem)").matches) return;
         const { subscriptions, onSelect } = latest.current;
         for (const entry of entries) {
           // the observer also fires for the slide dropping below the threshold, still intersecting
@@ -76,11 +83,28 @@ export function CardsSlider({ subscriptions, selectedId, onSelect, canBuy, onBuy
     <div>
       <div
         ref={trackRef}
-        className="relative -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 py-0.5 [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden"
+        className="relative -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 py-0.5 [scrollbar-width:none] lg:-mx-3 lg:-mt-3 lg:mb-1 lg:p-3 [&::-webkit-scrollbar]:hidden"
       >
         {subscriptions.map((sub, index) => (
           <div key={sub.id} data-index={index} className={SLIDE}>
-            <SubscriptionCard sub={sub} index={index} devicesUsed={sub.id === selectedId ? devicesUsed : undefined} />
+            <button
+              type="button"
+              aria-pressed={sub.id === selectedId}
+              onClick={() => {
+                onSelect(sub.id);
+                setVisible(index);
+                if (trackRef.current) scrollToSlide(trackRef.current, index, reduced ? "auto" : "smooth");
+              }}
+              className={`block w-full rounded-[20px] text-left transition ${
+                subscriptions.length < 2
+                  ? ""
+                  : sub.id === selectedId
+                    ? "lg:shadow-[0_0_12px_-4px_var(--color-primary)] lg:ring-2 lg:ring-primary"
+                    : "opacity-55 hover:opacity-90"
+              }`}
+            >
+              <SlideCard sub={sub} index={index} />
+            </button>
           </div>
         ))}
         <div data-index={subscriptions.length} className={SLIDE}>
@@ -97,7 +121,7 @@ export function CardsSlider({ subscriptions, selectedId, onSelect, canBuy, onBuy
       </div>
 
       {/* 24px tap targets around 6px dots; the negative margin keeps the visual spacing */}
-      <div className="mt-2 mb-3 flex justify-center">
+      <div className="mt-2 mb-3 flex justify-center lg:hidden">
         {[...subscriptions, null].map((sub, index) => (
           <button
             key={sub?.id ?? "buy"}
@@ -106,7 +130,12 @@ export function CardsSlider({ subscriptions, selectedId, onSelect, canBuy, onBuy
               sub ? t("home.slideOf", { index: index + 1, total: subscriptions.length }) : t("home.buy")
             }
             aria-current={index === visible}
-            onClick={() => trackRef.current && scrollToSlide(trackRef.current, index, reduced ? "auto" : "smooth")}
+            onClick={() => {
+              // desktop doesn't scroll, so the dot picks its card itself
+              if (sub) onSelect(sub.id);
+              setVisible(index);
+              if (trackRef.current) scrollToSlide(trackRef.current, index, reduced ? "auto" : "smooth");
+            }}
             className="-my-[9px] flex h-6 min-w-6 items-center justify-center px-[3px]"
           >
             <span

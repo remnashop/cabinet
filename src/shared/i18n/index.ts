@@ -8,6 +8,8 @@ import ru from "./locales/ru.json";
 
 export const SUPPORTED_LANGUAGES = ["en", "ru"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+// each in its own language, so a reader of the other one still finds theirs
+export const LANGUAGE_NAMES: Record<SupportedLanguage, string> = { ru: "Русский", en: "English" };
 
 const STORAGE_KEY = "cabinet_language";
 

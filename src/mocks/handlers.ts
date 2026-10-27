@@ -1,7 +1,12 @@
 import { http, HttpResponse } from "msw";
 
+import { linkDigest } from "@entities/connect-guide/lib";
 import { API_BASE } from "@shared/api/http";
 import type { AccessToken } from "@shared/api/tokens";
+
+import { loadScenario } from "./scenario";
+
+const scenario = loadScenario();
 
 const API = API_BASE;
 const MOCK_CODE = "000000";
@@ -36,9 +41,9 @@ let me = {
   username: null,
   language: "ru",
   created_at: "2026-01-15T10:00:00Z",
-  points: "120.00",
-  bonus_days: 3,
-  personal_discount: 10,
+  points: scenario.points.toFixed(2),
+  bonus_days: scenario.bonusDays,
+  personal_discount: scenario.discount,
   purchase_discount: 0,
   loyalty_discount: 0,
 };
@@ -62,36 +67,24 @@ interface MockSubscription {
   link_reset_at: string | null;
 }
 
-let subscriptions: MockSubscription[] = [
-  {
-    id: 1,
-    status: "ACTIVE",
-    is_trial: false,
-    expire_at: daysFromNow(27),
-    url: "https://sub.example.com/premium",
-    effective_traffic_limit: 100,
-    effective_device_limit: 3,
-    traffic_limit_strategy: "NO_RESET",
-    plan_name: "Премиум",
-    plan_id: 2,
-    used_traffic: 12.4 * GB,
-    link_reset_at: null,
-  },
-  {
-    id: 2,
-    status: "ACTIVE",
-    is_trial: false,
-    expire_at: daysFromNow(3),
-    url: "https://sub.example.com/basic",
-    effective_traffic_limit: 50,
-    effective_device_limit: 2,
-    traffic_limit_strategy: "NO_RESET",
-    plan_name: "Базовый",
-    plan_id: 1,
-    used_traffic: 44 * GB,
-    link_reset_at: null,
-  },
+const TEMPLATES = [
+  { plan_name: "Премиум", plan_id: 2, url: "https://sub.example.com/premium" },
+  { plan_name: "Базовый", plan_id: 1, url: "https://sub.example.com/basic" },
+  { plan_name: "Безлимит", plan_id: 3, url: "https://sub.example.com/unlimited" },
 ];
+let subscriptions: MockSubscription[] = TEMPLATES.slice(0, scenario.subscriptions).map((template, i) => ({
+  ...template,
+  id: i + 1,
+  status: i === 0 ? scenario.status : "ACTIVE",
+  is_trial: i === 0 && scenario.trial,
+  ...(i === 0 && scenario.trial ? { plan_name: "Пробный", plan_id: 0 } : {}),
+  expire_at: daysFromNow(i === 0 ? scenario.daysLeft : 60 + i * 30),
+  effective_traffic_limit: scenario.trafficLimit,
+  effective_device_limit: scenario.deviceLimit,
+  traffic_limit_strategy: "NO_RESET",
+  used_traffic: scenario.trafficUsed * GB,
+  link_reset_at: null,
+}));
 
 const device = (hwid: string, platform: string, device_model: string) => ({
   hwid,
@@ -100,13 +93,26 @@ const device = (hwid: string, platform: string, device_model: string) => ({
   user_agent: "Happ/1.0",
   created_at: "2026-09-01T09:00:00Z",
 });
-const devices: Record<number, ReturnType<typeof device>[]> = {
-  1: [device("hwid-1", "iOS", "iPhone 15"), device("hwid-2", "Windows", "Desktop PC")],
-  2: [device("hwid-3", "Android", "Pixel 8")],
-};
+const MODELS: [string, string][] = [
+  ["iOS", "iPhone 15"],
+  ["Windows", "Desktop PC"],
+  ["Android", "Pixel 8"],
+  ["macOS", "MacBook Air"],
+  ["Android", "Galaxy Tab"],
+  ["Linux", "ThinkPad"],
+];
+const devices: Record<number, ReturnType<typeof device>[]> = Object.fromEntries(
+  subscriptions.map((sub) => [
+    sub.id,
+    Array.from({ length: scenario.devices }, (_, i) => {
+      const [platform, model] = MODELS[i % MODELS.length];
+      return device(`hwid-${sub.id}-${i}`, platform, model);
+    }),
+  ]),
+);
 
-let trialAvailable = true;
-let nextSubscriptionId = 3;
+let trialAvailable = scenario.trialAvailable;
+let nextSubscriptionId = subscriptions.length + 1;
 
 const PRICES: Record<number, number[]> = {
   1: [149, 399, 749, 1399],
@@ -138,15 +144,15 @@ const catalog = [plan(1, "Базовый", 50, 2), plan(2, "Премиум", 100
 let referral = {
   referral_code: "IVAN42",
   referrer_id: null as number | null,
-  points: "240.00",
-  bonus_days: 5,
+  points: scenario.points.toFixed(2),
+  bonus_days: scenario.bonusDays,
   counts_by_level: { "1": 5, "2": 2 },
   rewards: [
     { type: "POINTS", amount: "49.00", created_at: "2026-10-14T10:00:00Z" },
     { type: "EXTRA_DAYS", amount: "3", created_at: "2026-10-02T10:00:00Z" },
   ],
   program: {
-    enabled: true,
+    enabled: scenario.referral,
     reward_type: "POINTS",
     reward_strategy: "PERCENT",
     reward_amounts: { "1": "10.00", "2": "5.00" },
@@ -155,7 +161,62 @@ let referral = {
   },
 };
 
-const PERSONAL_DISCOUNT = 10;
+const PERSONAL_DISCOUNT = scenario.discount;
+
+const text = (ru: string, en: string) => ({ ru, en });
+const guideApp = (id: string, name: string, store: string, template: string, featured = false) => ({
+  id,
+  name,
+  featured,
+  steps: [
+    {
+      title: text(`Установите ${name}`, `Install ${name}`),
+      body: text("Скачайте приложение и откройте его один раз.", "Download the app and open it once."),
+      icon: "download",
+      buttons: [{ kind: "external", label: text("Скачать", "Download"), url: store }],
+    },
+    {
+      title: text("Добавьте подписку", "Add the subscription"),
+      body: text(
+        "Нажмите «Добавить» — приложение откроется с вашей подпиской.",
+        "Tap “Add” and the app opens with your subscription.",
+      ),
+      icon: "plus",
+      buttons: [
+        { kind: "deep_link", label: text("Добавить", "Add"), template, encode: "raw" },
+        { kind: "copy_link", label: text("Скопировать ссылку", "Copy link") },
+      ],
+    },
+    {
+      title: text("Подключитесь", "Connect"),
+      body: text("Выберите сервер и нажмите кнопку включения.", "Pick a server and tap the power button."),
+      icon: "power",
+      buttons: [],
+    },
+  ],
+});
+const APPLE = "https://apps.apple.com/app/happ-proxy-utility/id6504287215";
+const GOOGLE = "https://play.google.com/store/apps/details?id=com.happproxy";
+const connectGuide = {
+  platforms: [
+    {
+      id: "ios",
+      apps: [
+        guideApp("happ", "Happ", APPLE, "happ://add/{{SUBSCRIPTION_LINK}}", true),
+        guideApp("v2raytun", "v2RayTun", APPLE, "v2raytun://import/{{SUBSCRIPTION_LINK}}"),
+      ],
+    },
+    {
+      id: "android",
+      apps: [
+        guideApp("happ", "Happ", GOOGLE, "happ://add/{{SUBSCRIPTION_LINK}}", true),
+        guideApp("hiddify", "Hiddify", GOOGLE, "hiddify://import/{{SUBSCRIPTION_LINK}}"),
+      ],
+    },
+    { id: "windows", apps: [guideApp("happ", "Happ", APPLE, "happ://add/{{SUBSCRIPTION_LINK}}", true)] },
+    { id: "macos", apps: [guideApp("happ", "Happ", APPLE, "happ://add/{{SUBSCRIPTION_LINK}}", true)] },
+  ],
+};
 
 const identities = [
   { kind: "TELEGRAM", linked: true, label: "@dev" },
@@ -214,6 +275,15 @@ function unauthorized(request: Request) {
     : apiError(401, "NOT_AUTHENTICATED", "Not authenticated");
 }
 
+// long enough to scroll the document dialog
+const longDoc = (name: string) =>
+  `# ${name}\n\n` +
+  Array.from(
+    { length: 8 },
+    (_, i) =>
+      `## ${i + 1}. Section\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\n- First point of the section\n- Second point, with a [link](https://example.com)\n- Third point\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.`,
+  ).join("\n\n");
+
 export const handlers = [
   http.get(`${API}/auth/methods`, () =>
     HttpResponse.json({
@@ -222,6 +292,7 @@ export const handlers = [
       email: true,
       oauth: ["telegram", "google", "yandex"],
       allowed_email_domains: ["gmail.com", "yandex.ru", "mail.ru"],
+      captcha: null,
     }),
   ),
 
@@ -278,9 +349,9 @@ export const handlers = [
   http.get(`${API}/legal/documents`, ({ request }) => {
     const ru = new URL(request.url).searchParams.get("locale") === "ru";
     const items = [
-      { kind: "USER_AGREEMENT", title: ru ? "Пользовательское соглашение" : "User agreement", body: "# Terms\n\nMock text.", revision_id: 1 },
-      { kind: "PRIVACY_POLICY", title: ru ? "Политика конфиденциальности" : "Privacy policy", body: "# Privacy\n\nMock text.", revision_id: 1 },
-      { kind: "OFFER", title: ru ? "Оферта" : "Offer", body: "# Offer\n\nMock text.", revision_id: 1 },
+      { kind: "USER_AGREEMENT", title: ru ? "Пользовательское соглашение" : "User agreement", body: longDoc("Terms"), revision_id: 1 },
+      { kind: "PRIVACY_POLICY", title: ru ? "Политика конфиденциальности" : "Privacy policy", body: longDoc("Privacy"), revision_id: 1 },
+      { kind: "OFFER", title: ru ? "Оферта" : "Offer", body: longDoc("Offer"), revision_id: 1 },
     ];
     return HttpResponse.json({ items, total: items.length });
   }),
@@ -313,18 +384,31 @@ export const handlers = [
     ({ request }) =>
       unauthorized(request) ??
       HttpResponse.json({
-        max_active_subscriptions: 3,
-        device_single_reset_enabled: true,
-        device_all_reset_enabled: true,
+        max_active_subscriptions: scenario.maxActive,
+        device_single_reset_enabled: scenario.deviceReset,
+        device_all_reset_enabled: scenario.deviceReset,
         link_reset_enabled: true,
         bot_username: "mock_bot",
       }),
   ),
 
-  http.get(
-    `${API}/subscriptions/me`,
-    ({ request }) => unauthorized(request) ?? HttpResponse.json({ items: subscriptions, total: subscriptions.length }),
+  // zero-session, like the backend's
+  http.get(`${API}/shop/connect-guide`, () =>
+    HttpResponse.json(scenario.connectGuide ? connectGuide : { platforms: [] }),
   ),
+
+  // the backend's signature is an HMAC; the mock's is the link's digest, which verify compares against
+  http.get(`${API}/subscriptions/me`, async ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const items = await Promise.all(subscriptions.map(async (sub) => ({ ...sub, connect_signature: await linkDigest(sub.url) })));
+    return HttpResponse.json({ items, total: items.length });
+  }),
+
+  http.post(`${API}/shop/connect-guide/verify`, async ({ request }) => {
+    const { digest, signature } = (await request.json()) as { digest: string; signature: string };
+    return HttpResponse.json({ valid: digest === signature });
+  }),
 
   http.get(
     `${API}/subscriptions/me/trial`,
@@ -337,7 +421,7 @@ export const handlers = [
       }),
   ),
 
-  http.post(`${API}/subscriptions/me/actions/activate-trial`, ({ request }) => {
+  http.post(`${API}/subscriptions/me/actions/activate-trial`, async ({ request }) => {
     const denied = unauthorized(request);
     if (denied) return denied;
     if (!trialAvailable) return apiError(409, "TRIAL_NOT_AVAILABLE", "Trial is not available");
@@ -358,7 +442,7 @@ export const handlers = [
     };
     subscriptions = [...subscriptions, created];
     devices[created.id] = [];
-    return HttpResponse.json(created, { status: 201 });
+    return HttpResponse.json({ ...created, connect_signature: await linkDigest(created.url) }, { status: 201 });
   }),
 
   http.get(`${API}/subscriptions/me/:id/devices`, ({ request, params }) => {

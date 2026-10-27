@@ -19,7 +19,7 @@ export function LegalDocumentDialog({
   onClose: () => void;
 }) {
   return (
-    <BottomSheet open={document !== null} onClose={onClose} title={document?.title ?? ""}>
+    <BottomSheet variant="dialog" fullScreen open={document !== null} onClose={onClose} title={document?.title ?? ""}>
       {document && <LegalMarkdown>{document.body}</LegalMarkdown>}
     </BottomSheet>
   );

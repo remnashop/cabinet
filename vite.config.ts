@@ -6,8 +6,10 @@ import { defineConfig } from "vitest/config";
 
 const layer = (name: string) => fileURLToPath(new URL(`./src/${name}`, import.meta.url));
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
+  // public/ holds only MSW's mock worker: served by the dev server, never shipped
+  publicDir: command === "serve" ? "public" : false,
   resolve: {
     alias: {
       "@app": layer("app"),
@@ -27,8 +29,11 @@ export default defineConfig({
         target: process.env.VITE_API_PROXY_TARGET || "http://127.0.0.1:5000",
         // same rewrite as nginx in the image: the browser only ever sees /api
         rewrite: (path) => path.replace(/^\/api/, "/api/v1"),
-        // exact match, not a prefix: the backend scopes every refresh cookie to this one path
-        cookiePathRewrite: { "/api/v1/auth": "/api/auth" },
+        // exact matches, unlike nginx's prefix rewrite: one per cookie path the backend sets
+        cookiePathRewrite: {
+          "/api/v1/auth": "/api/auth",
+          "/api/v1/users/me/identities/oauth": "/api/users/me/identities/oauth",
+        },
         xfwd: true,
       },
     },
@@ -36,4 +41,4 @@ export default defineConfig({
   test: {
     environment: "jsdom",
   },
-});
+}));

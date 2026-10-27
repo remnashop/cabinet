@@ -1,0 +1,67 @@
+import { Check, Copy, ExternalLink, RefreshCw } from "lucide-react";
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { useCabinetSettingsQuery } from "@entities/shop/api";
+import { useReissue, type OwnSubscription } from "@entities/subscription/api";
+import { getErrorMessage } from "@shared/api/http";
+import { haptic, openExternal } from "@shared/telegram";
+import { Button } from "@shared/ui/Button";
+import { ConfirmSheet } from "@shared/ui/ConfirmSheet";
+import { QrCode } from "@shared/ui/QrCode";
+
+import { useCopyLink } from "./use-copy-link";
+
+/** QR, the link itself, copy/open and reissue: the plain connect page, and the guide's "link and QR" sheet. */
+export function LinkPanel({ subscription }: { subscription: OwnSubscription }) {
+  const { t } = useTranslation();
+  const settings = useCabinetSettingsQuery();
+  const reissue = useReissue();
+  const [confirm, setConfirm] = useState(false);
+  const linkRef = useRef<HTMLParagraphElement>(null);
+  const [copied, copy] = useCopyLink(subscription.url, () => linkRef.current);
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <QrCode value={subscription.url} size={208} />
+      <p ref={linkRef} className="w-full break-all rounded-xl bg-white/[0.04] p-3 font-mono text-xs">
+        {subscription.url}
+      </p>
+      {/* stacked on phones: "Открыть в приложении" doesn't fit half a row */}
+      <div className="flex w-full flex-col gap-2 sm:flex-row">
+        <Button variant="outline" className="gap-2 sm:flex-1" onClick={() => void copy()}>
+          {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+          {copied ? t("connect.copied") : t("connect.copy")}
+        </Button>
+        <Button
+          variant="accent"
+          className="gap-2 sm:flex-1"
+          onClick={() => {
+            haptic();
+            openExternal(subscription.url);
+          }}
+        >
+          <ExternalLink className="size-4" />
+          {t("connect.open")}
+        </Button>
+      </div>
+      {settings.data?.link_reset_enabled && (
+        <Button variant="outline" className="w-full gap-2" onClick={() => setConfirm(true)}>
+          <RefreshCw className="size-4" />
+          {t("connect.reissue")}
+        </Button>
+      )}
+      {reissue.isError && <p className="text-sm text-error">{getErrorMessage(reissue.error, t("errors.generic"))}</p>}
+      <ConfirmSheet
+        open={confirm}
+        danger
+        title={t("connect.reissueTitle")}
+        text={t("connect.reissueWarning")}
+        confirmLabel={t("connect.reissue")}
+        pending={reissue.isPending}
+        onClose={() => setConfirm(false)}
+        onConfirm={() => reissue.mutate({ subscriptionId: subscription.id }, { onSettled: () => setConfirm(false) })}
+      />
+    </div>
+  );
+}

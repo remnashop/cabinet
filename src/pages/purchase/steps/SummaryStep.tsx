@@ -77,6 +77,7 @@ export function SummaryStep({
         currency: method.currency,
         purchase_type: type,
         gateway_type: method.gateway_type,
+        ...(quote.data && { expected_price: quote.data.final_price }),
         ...(legal && { legal_locale: legal }),
         ...(subId !== null && { target_subscription_id: subId }),
         ...(email && { customer_email: email }),
@@ -86,7 +87,7 @@ export function SummaryStep({
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <Card variant="list">
         <InfoRow label={t("purchase.plan")} value={plan.name} />
         <InfoRow label={t("purchase.duration")} value={t(`purchase.${unit}`, { count })} />
@@ -132,7 +133,7 @@ export function SummaryStep({
           required={method.requires_email}
           className="w-full"
         />
-        {emailInvalid && <p className="text-xs text-error">{t("purchase.emailInvalid")}</p>}
+        {emailInvalid && <p className="text-[12px] text-error">{t("purchase.emailInvalid")}</p>}
       </Card>
 
       {quote.isError && (

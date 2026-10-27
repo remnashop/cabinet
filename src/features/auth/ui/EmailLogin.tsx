@@ -3,18 +3,22 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useShownLegalLocale } from "@entities/legal/api";
-import { authApi, completeLogin } from "@features/auth/api";
+import { authApi, completeLogin, type CaptchaConfig } from "@features/auth/api";
 import { isUnlistedDomain } from "@features/auth/email-domain";
+import { CaptchaWidget } from "@features/auth/ui/CaptchaWidget";
 import { getErrorMessage } from "@shared/api/http";
 import { Button } from "@shared/ui/Button";
 import { TextInput } from "@shared/ui/TextInput";
 
 const RESEND_SECONDS = 60;
+
+const emailError = (input: HTMLInputElement) =>
+  input.validity.valueMissing ? "auth.emailRequired" : input.validity.valid ? null : "auth.emailInvalid";
 const CODE_LENGTH = 6;
 
 /** The two calls of an email-code flow; verify also finishes it (signs in, or links in the profile). */
 export interface EmailCodeFlow {
-  sendCode: (email: string, locale: string) => Promise<unknown>;
+  sendCode: (email: string, locale: string, captchaToken?: string) => Promise<unknown>;
   verify: (email: string, code: string) => Promise<void>;
 }
 
@@ -26,17 +30,24 @@ const signInFlow = (legal?: string): EmailCodeFlow => ({
 export function EmailLogin({
   allowedDomains,
   flow: customFlow,
+  captcha = null,
 }: {
   allowedDomains: string[] | null;
   flow?: EmailCodeFlow;
+  /** asked before every code, the resend too */
+  captcha?: CaptchaConfig | null;
 }) {
   const legal = useShownLegalLocale();
   const flow = customFlow ?? signInFlow(legal);
   const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
+  const [invalid, setInvalid] = useState<ReturnType<typeof emailError>>(null);
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
   const [cooldown, setCooldown] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaRound, setCaptchaRound] = useState(0);
+  const captchaMissing = captcha !== null && captchaToken === null;
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -45,7 +56,10 @@ export function EmailLogin({
   }, [cooldown]);
 
   const sendCode = useMutation({
-    mutationFn: () => flow.sendCode(email.trim(), i18n.language.startsWith("ru") ? "ru" : "en"),
+    mutationFn: () =>
+      flow.sendCode(email.trim(), i18n.language.startsWith("ru") ? "ru" : "en", captchaToken ?? undefined),
+    // the token is spent either way
+    onSettled: () => captcha && setCaptchaRound((round) => round + 1),
     onSuccess: () => {
       setStep("code");
       setCode("");
@@ -74,13 +88,25 @@ export function EmailLogin({
           autoComplete="email"
           placeholder={t("auth.emailPlaceholder")}
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            // re-checked while typing once shown, gone when the value passes
+            if (invalid) setInvalid(emailError(e.target));
+          }}
+          // the browser's own bubble is unstyled; the message goes under the field instead
+          onInvalid={(e) => {
+            e.preventDefault();
+            setInvalid(emailError(e.currentTarget));
+          }}
+          aria-invalid={invalid !== null}
           className="w-full"
         />
+        {invalid && <p className="text-left text-[12px] text-error">{t(invalid)}</p>}
         {isUnlistedDomain(email, allowedDomains) && (
           <p className="text-sm text-muted-foreground">{t("auth.domainHint")}</p>
         )}
-        <Button type="submit" variant="accent" className="w-full" disabled={sendCode.isPending}>
+        {captcha && <CaptchaWidget config={captcha} round={captchaRound} onToken={setCaptchaToken} />}
+        <Button type="submit" variant="accent" className="w-full" disabled={sendCode.isPending || captchaMissing}>
           {t("auth.sendCode")}
         </Button>
         {sendCode.isError && <p className="text-sm text-error">{getErrorMessage(sendCode.error, t("errors.generic"))}</p>}
@@ -104,10 +130,13 @@ export function EmailLogin({
         className="w-full text-center tracking-[0.4em]"
       />
       {error && <p className="text-sm text-error">{getErrorMessage(error, t("errors.generic"))}</p>}
+      {captcha && cooldown === 0 && (
+        <CaptchaWidget config={captcha} round={captchaRound} onToken={setCaptchaToken} />
+      )}
       <Button
         variant="outline"
         className="w-full"
-        disabled={cooldown > 0 || sendCode.isPending}
+        disabled={cooldown > 0 || sendCode.isPending || captchaMissing}
         onClick={() => sendCode.mutate()}
       >
         {cooldown > 0 ? t("auth.resendIn", { seconds: cooldown }) : t("auth.resend")}

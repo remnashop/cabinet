@@ -1,5 +1,6 @@
 import type { Plan } from "@entities/plan/api";
-import type { OwnSubscription } from "@entities/subscription/api";
+import type { OwnSubscription, SubscriptionStatus } from "@entities/subscription/api";
+import type { BadgeTone } from "@shared/ui/Badge";
 
 const DAY_MS = 86_400_000;
 const SOON_DAYS = 3;
@@ -35,3 +36,17 @@ export function canRenew(sub: OwnSubscription, catalog: Plan[]): boolean {
 export function canBuyMore(maxActive: number | null, count: number): boolean {
   return maxActive === null || count < maxActive;
 }
+
+/** What bonus days can go to: the backend renews EXPIRED ones too; it refuses trials, disabled and deleted. */
+export function redeemTargets(items: OwnSubscription[]): OwnSubscription[] {
+  return items.filter((s) => !s.is_trial && s.status !== "DELETED" && s.status !== "DISABLED");
+}
+
+/** The panel's SUBSCRIPTION_STATUS_BADGE_TONE. */
+export const STATUS_TONE: Record<SubscriptionStatus, BadgeTone> = {
+  ACTIVE: "success",
+  LIMITED: "warning",
+  EXPIRED: "error",
+  DISABLED: "neutral",
+  DELETED: "neutral",
+};

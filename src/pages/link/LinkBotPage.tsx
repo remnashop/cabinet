@@ -45,7 +45,7 @@ export function LinkBotPage() {
   }
   return (
     <FullScreen>
-      <h1 className="text-xl font-semibold">{t(exchange.isError ? "link.failed" : "link.botLinkExpired")}</h1>
+      <h1 className="text-lg font-bold">{t(exchange.isError ? "link.failed" : "link.botLinkExpired")}</h1>
       <p className="text-sm text-muted-foreground">
         {exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : t("link.botLinkElsewhere")}
       </p>

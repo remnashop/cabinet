@@ -8,3 +8,7 @@ dist
 coverage/
 .idea/
 docs/
+.vscode/
+*.code-workspace
+.worktrees/
+.agents

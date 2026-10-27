@@ -1,10 +1,10 @@
-import { Check, Copy, Share2 } from "lucide-react";
+import { CalendarPlus, Check, Coins, Copy, Gift, Share2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Navigate } from "react-router";
 
 import { useReferralQuery } from "@entities/referral/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
-import { RedeemDaysSheet } from "./RedeemDaysSheet";
 import { WithdrawSheet } from "./WithdrawSheet";
 import { formatNumber, inviteLinks, rewardTerms } from "@features/referral/links";
 import { formatDate } from "@shared/lib/format";
@@ -13,9 +13,12 @@ import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { ErrorCard } from "@shared/ui/ErrorCard";
+import { EVENT_ROW, EventIcon, EventList, EventListEmpty } from "@shared/ui/EventList";
+import { KpiTile } from "@shared/ui/KpiTile";
 import { QrCode } from "@shared/ui/QrCode";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { PageHeader } from "@widgets/page-header/PageHeader";
+import { RedeemDaysSheet } from "@widgets/redeem-days/RedeemDaysSheet";
 
 /** "Copied" for two seconds after flash(). */
 function useCopied() {
@@ -95,7 +98,7 @@ export function ReferralPage() {
     return (
       <>
         {header}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <Skeleton className="h-44" />
           <Skeleton className="h-40" />
         </div>
@@ -105,12 +108,8 @@ export function ReferralPage() {
 
   const { program, points, bonus_days: bonusDays, counts_by_level: counts, rewards } = referral.data;
   if (!program.enabled) {
-    return (
-      <>
-        {header}
-        <Card className="text-sm text-muted-foreground">{t("referral.disabled")}</Card>
-      </>
-    );
+    // the nav drops the tab; a bookmarked /referral goes home
+    return <Navigate to="/" replace />;
   }
 
   const links = inviteLinks(referral.data.referral_code, settings.data?.bot_username ?? null, window.location.origin);
@@ -130,12 +129,9 @@ export function ReferralPage() {
   return (
     <>
       {header}
-      <div className="flex flex-col gap-3">
-        <Card className="flex flex-col gap-3">
-          <div>
-            <p className="font-semibold">{t("referral.title")}</p>
-            <p className="text-sm text-muted-foreground">{rewardTerms(program, t, locale)}</p>
-          </div>
+      <div className="flex flex-col gap-4">
+        <Card title={t("referral.title")} className="flex flex-col gap-3">
+          <p className="text-sm text-muted-foreground">{rewardTerms(program, t, locale)}</p>
           {linkPending ? (
             <>
               <Skeleton className="h-12 w-full rounded-xl" />
@@ -176,12 +172,9 @@ export function ReferralPage() {
           )}
         </Card>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {stats.map(([label, value]) => (
-            <Card key={label} className="flex flex-col gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
-              <b className="text-xl">{value}</b>
-            </Card>
+            <KpiTile key={label} label={label} value={value} />
           ))}
         </div>
 
@@ -199,18 +192,30 @@ export function ReferralPage() {
           </Button>
         </div>
 
-        <Card title={t("referral.rewards")} variant="list">
-          {rewards.length === 0 && <p className="px-2.5 py-2 text-sm text-muted-foreground">{t("referral.noRewards")}</p>}
-          {rewards.map((reward, i) => (
-            <div key={i} className="flex h-9.5 items-center justify-between gap-3 px-2.5 text-[13px]">
-              <b>
-                {reward.type === "POINTS"
-                  ? t("referral.rewardPoints", { n: formatNumber(reward.amount, locale) })
-                  : t("referral.rewardDays", { count: Number(reward.amount) })}
-              </b>
-              {reward.created_at && <span className="text-muted-foreground">{formatDate(reward.created_at, locale)}</span>}
-            </div>
-          ))}
+        <Card title={t("referral.rewards")}>
+          {rewards.length === 0 ? (
+            <EventListEmpty icon={Gift} text={t("referral.noRewards")} />
+          ) : (
+            <EventList className="mt-2">
+              {rewards.map((reward, i) => (
+                <div key={i} className={`flex ${EVENT_ROW} items-center justify-between gap-3 hover:bg-white/[0.04]`}>
+                  <span className="flex min-w-0 items-center gap-3">
+                    <EventIcon icon={reward.type === "POINTS" ? Coins : CalendarPlus} />
+                    <span className="truncate text-[13px] font-medium text-foreground/90">
+                      {reward.type === "POINTS"
+                        ? t("referral.rewardPoints", { n: formatNumber(reward.amount, locale) })
+                        : t("referral.rewardDays", { count: Number(reward.amount) })}
+                    </span>
+                  </span>
+                  {reward.created_at && (
+                    <span className="shrink-0 text-[13px] tabular-nums text-muted-foreground">
+                      {formatDate(reward.created_at, locale)}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </EventList>
+          )}
         </Card>
       </div>
 

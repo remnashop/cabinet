@@ -1,5 +1,6 @@
 import type { NavigateFunction } from "react-router";
 
+import { isHttpsUrl } from "@shared/lib/safe-redirect";
 import { isMiniApp, openExternal, openStarsInvoice } from "@shared/telegram";
 
 /** The Stars popup closed unpaid: the customer stays on the summary and can pay again. */
@@ -18,10 +19,6 @@ export class UnsafePaymentUrlError extends Error {
   }
 }
 
-// dev: the MSW checkout redirects to http://localhost
-const isHttps = (url: string) =>
-  URL.canParse(url) && (new URL(url).protocol === "https:" || (import.meta.env.DEV && url.startsWith(location.origin)));
-
 export async function startPayment(
   result: { order_id: number; confirmation_url: string | null },
   gateway: string,
@@ -30,7 +27,7 @@ export async function startPayment(
   const url = result.confirmation_url;
   const toResult = () => void navigate(`/payment/result?order_id=${result.order_id}`);
   if (url === null) return toResult();
-  if (!isHttps(url)) throw new UnsafePaymentUrlError();
+  if (!isHttpsUrl(url)) throw new UnsafePaymentUrlError();
   if (!isMiniApp()) return window.location.assign(url);
   // the Mini App stays open: the result screen polls while the user pays
   if (gateway === "TELEGRAM_STARS") {

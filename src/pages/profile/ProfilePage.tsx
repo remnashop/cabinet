@@ -5,17 +5,16 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { unlinkIdentity, useIdentitiesQuery, type Identity, type IdentityKind } from "@entities/identity/api";
-import { useMeQuery, type Me } from "@entities/session/api";
+import { useChangeLanguage, useMeQuery, type Me } from "@entities/session/api";
 import { authApi } from "@features/auth/api";
-import { logout } from "@features/auth/logout";
 import { MergeSheet } from "@features/link-identity/MergeSheet";
 import { startOAuthLink } from "@features/link-identity/api";
 import { LinkEmailSheet } from "@features/link-identity/LinkEmailSheet";
 import { LinkTelegramSheet } from "@features/link-identity/LinkTelegramSheet";
 import { useLinkResult } from "@features/link-identity/useLinkResult";
 import { formatNumber } from "@features/referral/links";
-import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@shared/i18n";
-import { apiPatch, getErrorMessage } from "@shared/api/http";
+import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@shared/i18n";
+import { getErrorMessage } from "@shared/api/http";
 import { haptic, isMiniApp } from "@shared/telegram";
 import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
@@ -24,11 +23,11 @@ import { ConfirmSheet } from "@shared/ui/ConfirmSheet";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { InfoRow } from "@shared/ui/InfoRow";
 import { Skeleton } from "@shared/ui/Skeleton";
+import { useSignOut } from "@widgets/app-shell/sign-out";
 import { PageHeader } from "@widgets/page-header/PageHeader";
+import { PromoDialog } from "@widgets/promo/PromoDialog";
 
 import { rowAction, visibleIdentities } from "./identity-rows";
-
-const LANGUAGE_NAMES: Record<SupportedLanguage, string> = { ru: "Русский", en: "English" };
 
 function Header({ me }: { me: Me }) {
   const { t, i18n } = useTranslation();
@@ -37,12 +36,12 @@ function Header({ me }: { me: Me }) {
     new Intl.DateTimeFormat(i18n.language, { month: "2-digit", year: "numeric" }).format(new Date(me.created_at));
   return (
     <div className="flex items-center gap-3 px-1">
-      <div className="flex size-11 items-center justify-center rounded-full bg-gradient-to-br from-primary to-cyan-700 text-lg font-extrabold text-primary-foreground">
+      <div className="flex size-11 shrink-0 items-center justify-center rounded-full border border-glass-border bg-white/[0.05] text-lg font-bold text-foreground">
         {(me.name.trim()[0] ?? "?").toUpperCase()}
       </div>
       <div className="min-w-0">
         <div className="truncate text-[15px] font-semibold">{me.name}</div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-[12px] text-muted-foreground">
           {t("profile.id", { id: me.id })}
           {since && ` · ${t("profile.since", { date: since })}`}
         </div>
@@ -143,16 +142,7 @@ function IdentitiesCard({
 
 function LanguageSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t, i18n } = useTranslation();
-  const queryClient = useQueryClient();
-  const change = useMutation({
-    mutationFn: (language: SupportedLanguage) => apiPatch("/users/me", { language }),
-    onSuccess: async (_, language) => {
-      await i18n.changeLanguage(language);
-      // the answer carries raw discounts: refetch instead of caching it
-      await queryClient.invalidateQueries({ queryKey: ["me"] });
-      onClose();
-    },
-  });
+  const change = useChangeLanguage(onClose);
   return (
     <BottomSheet open={open} onClose={onClose} title={t("profile.languageTitle")}>
       <div className="flex flex-col gap-2">
@@ -176,8 +166,10 @@ export function ProfilePage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const signOut = useSignOut();
   const me = useMeQuery();
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
   const [linkSheet, setLinkSheet] = useState<"email" | "telegram" | null>(null);
   const link = useLinkResult();
   const oauthLink = useMutation({ mutationFn: startOAuthLink });
@@ -217,7 +209,7 @@ export function ProfilePage() {
     return (
       <>
         {header}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <Skeleton className="h-12" />
           <Skeleton className="h-32" />
           <Skeleton className="h-40" />
@@ -230,7 +222,7 @@ export function ProfilePage() {
   return (
     <>
       {header}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <Header me={me.data} />
         <BalanceCard me={me.data} />
         {link.notice && (
@@ -251,7 +243,7 @@ export function ProfilePage() {
         />
         <Card variant="list" title={t("profile.account")}>
           <InfoRow label={t("pages.payments")} value={arrow} onClick={() => void navigate("/profile/payments")} />
-          <InfoRow label={t("profile.promo")} value={arrow} onClick={() => void navigate("/promo")} />
+          <InfoRow label={t("profile.promo")} value={arrow} onClick={() => setPromoOpen(true)} />
           <InfoRow
             label={t("profile.language")}
             value={
@@ -263,15 +255,12 @@ export function ProfilePage() {
             onClick={() => setLanguageOpen(true)}
           />
         </Card>
-        <Button
-          variant="danger"
-          className="w-full"
-          onClick={() => void logout().then(() => queryClient.clear())}
-        >
+        <Button variant="danger" className="w-full lg:hidden" onClick={signOut}>
           {t("common.logout")}
         </Button>
       </div>
       <LanguageSheet open={languageOpen} onClose={() => setLanguageOpen(false)} />
+      <PromoDialog open={promoOpen} onClose={() => setPromoOpen(false)} />
       <LinkEmailSheet
         open={linkSheet === "email"}
         onClose={() => setLinkSheet(null)}

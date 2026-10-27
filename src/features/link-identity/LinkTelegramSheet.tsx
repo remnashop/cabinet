@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { getErrorMessage } from "@shared/api/http";
+import { telegramLink } from "@shared/lib/safe-redirect";
 import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { Spinner } from "@shared/ui/Spinner";
@@ -37,7 +38,7 @@ function TelegramLinkBody() {
     <div className="flex flex-col gap-2">
       {/* a link, not window.open: after an await browsers block a scripted popup and iOS won't hand it to the app */}
       <a
-        href={request.data.bot_url}
+        href={telegramLink(request.data.bot_url)}
         target="_blank"
         rel="noopener noreferrer"
         className="flex h-9 w-full items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover"

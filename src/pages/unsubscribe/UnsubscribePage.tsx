@@ -42,7 +42,7 @@ export function UnsubscribePage() {
 
   return (
     <FullScreen>
-      <h1 className="text-xl font-semibold">{title}</h1>
+      <h1 className="text-lg font-bold">{title}</h1>
       {text && <p className="text-sm text-muted-foreground">{text}</p>}
       {canSubmit && (
         <Button variant="solid" disabled={action.isPending} onClick={() => action.mutate(token)}>

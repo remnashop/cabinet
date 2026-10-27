@@ -19,6 +19,8 @@ export interface OwnSubscription {
   // bytes, null = unknown
   used_traffic: number | null;
   link_reset_at: string | null;
+  // the backend's signature over url: what the connect page's browser hop is vouched for with
+  connect_signature: string;
 }
 
 export interface Trial {

@@ -30,7 +30,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
     return (
       <>
         <CircleCheck className="size-12 text-success" />
-        <h1 className="text-xl font-semibold">{t("payment.paid", { plan: transaction?.plan_name ?? "" })}</h1>
+        <h1 className="text-lg font-bold">{t("payment.paid", { plan: transaction?.plan_name ?? "" })}</h1>
         <Button
           variant="solid"
           className="w-full"
@@ -48,7 +48,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
     return (
       <>
         <CircleX className="size-12 text-error" />
-        <h1 className="text-xl font-semibold">{t("payment.failed")}</h1>
+        <h1 className="text-lg font-bold">{t("payment.failed")}</h1>
         <Button variant="solid" className="w-full" onClick={() => void navigate("/purchase", { replace: true })}>
           {t("payment.retry")}
         </Button>

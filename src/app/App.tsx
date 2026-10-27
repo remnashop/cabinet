@@ -52,7 +52,7 @@ export function App() {
   if (boot.kind === "error") {
     return (
       <FullScreen>
-        <h1 className="text-xl font-semibold">{t("auth.bootFailed")}</h1>
+        <h1 className="text-lg font-bold">{t("auth.bootFailed")}</h1>
         <p className="text-sm text-muted-foreground">{getErrorMessage(boot.error, t("errors.generic"))}</p>
         <Button variant="solid" onClick={run}>
           {t("common.retry")}

@@ -53,6 +53,8 @@ export interface CheckoutInput {
   target_subscription_id?: number;
   customer_email?: string;
   legal_locale?: string;
+  // the total shown to the customer: the backend refuses the order with PRICE_CHANGED if it moved
+  expected_price?: string;
 }
 
 export interface PromocodeActivation {

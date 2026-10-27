@@ -1,3 +1,4 @@
+import { Receipt } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +8,7 @@ import { formatDate, formatMoney } from "@shared/lib/format";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { ErrorCard } from "@shared/ui/ErrorCard";
+import { EVENT_ROW, EventIcon, EventList, EventListEmpty } from "@shared/ui/EventList";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 
@@ -56,7 +58,9 @@ export function PaymentsPage() {
     return (
       <>
         {header}
-        <Card className="text-center text-sm text-muted-foreground">{t("payments.empty")}</Card>
+        <Card>
+          <EventListEmpty icon={Receipt} text={t("payments.empty")} />
+        </Card>
       </>
     );
   }
@@ -64,37 +68,42 @@ export function PaymentsPage() {
   return (
     <>
       {header}
-      <Card variant="list">
-        {items.map((tx) => {
-          const { unit, count } = durationUnit(tx.duration_days);
-          return (
-            <button
-              key={tx.id}
-              type="button"
-              onClick={() => setSelected(tx)}
-              className="flex w-full items-center justify-between gap-3 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-white/[0.04]"
-            >
-              <span className="min-w-0">
-                <span className="block truncate text-[13px] font-semibold">
-                  {tx.plan_name} · {t(`purchase.${unit}`, { count })}
+      <Card>
+        <EventList>
+          {items.map((tx) => {
+            const { unit, count } = durationUnit(tx.duration_days);
+            return (
+              <button
+                key={tx.id}
+                type="button"
+                onClick={() => setSelected(tx)}
+                className={`flex w-full ${EVENT_ROW} items-center justify-between gap-3 text-left hover:bg-white/[0.04]`}
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <EventIcon icon={Receipt} />
+                  <span className="min-w-0">
+                    <span className="block truncate text-[13px] font-medium text-foreground/90">
+                      {tx.plan_name} · {t(`purchase.${unit}`, { count })}
+                    </span>
+                    <span className="block truncate text-[12px] text-muted-foreground">
+                      {gatewayLabel(tx.gateway_type)}
+                      {tx.created_at && ` · ${formatDate(tx.created_at, i18n.language)}`}
+                    </span>
+                  </span>
                 </span>
-                <span className="block text-[11.5px] text-muted-foreground">
-                  {gatewayLabel(tx.gateway_type)}
-                  {tx.created_at && ` · ${formatDate(tx.created_at, i18n.language)}`}
+                <span className="shrink-0 text-right">
+                  <span className="block text-[13px] font-semibold">{formatMoney(tx.final_price, tx.currency, i18n.language)}</span>
+                  <span className={`block text-[12px] ${STATUS_COLOR[tx.status]}`}>
+                    {t(`payments.statuses.${tx.status}`)}
+                  </span>
                 </span>
-              </span>
-              <span className="shrink-0 text-right">
-                <span className="block text-[13px] font-semibold">{formatMoney(tx.final_price, tx.currency, i18n.language)}</span>
-                <span className={`block text-[10px] font-semibold ${STATUS_COLOR[tx.status]}`}>
-                  {t(`payments.statuses.${tx.status}`)}
-                </span>
-              </span>
-            </button>
-          );
-        })}
+              </button>
+            );
+          })}
+        </EventList>
       </Card>
       {hasNextPage && (
-        <div ref={sentinel} className="mt-3 flex flex-col items-center gap-2">
+        <div ref={sentinel} className="mt-4 flex flex-col items-center gap-2">
           {isFetchNextPageError && <p className="text-sm text-error">{t("common.loadFailed")}</p>}
           <Button variant="outline" disabled={isFetchingNextPage} onClick={() => void fetchNextPage()}>
             {t("payments.more")}

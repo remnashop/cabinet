@@ -107,6 +107,14 @@ describe("SummaryStep", () => {
     vi.unstubAllGlobals();
   });
 
+  it("sends the total it showed, so a moved price is refused", async () => {
+    await render("NEW", null);
+    await until(() => expect(payButton().disabled).toBe(false));
+    await act(async () => payButton().click());
+    await until(() => expect(createCheckout).toHaveBeenCalled());
+    expect(checkoutBody()).toMatchObject({ expected_price: "100" });
+  });
+
   it("sends no target subscription for NEW", async () => {
     await render("NEW", null);
     await until(() => expect(payButton().disabled).toBe(false));

@@ -1,6 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
-import { apiGet } from "@shared/api/http";
+import { apiGet, apiPatch } from "@shared/api/http";
+import type { SupportedLanguage } from "@shared/i18n";
 
 export interface Me {
   id: number;
@@ -21,4 +23,19 @@ export interface Me {
 
 export function useMeQuery() {
   return useQuery({ queryKey: ["me"], queryFn: ({ signal }) => apiGet<Me>("/users/me", signal) });
+}
+
+/** Saves the language on the server (bot and email texts follow it), then switches the UI. */
+export function useChangeLanguage(onDone?: () => void) {
+  const { i18n } = useTranslation();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (language: SupportedLanguage) => apiPatch("/users/me", { language }),
+    onSuccess: async (_, language) => {
+      await i18n.changeLanguage(language);
+      // the answer carries raw discounts: refetch instead of caching it
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
+      onDone?.();
+    },
+  });
 }

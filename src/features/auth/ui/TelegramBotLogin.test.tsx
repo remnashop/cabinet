@@ -40,7 +40,7 @@ it("asks the backend for a fresh bot link once the first one went stale", async 
   await act(async () => {
     root.render(
       <QueryClientProvider client={new QueryClient()}>
-        <TelegramBotLogin primary />
+        <TelegramBotLogin />
       </QueryClientProvider>,
     );
   });
