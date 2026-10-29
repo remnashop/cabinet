@@ -379,6 +379,17 @@ export const handlers = [
     return HttpResponse.json(me);
   }),
 
+  http.get(`${API}/appearance/:target`, () =>
+    HttpResponse.json({
+      brand_name: null,
+      primary_color: null,
+      shader_palette: null,
+      shader_enabled: true,
+      has_logo: false,
+      has_favicon: false,
+    }),
+  ),
+
   http.get(
     `${API}/shop/public-settings`,
     ({ request }) =>

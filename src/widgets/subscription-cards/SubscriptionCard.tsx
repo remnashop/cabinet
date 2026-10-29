@@ -2,11 +2,11 @@ import { Gift, Zap } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { BrandMark } from "@entities/appearance/BrandMark";
 import type { OwnSubscription } from "@entities/subscription/api";
 import { daysLeft, STATUS_TONE, trafficColor, trafficRatio, urgency } from "@entities/subscription/lib";
 import { formatBytes, formatDate, formatGb } from "@shared/lib/format";
 import { Badge } from "@shared/ui/Badge";
-import { BrandLogo } from "@shared/ui/BrandLogo";
 
 import "@widgets/subscription-cards/card.css";
 
@@ -42,7 +42,7 @@ export function SubscriptionCard({ sub, index, devicesUsed, compact }: Subscript
     >
       <div className="sub-card-bg" data-palette={index % 3} />
       <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/35" />
-      <BrandLogo className="pointer-events-none absolute -bottom-3 -right-3 size-24 opacity-[0.07]" />
+      <BrandMark className="pointer-events-none absolute -bottom-3 -right-3 size-24 opacity-[0.07]" />
 
       <div className="relative flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">

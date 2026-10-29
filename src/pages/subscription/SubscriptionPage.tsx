@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
+import { useBrandName } from "@entities/appearance/api";
+import { BrandMark } from "@entities/appearance/BrandMark";
 import { useCatalogQuery } from "@entities/plan/api";
 import { useReferralQuery } from "@entities/referral/api";
 import { useMeQuery } from "@entities/session/api";
@@ -12,7 +14,6 @@ import { canBuyMore, canRenew, redeemTargets } from "@entities/subscription/lib"
 import { formatNumber } from "@features/referral/links";
 import { getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
-import { BrandLogo } from "@shared/ui/BrandLogo";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { ErrorCard } from "@shared/ui/ErrorCard";
@@ -28,12 +29,12 @@ import { pickSelected } from "@widgets/subscription-cards/select";
 function Header() {
   const { t } = useTranslation();
   const me = useMeQuery();
-  const brand = t("app.name");
+  const brand = useBrandName();
   return (
     <HeaderSlot>
       <div className="flex min-w-0 items-center gap-2.5">
         {/* the sidebar carries the brand on desktop */}
-        <BrandLogo className="size-8 shrink-0 text-primary lg:hidden" />
+        <BrandMark className="size-8 shrink-0 text-primary lg:hidden" />
         <div className="min-w-0">
           <div className="truncate text-sm font-bold lg:hidden">{brand}</div>
           {me.data && (

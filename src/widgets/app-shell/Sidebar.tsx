@@ -5,12 +5,13 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, useLocation } from "react-router";
 
+import { useBrandName } from "@entities/appearance/api";
+import { BrandMark } from "@entities/appearance/BrandMark";
 import { useReferralQuery } from "@entities/referral/api";
 import { rewardTerms } from "@features/referral/links";
 import { bounceTap } from "@shared/lib/bounceState";
 import { toggleSidebarCollapsed, useSidebarCollapsed } from "@shared/lib/sidebar-collapse";
 import { BounceIcon } from "@shared/ui/BounceIcon";
-import { BrandLogo } from "@shared/ui/BrandLogo";
 import { useNavItems } from "@widgets/app-shell/nav-items";
 import { InfoDialog } from "@widgets/info/InfoDialog";
 
@@ -100,7 +101,7 @@ function FooterButton({
 export function Sidebar() {
   const { t } = useTranslation();
   const navItems = useNavItems();
-  const brand = t("app.name");
+  const brand = useBrandName();
   const [infoOpen, setInfoOpen] = useState(false);
   const collapsed = useSidebarCollapsed();
   const [hint, setHint] = useState<Hint | null>(null);
@@ -120,7 +121,7 @@ export function Sidebar() {
           to="/"
           className="flex min-w-0 items-center justify-center gap-2.5 rounded-xl px-2 pt-1.5 xl:group-data-expanded/sidebar:flex-1 xl:group-data-expanded/sidebar:justify-start"
         >
-          <BrandLogo className="size-8 shrink-0 text-primary" />
+          <BrandMark className="size-8 shrink-0 text-primary" />
           <div className={`min-w-0 ${LABEL}`}>
             <span className="block truncate text-[15px] font-bold leading-[22px] tracking-tight text-foreground">{brand}</span>
             <span className="block truncate text-[11px] font-medium leading-4 text-muted-foreground">{t("app.tagline")}</span>

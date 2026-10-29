@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 
+import { useAppearanceQuery } from "@entities/appearance/api";
 import { buildHueRotationMatrix, DEFAULT_TIME_SCALE, PALETTE, type ShaderUniforms } from "@app/shaderState";
 import { DEFAULT_ACCENT_COLOR, DEFAULT_SHADER_PALETTE_HEX, hexToHueDegrees, hexToRgbNormalized } from "@shared/lib/color";
 
@@ -159,10 +160,11 @@ export function ShaderBackground() {
   const uniformsRef = useRef<ShaderUniforms | null>(null);
   // read by the render loop: skips drawing without recreating the WebGL context
   const enabledRef = useRef(true);
-  // the cabinet has no appearance settings yet: the dashboard's defaults
-  const accentColor: string | null = DEFAULT_ACCENT_COLOR;
-  const shaderPalette: typeof DEFAULT_SHADER_PALETTE_HEX | null = DEFAULT_SHADER_PALETTE_HEX;
-  const shaderEnabled = true;
+  const { data: appearance } = useAppearanceQuery();
+  const accentColor = appearance?.primaryColor ?? null;
+  const shaderPalette = appearance?.shaderPalette ?? null;
+  // on while loading, as on the backend
+  const shaderEnabled = appearance?.shaderEnabled ?? true;
 
   useEffect(() => {
     const canvas = canvasRef.current;

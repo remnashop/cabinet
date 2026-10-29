@@ -1,29 +1,13 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RouterProvider } from "react-router";
 
 import { router } from "@app/router";
 import { bootSession, type BootResult } from "@features/auth/boot";
-import { ApiError, getErrorMessage, setSessionEndHandler } from "@shared/api/http";
+import { getErrorMessage } from "@shared/api/http";
 import { Button } from "@shared/ui/Button";
 import { Spinner } from "@shared/ui/Spinner";
 import { FullScreen } from "@widgets/full-screen/FullScreen";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // a 4xx won't change on retry; 5xx and network errors might
-      retry: (failureCount, error) => failureCount < 2 && !(error instanceof ApiError && error.status < 500),
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-// no navigate here: RequireAuth sees the cleared token and goes to /login?next=<where the user was>
-setSessionEndHandler(() => {
-  queryClient.clear();
-});
 
 export function App() {
   const { t } = useTranslation();
@@ -60,9 +44,5 @@ export function App() {
       </FullScreen>
     );
   }
-  return (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
+  return <RouterProvider router={router} />;
 }
