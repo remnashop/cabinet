@@ -21,6 +21,11 @@ export interface Me {
   loyalty_discount: number;
 }
 
+/** The biggest of the user's three discounts, percent; 0 = none. */
+export function maxDiscount(me: Me): number {
+  return Math.max(me.personal_discount, me.purchase_discount, me.loyalty_discount);
+}
+
 export function useMeQuery() {
   return useQuery({ queryKey: ["me"], queryFn: ({ signal }) => apiGet<Me>("/users/me", signal) });
 }

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+
 import { apiGet, apiPost } from "@shared/api/http";
 import { setAccessToken, type AccessToken } from "@shared/api/tokens";
 import { clearAttribution, readAttribution } from "@shared/lib/attribution";
@@ -11,6 +13,8 @@ export interface AuthMethods {
   allowed_email_domains: string[] | null;
   // null: no captcha before an email code
   captcha: CaptchaConfig | null;
+  // set while the Mini App is on: a browser with no other way in is sent to the bot
+  bot_username: string | null;
 }
 
 export interface CaptchaConfig {
@@ -48,14 +52,18 @@ export const authApi = {
       audience: "cabinet",
       ...readAttribution(),
     }),
-  oauthCallback: (name: string, code: string, state: string) =>
-    apiPost<AccessToken, object>(`${provider(name)}/callback`, { code, state }),
+  oauthCallback: (name: string, code: string, state: string, legal?: string) =>
+    apiPost<AccessToken, object>(`${provider(name)}/callback`, { code, state, ...withLegal(legal) }),
   deeplink: () =>
     apiPost<Deeplink, object>("/auth/telegram/deeplink", readAttribution()),
   botSignin: (token: string) =>
     apiPost<AccessToken, object>("/auth/telegram/signin", { token }),
   logout: () => apiPost<null, object>("/auth/logout", {}, undefined, true),
 };
+
+export function useAuthMethodsQuery() {
+  return useQuery({ queryKey: ["auth-methods"], queryFn: authApi.methods });
+}
 
 export function completeLogin(token: AccessToken): void {
   setAccessToken(token);

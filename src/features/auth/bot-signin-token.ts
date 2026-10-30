@@ -1,6 +1,5 @@
 import { readStorage, removeStorage, writeStorage } from "@shared/lib/safe-storage";
 
-
 // secrets.token_urlsafe(32) on the backend: 43 url-safe characters; the schema caps it at 128
 const TOKEN = /^[A-Za-z0-9_-]{20,128}$/;
 

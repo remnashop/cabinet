@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { CaptchaConfig } from "@features/auth/api";
+import { FormError } from "@shared/ui/FormError";
 
 // Turnstile and hCaptcha expose the same explicit-render API under different globals
 interface CaptchaApi {
@@ -78,6 +79,6 @@ export function CaptchaWidget({
     };
   }, [config.provider, config.site_key, round]);
 
-  if (failed) return <p className="text-sm text-error">{t("auth.captchaUnavailable")}</p>;
+  if (failed) return <FormError>{t("auth.captchaUnavailable")}</FormError>;
   return <div ref={ref} className="flex min-h-[65px] justify-center" />;
 }

@@ -12,6 +12,7 @@ export const PlanWizardPage = lazy(() =>
   import("@pages/purchase/PlanWizardPage").then((m) => ({ default: m.PlanWizardPage })),
 );
 export const ReferralPage = lazy(() => import("@pages/referral/ReferralPage").then((m) => ({ default: m.ReferralPage })));
+export const InvitedPage = lazy(() => import("@pages/referral/InvitedPage").then((m) => ({ default: m.InvitedPage })));
 export const ProfilePage = lazy(() => import("@pages/profile/ProfilePage").then((m) => ({ default: m.ProfilePage })));
 export const PaymentsPage = lazy(() => import("@pages/payments/PaymentsPage").then((m) => ({ default: m.PaymentsPage })));
 export const PaymentResultPage = lazy(() =>

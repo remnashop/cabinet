@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 import { apiGet, apiPost, cookieRefresh, NetworkError, setReauthenticator, setSessionEndHandler } from "@shared/api/http";
-import { clearAccessToken, getAccessToken, setAccessToken } from "@shared/api/tokens";
+import { clearAccessToken, getAccessToken, setAccessToken, wasSessionExpired } from "@shared/api/tokens";
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -64,6 +64,9 @@ it("ends the session when the refresh is rejected", async () => {
   await expect(apiGet("/me")).rejects.toMatchObject({ status: 401 });
   expect(onEnd).toHaveBeenCalledOnce();
   expect(getAccessToken()).toBeNull();
+  expect(wasSessionExpired()).toBe(true);
+  clearAccessToken();
+  expect(wasSessionExpired()).toBe(false);
 });
 
 it("keeps the session when the refresh is unavailable", async () => {
@@ -93,4 +96,23 @@ it("sends the csrf header on posts", async () => {
   const fetch = mockFetch(() => new Response(null, { status: 204 }));
   await apiPost("/auth/logout", {});
   expect(csrf(fetch.mock.calls[0][1])).toBe("csrf-1");
+});
+
+it("translates a known error code and falls back on an unknown one", async () => {
+  const { ApiError, getErrorMessage } = await import("@shared/api/http");
+  const { default: i18n } = await import("@shared/i18n");
+  expect(getErrorMessage(new ApiError(400, "raw", "PROMOCODE_EXPIRED"), "fallback")).toBe(i18n.t("apiErrors.PROMOCODE_EXPIRED"));
+  expect(getErrorMessage(new ApiError(400, "raw", "SOME_NEW_CODE"), "fallback")).toBe("fallback");
+  expect(getErrorMessage(new ApiError(500, "raw"), "fallback")).toBe("fallback");
+});
+
+it("tells an offline device from an unreachable server", async () => {
+  const { getErrorMessage } = await import("@shared/api/http");
+  const { default: i18n } = await import("@shared/i18n");
+  const online = vi.spyOn(navigator, "onLine", "get");
+  online.mockReturnValue(false);
+  expect(getErrorMessage(new NetworkError("x"), "fallback")).toBe(i18n.t("errors.offline"));
+  online.mockReturnValue(true);
+  expect(getErrorMessage(new NetworkError("x"), "fallback")).toBe(i18n.t("errors.network"));
+  online.mockRestore();
 });

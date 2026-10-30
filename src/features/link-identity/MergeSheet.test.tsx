@@ -27,7 +27,7 @@ async function render(expiresIn: number, token = "t") {
   await act(async () => {
     root.render(
       <QueryClientProvider client={client}>
-        <MergeBody key={token} offer={{ token, expiresIn, other }} {...handlers} />
+        <MergeBody key={token} offer={{ kind: "GOOGLE", token, expiresIn, other }} {...handlers} />
       </QueryClientProvider>,
     );
   });

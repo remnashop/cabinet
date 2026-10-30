@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router";
 
-import { GuestOnly, RequireAuth, Root } from "@app/guards";
+import { GuestOnly, RequireAuth, Root, ShellIfSignedIn } from "@app/guards";
 import {
   BotSignInPage,
   ConnectPage,
@@ -15,15 +15,18 @@ import {
   ProfilePage,
   PurchasePage,
   ReferralPage,
+  InvitedPage,
   SubscriptionPage,
   UnsubscribePage,
   LegalPage,
 } from "@app/lazy-pages";
+import { RouteErrorPage } from "@pages/route-error/RouteErrorPage";
 import { AppShell } from "@widgets/app-shell/AppShell";
 
 export const router = createBrowserRouter([
   {
     element: <Root />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         path: "/login",
@@ -53,8 +56,14 @@ export const router = createBrowserRouter([
       },
       { path: "/unsubscribe", element: <UnsubscribePage /> },
       { path: "/connect/open", element: <OpenInAppPage /> },
-      { path: "/legal", element: <LegalPage /> },
-      { path: "/legal/:kind", element: <LegalPage /> },
+      {
+        path: "/legal",
+        element: <ShellIfSignedIn />,
+        children: [
+          { index: true, element: <LegalPage /> },
+          { path: ":kind", element: <LegalPage /> },
+        ],
+      },
       {
         element: (
           <RequireAuth>
@@ -66,7 +75,8 @@ export const router = createBrowserRouter([
           { path: "subscription/:id/connect", element: <ConnectPage /> },
           { path: "purchase", element: <PurchasePage /> },
           { path: "purchase/:planId", element: <PlanWizardPage /> },
-          { path: "referral", element: <ReferralPage /> },
+          { path: "invite", element: <ReferralPage /> },
+          { path: "invite/friends", element: <InvitedPage /> },
           { path: "profile", element: <ProfilePage /> },
           { path: "profile/payments", element: <PaymentsPage /> },
         ],

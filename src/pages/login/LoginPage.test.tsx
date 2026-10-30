@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import "@shared/i18n";
+import i18n from "@shared/i18n";
 
 import { LoginPage } from "./LoginPage";
 
@@ -15,7 +15,7 @@ let container: HTMLElement;
 
 const doc = (kind: string, title: string) => ({ kind, title, body: "text", revision_id: 1 });
 
-async function render(documents: object[], documentsFail = false) {
+async function render(documents: object[], documentsFail = false, methods: object = {}) {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) =>
@@ -31,6 +31,7 @@ async function render(documents: object[], documentsFail = false) {
             email: true,
             oauth: [],
             allowed_email_domains: null,
+            ...methods,
           }),
     ),
   );
@@ -62,7 +63,6 @@ afterEach(() => {
 describe("LoginPage legal notice", () => {
   it("links only the visible documents", async () => {
     await render([doc("USER_AGREEMENT", "Terms"), doc("OFFER", "Offer")]);
-    console.log("HTML", container.innerHTML);
     const links = [...container.querySelectorAll("button")].map((b) => b.textContent);
     expect(links.length).toBeGreaterThan(0);
     expect(container.textContent).toMatch(/User agreement/i);
@@ -87,7 +87,8 @@ describe("LoginPage legal notice", () => {
     };
     await type("a@b.co");
     await act(async () => container.querySelector("form")!.requestSubmit());
-    await act(async () => new Promise((resolve) => setTimeout(resolve, 30)));
+    // the email step fades out (StepTransition) before the code step mounts
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 300)));
     await type("123456");
     await act(async () => new Promise((resolve) => setTimeout(resolve, 30)));
     const call = vi.mocked(fetch).mock.calls.find(([url]) => String(url).includes("/auth/email/verify"))!;
@@ -100,5 +101,18 @@ describe("LoginPage legal notice", () => {
 
   it("sends no legal_locale when the documents failed to load", async () => {
     expect(await verifyBody(true)).not.toHaveProperty("legal_locale");
+  });
+});
+
+describe("LoginPage Mini App only", () => {
+  it("sends a browser to the bot when no other way in is on", async () => {
+    await render([], false, { email: false, telegram_webapp: true, bot_username: "shop_bot" });
+    expect(container.textContent).toContain(i18n.t("auth.miniAppOnly"));
+    expect(container.querySelector("input")).toBeNull();
+  });
+
+  it("says sign-in is unavailable without the bot", async () => {
+    await render([], false, { email: false, telegram_webapp: false, bot_username: null });
+    expect(container.textContent).toContain(i18n.t("auth.unavailable"));
   });
 });

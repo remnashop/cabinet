@@ -27,6 +27,13 @@ export function useLegalDocumentsQuery() {
   });
 }
 
+/** False once the documents are in and none is published: nothing to open, so no way in to them. While they load
+ *  or fail, true: the dialog shows the wait or the error. */
+export function useHasLegalDocuments(): boolean {
+  const documents = useLegalDocumentsQuery();
+  return !documents.isSuccess || documents.data.items.length > 0;
+}
+
 /** The locale to send with a sign-in or order: only once the notice could be shown (documents loaded). */
 export function useShownLegalLocale(): string | undefined {
   return useLegalDocumentsQuery().isSuccess ? legalLocale() : undefined;

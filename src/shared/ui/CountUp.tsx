@@ -1,6 +1,8 @@
 import { animate } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
+import { EASE_SOFT } from "@shared/lib/motion";
+
 // First number in an already-formatted value ("1 234 ₽", "12,5%", "$1,234.56"):
 // 1–2 digits after the last . or , are a fraction, anything else is grouping.
 const NUMBER_RUN = /\d(?:[\d\s.,]*\d)?/;
@@ -48,7 +50,7 @@ export function CountUp({ text }: { text: string }) {
     if (target === undefined) return;
     const controls = animate(fromRef.current, target, {
       duration: 0.8,
-      ease: [0.2, 0.8, 0.2, 1],
+      ease: EASE_SOFT,
       onUpdate: (latest) => {
         fromRef.current = latest;
         setShown(latest);

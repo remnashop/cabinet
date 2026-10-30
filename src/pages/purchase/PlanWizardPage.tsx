@@ -1,56 +1,97 @@
+import { TriangleAlert } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 
-import { useCatalogQuery, type PaymentMethod } from "@entities/plan/api";
+import { useCatalogQuery, usePaymentMethodsQuery, type PaymentMethod, type Plan } from "@entities/plan/api";
+import { useTrialQuery, type Trial } from "@entities/subscription/api";
 import { startPayment } from "@features/payment/start-payment";
 import { parseWizardParams } from "@features/purchase/wizard";
-import { Card } from "@shared/ui/Card";
+import { ButtonLink } from "@shared/ui/ButtonLink";
 import { ErrorCard } from "@shared/ui/ErrorCard";
+import { PageEmpty } from "@shared/ui/PageEmpty";
 import { Skeleton } from "@shared/ui/Skeleton";
+import { StepTransition } from "@shared/ui/StepTransition";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 
 import { DurationStep } from "./steps/DurationStep";
 import { MethodStep } from "./steps/MethodStep";
 import { SummaryStep } from "./steps/SummaryStep";
+import { WizardHead } from "./WizardHead";
 
-const STEP_TITLES = ["purchase.stepDuration", "purchase.stepMethod", "purchase.stepSummary"] as const;
+/** A paid trial as a plan: the catalog leaves trials out, its one duration comes priced with the trial. */
+function trialPlan(trial: Trial | undefined, planId: number): Plan | undefined {
+  if (!trial?.is_available || trial.is_free || trial.plan_id !== planId || !trial.duration_days) return undefined;
+  return {
+    id: planId,
+    name: trial.plan_name ?? "",
+    description: null,
+    badge: null,
+    type: "BOTH",
+    traffic_limit: 0,
+    device_limit: 0,
+    is_trial: true,
+    order_index: 0,
+    durations: [{ days: trial.duration_days, order_index: 0, prices: trial.prices }],
+  };
+}
 
 export function PlanWizardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const planId = Number(useParams().planId);
   const [search] = useSearchParams();
-  const { type, subId } = parseWizardParams(search);
-  const catalog = useCatalogQuery();
-  const [step, setStep] = useState<0 | 1 | 2>(0);
-  const [days, setDays] = useState<number | null>(null);
-  const [method, setMethod] = useState<PaymentMethod | null>(null);
+  const { type, subId, access } = parseWizardParams(search);
+  const catalog = useCatalogQuery(access);
+  const trial = useTrialQuery();
+  const methods = usePaymentMethodsQuery();
+  // ?days= (buying again after a failed payment): the duration is taken, the wizard opens on the method
+  const [chosenDays, setDays] = useState<number | null>(() => Number(search.get("days")) || null);
+  const [chosenStep, setStep] = useState<0 | 1 | 2>(() => (search.get("days") ? 1 : 0));
+  const [chosenMethod, setMethod] = useState<PaymentMethod | null>(null);
   const [email, setEmail] = useState<string | null>(null);
 
-  // RENEW comes straight from the home card, and the catalog has nothing to renew into
+  // RENEW comes straight from the home card, and the catalog has nothing to renew into; a plan link's page
+  // would send the user straight back here, so it leaves for the catalog
   const exitTo = type === "RENEW" ? "/" : type === "CHANGE" ? `/purchase?type=CHANGE&sub=${subId}` : "/purchase";
+  const catalogPlan = catalog.data?.items.find((p) => p.id === planId);
+  const trialOffer = catalogPlan ? undefined : trialPlan(trial.data, planId);
+  const plan = catalogPlan ?? trialOffer;
+  // one method is no choice: it's taken, and the wizard skips its step
+  const onlyMethod = methods.data?.items.length === 1 ? methods.data.items[0] : null;
+  const method = chosenMethod ?? onlyMethod;
+  const skipMethod = onlyMethod !== null;
+  // a trial has one duration: it's taken, the wizard opens on the method (the summary with the method taken), and back
+  // from there leaves for home
+  const isTrial = trialOffer !== undefined;
+  const firstStep = isTrial ? (skipMethod ? 2 : 1) : 0;
+  // a duration the plan no longer sells is no choice: back to picking one
+  const days = (plan?.durations.some((d) => d.days === chosenDays) ? chosenDays : null) ?? trialOffer?.durations[0].days ?? null;
+  const step = (days === null ? 0 : Math.max(chosenStep === 1 && skipMethod ? 2 : chosenStep, firstStep)) as 0 | 1 | 2;
+
   const onBack = useCallback(() => {
-    if (step === 0) void navigate(exitTo, { replace: true });
-    else setStep((step - 1) as 0 | 1);
-  }, [step, exitTo, navigate]);
+    if (step === firstStep) void navigate(isTrial ? "/" : exitTo, { replace: true });
+    else setStep(step === 2 && skipMethod ? 0 : ((step - 1) as 0 | 1));
+  }, [step, firstStep, isTrial, skipMethod, exitTo, navigate]);
 
-  const plan = catalog.data?.items.find((p) => p.id === planId);
-  const header = <PageHeader title={plan?.name ?? t("pages.purchase")} onBack={onBack} />;
+  // every step says what's going on (a purchase, a renewal, a change); the plan's name is on the card under it
+  const title = plan ? t(`purchase.titles.${type}`) : t("pages.purchase");
+  const header = <PageHeader title={title} onBack={onBack} />;
 
-  if (catalog.isError) {
+  if (catalog.isError && !catalog.data) {
     return (
       <>
         {header}
-        <ErrorCard onRetry={() => void catalog.refetch()} />
+        <ErrorCard round error={catalog.error} onRetry={() => void catalog.refetch()} />
       </>
     );
   }
-  if (!catalog.data) {
+  // a plan the catalog lacks may be the paid trial: wait for that answer too
+  if (!catalog.data || (!catalogPlan && trial.isPending)) {
     return (
       <>
         {header}
-        <Skeleton className="h-64" />
+        <Skeleton round className="h-64" />
       </>
     );
   }
@@ -58,12 +99,11 @@ export function PlanWizardPage() {
     return (
       <>
         {header}
-        <Card className="flex flex-col items-center gap-3 text-center">
-          <p className="text-sm text-muted-foreground">{t("purchase.planNotFound")}</p>
-          <Link to={exitTo} className="text-sm text-primary">
-            {t("purchase.toCatalog")}
-          </Link>
-        </Card>
+        <PageEmpty icon={TriangleAlert} text={t("purchase.planNotFound")}>
+          <ButtonLink to={exitTo} variant="outline" className="mt-1">
+            {type === "RENEW" ? t("common.home") : t("purchase.toCatalog")}
+          </ButtonLink>
+        </PageEmpty>
       </>
     );
   }
@@ -71,48 +111,54 @@ export function PlanWizardPage() {
   return (
     <>
       {header}
-      <div className="mb-4 flex gap-1.5">
-        {STEP_TITLES.map((key, i) => (
-          <div key={key} className={`h-1 flex-1 rounded-full ${i <= step ? "bg-primary" : "bg-white/[0.08]"}`} />
-        ))}
-      </div>
-      <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {t(STEP_TITLES[step])}
-      </h2>
-      {step === 0 && (
-        <DurationStep
-          plan={plan}
-          currency={catalog.data.anchor_currency}
-          selected={days}
-          onSelect={(d) => {
-            setDays(d);
-            setStep(1);
-          }}
-        />
-      )}
-      {step === 1 && days !== null && (
-        <MethodStep
-          plan={plan}
-          days={days}
-          selected={method}
-          onSelect={(m) => {
-            setMethod(m);
-            setStep(2);
-          }}
-        />
-      )}
-      {step === 2 && days !== null && method !== null && (
-        <SummaryStep
-          plan={plan}
-          days={days}
-          method={method}
-          type={type}
-          subId={subId}
-          typedEmail={email}
-          onEmailChange={setEmail}
-          onCreated={(result) => startPayment(result, method.gateway_type, navigate)}
-        />
-      )}
+      <WizardHead
+        plan={plan}
+        step={step}
+        days={days}
+        method={method}
+        currency={catalog.data.anchor_currency}
+        access={access}
+        skipMethod={skipMethod}
+        onStep={(s) => setStep(Math.max(s, firstStep) as 0 | 1)}
+      />
+      <StepTransition stepKey={step}>
+        {step === 0 && (
+          <DurationStep
+            plan={plan}
+            currency={catalog.data.anchor_currency}
+            type={type}
+            access={access}
+            onSelect={(d) => {
+              setDays(d);
+              setStep(skipMethod ? 2 : 1);
+            }}
+          />
+        )}
+        {step === 1 && days !== null && (
+          <MethodStep
+            plan={plan}
+            days={days}
+            access={access}
+            onSelect={(m) => {
+              setMethod(m);
+              setStep(2);
+            }}
+          />
+        )}
+        {step === 2 && days !== null && method !== null && (
+          <SummaryStep
+            plan={plan}
+            days={days}
+            method={method}
+            type={type}
+            subId={subId}
+            access={access}
+            typedEmail={email}
+            onEmailChange={setEmail}
+            onCreated={(result) => startPayment(result, method.gateway_type, navigate)}
+          />
+        )}
+      </StepTransition>
     </>
   );
 }

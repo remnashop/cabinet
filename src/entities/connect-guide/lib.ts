@@ -1,4 +1,4 @@
-import type { ConnectApp, ConnectGuide, ConnectPlatform, LocalizedText, PlatformId } from "./api";
+import type { ConnectApp, ConnectGuide, ConnectPlatform, ConnectStep, PlatformId } from "./api";
 
 export const SUBSCRIPTION_LINK_TOKEN = "{{SUBSCRIPTION_LINK}}";
 
@@ -6,10 +6,17 @@ export function buildDeepLink(template: string, encode: "raw" | "component", sub
   return template.replace(SUBSCRIPTION_LINK_TOKEN, encode === "component" ? encodeURIComponent(subscriptionUrl) : subscriptionUrl);
 }
 
-/** The language shown: the cabinet's, else English, else whichever the operator wrote. */
-export function localized(text: LocalizedText | null, language: string): string {
-  if (!text) return "";
-  return text[language] ?? text.en ?? Object.values(text)[0] ?? "";
+const adds = (step: ConnectStep) => step.buttons.some((b) => b.kind === "deep_link" || b.kind === "copy_link");
+
+/**
+ * The catalog's steps by stage: up to the first one that adds the subscription the app's install, through
+ * the last such one the adding, what follows (connect, pick a server) goes with "done".
+ */
+export function splitSteps(steps: ConnectStep[]) {
+  const first = steps.findIndex(adds);
+  if (first === -1) return { app: steps, add: [], done: [] };
+  const last = steps.findLastIndex(adds);
+  return { app: steps.slice(0, first), add: steps.slice(first, last + 1), done: steps.slice(last + 1) };
 }
 
 /**

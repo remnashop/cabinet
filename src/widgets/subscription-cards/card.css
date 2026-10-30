@@ -1,15 +1,12 @@
-/* The card's static diagonal gradient, one palette per neighbour. */
+/* The card's static gradient, the theme's primary into a neighbouring hue, so the cards follow the theme.
+   Without relative colors the first line stays. */
 .sub-card-bg {
   position: absolute;
   inset: 0;
-}
-
-.sub-card-bg[data-palette="0"] {
-  background: linear-gradient(135deg, #164e63, #0e7490 45%, #22d3ee);
-}
-.sub-card-bg[data-palette="1"] {
-  background: linear-gradient(135deg, #312e81, #4c1d95 40%, #7c3aed 75%, #22d3ee);
-}
-.sub-card-bg[data-palette="2"] {
-  background: linear-gradient(135deg, #78350f, #b45309 45%, #f59e0b);
+  background: linear-gradient(var(--card-angle, 135deg), color-mix(in oklab, var(--color-primary) 70%, black), var(--color-primary));
+  background: linear-gradient(
+    var(--card-angle, 135deg),
+    color-mix(in oklab, var(--color-primary) 70%, black),
+    oklch(from var(--color-primary) 0.62 0.16 calc(h + 30))
+  );
 }

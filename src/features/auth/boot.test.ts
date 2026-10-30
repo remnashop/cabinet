@@ -4,7 +4,6 @@ import { bootSession } from "@features/auth/boot";
 import { apiGet, cookieRefresh, setReauthenticator } from "@shared/api/http";
 import { getAccessToken } from "@shared/api/tokens";
 
-// vitest hoists this above the imports
 vi.mock("@shared/telegram", () => ({ getInitDataRaw: () => "signed-init-data" }));
 
 const json = (status: number, body: unknown) =>

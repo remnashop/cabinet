@@ -18,6 +18,7 @@ const methods = (over: Partial<AuthMethods>): AuthMethods => ({
   oauth: [],
   allowed_email_domains: null,
   captcha: null,
+  bot_username: null,
   ...over,
 });
 const kinds = (m: AuthMethods) => visibleIdentities(items, m).map((i) => i.kind);
@@ -52,5 +53,12 @@ describe("rowAction", () => {
     expect(rowAction(row("GOOGLE", true), true)).toBe("unlink");
     expect(rowAction(row("EMAIL", false), true)).toBe("connect");
     expect(rowAction(row("EMAIL", true), true)).toBe("unlink");
+  });
+
+  it("offers nothing for the only linked method: the backend refuses to unlink it", () => {
+    expect(rowAction(row("EMAIL", true), false, true)).toBe("onlyMethod");
+    expect(rowAction(row("TELEGRAM", true), true, true)).toBe("onlyMethod");
+    // an unlinked one can still be connected
+    expect(rowAction(row("GOOGLE", false), false, true)).toBe("connect");
   });
 });

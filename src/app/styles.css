@@ -28,6 +28,102 @@
      on a 36px (h-9) item that's exactly a pill */
   --radius-popover-item: 18px;
   --radius-dialog: 24px;
+  /* the home page's blocks: the corners of its 64px notice pill (NoticeBar), on tiles and cards of any height */
+  --radius-home: 32px;
+  /* the one action to take (PulseButton): a primary glow round it flares and fades */
+  --animate-glow-pulse: glow-pulse 2.4s ease-in-out infinite;
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-primary) 0%, transparent);
+    }
+    50% {
+      box-shadow: 0 0 22px 2px color-mix(in oklab, var(--color-primary) 55%, transparent);
+    }
+  }
+  /* the connect start screen's glow (pages/connect/HeroArt). CSS, not motion: the pages sit under AnimatePresence
+     initial={false}, which lands a motion loop on its last frame and never starts it */
+  --animate-breathe: breathe 3.2s ease-in-out infinite;
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.5;
+      transform: scale(0.9);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+  /* the done step's success (pages/connect/HeroArt SuccessArt): pop and draw run once, ripples keep going */
+  --animate-pop: pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  @keyframes pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  --animate-draw: draw 0.45s ease-out 0.35s both;
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  /* a tap's ripple from the pointer (shared/ui/use-ripple) */
+  /* the badged plan cards' light streak (pages/purchase PurchasePage): crosses in the first third, then rests */
+  --animate-shine: shine 4.5s ease-in-out infinite;
+  @keyframes shine {
+    0% {
+      transform: translateX(0) skewX(-12deg);
+    }
+    35%,
+    100% {
+      transform: translateX(400%) skewX(-12deg);
+    }
+  }
+  --animate-tap-ripple: tap-ripple 0.6s ease-out forwards;
+  @keyframes tap-ripple {
+    from {
+      opacity: 1;
+      transform: scale(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1);
+    }
+  }
+  /* the connect steps' rings (pages/connect/HeroArt), Magic UI's Ripple: each breathes in and out, the delay staggers them */
+  --animate-ripple: ripple 2s ease infinite;
+  @keyframes ripple {
+    0%,
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+  }
+  --animate-ripple-out: ripple-out 2.4s ease-out infinite;
+  @keyframes ripple-out {
+    0% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(2.3);
+    }
+  }
 }
 
 /* Fallback paint behind ShaderBackground's canvas: before it mounts, and when
@@ -58,30 +154,32 @@ html {
   }
 }
 /* App-wide scrollbar styling. `scrollbar-color` covers Firefox; the
-   `::-webkit-scrollbar-*` pseudo-elements cover Chromium/Safari. */
-* {
-  scrollbar-color: var(--color-accent) transparent;
-  scrollbar-width: thin;
-}
+   `::-webkit-scrollbar-*` pseudo-elements cover Chromium/Safari. In the base layer, so a utility
+   (the cards slider's [scrollbar-width:none]) can still hide one. */
+@layer base {
+  * {
+    scrollbar-color: var(--color-accent) transparent;
+    scrollbar-width: thin;
+  }
 
-*::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
 
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-*::-webkit-scrollbar-thumb {
-  background-color: var(--color-accent);
-  border-radius: 9999px;
-}
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-accent);
+    border-radius: 9999px;
+  }
 
-*::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-primary);
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-primary);
+  }
 }
-
 /* Insets for notches and Telegram's own header/home bar. The --tg-* vars are
    bound by viewport.bindCssVars() inside a Mini App; elsewhere env() applies. */
 :root {
@@ -118,5 +216,43 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .list-rows > * {
     animation: none;
+  }
+}
+
+/* The highlight on what to act on, the alert under the cards (NoticeBar) and the selected card: a bright arc in
+   --ring-color runs round the edge, a lap in --glow-duration, the arc from --glow-from of the way round. A utility, so it takes variants. */
+@property --glow-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@utility glow {
+  position: relative;
+  @media (prefers-reduced-motion: no-preference) {
+    /* on the element's own edge, not outside it: a band outside would need a bigger radius to stay even */
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      padding: 2px;
+      border-radius: inherit;
+      background: conic-gradient(
+        from var(--glow-angle),
+        transparent 0 var(--glow-from, 70%),
+        var(--ring-color, var(--color-primary)) 90%,
+        transparent 100%
+      );
+      mask:
+        linear-gradient(#000 0 0) content-box exclude,
+        linear-gradient(#000 0 0);
+      pointer-events: none;
+      animation: glow-sweep var(--glow-duration, 2.8s) linear infinite;
+    }
+  }
+}
+@keyframes glow-sweep {
+  to {
+    --glow-angle: 360deg;
   }
 }

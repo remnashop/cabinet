@@ -1,3 +1,4 @@
+import { Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { EmailLogin, type EmailCodeFlow } from "@features/auth/ui/EmailLogin";
@@ -25,9 +26,9 @@ export function LinkEmailSheet({
     },
   };
   return (
-    <BottomSheet open={open} onClose={onClose} title={t("link.emailTitle")}>
+    <BottomSheet narrow icon={Mail} open={open} onClose={onClose} title={t("link.emailTitle")}>
       {/* no domain hint: it's about creating accounts, and this one exists */}
-      <EmailLogin allowedDomains={null} flow={flow} />
+      <EmailLogin flow={flow} emailHint={t("link.emailHint")} />
     </BottomSheet>
   );
 }

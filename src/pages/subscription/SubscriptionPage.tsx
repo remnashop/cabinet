@@ -1,30 +1,38 @@
-import { ArrowUpRight, Gift, Globe, Percent, Plus, RefreshCw, type LucideIcon } from "lucide-react";
+import { Gift, Percent, RefreshCw, Settings2, ShoppingCart, Unplug } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import { useBrandName } from "@entities/appearance/api";
 import { BrandMark } from "@entities/appearance/BrandMark";
 import { useCatalogQuery } from "@entities/plan/api";
-import { useReferralQuery } from "@entities/referral/api";
-import { useMeQuery } from "@entities/session/api";
+import { invitedCount, useRedeemTargetsQuery, useReferralQuery } from "@entities/referral/api";
+import { maxDiscount, useMeQuery } from "@entities/session/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useActivateTrial, useSubscriptionsQuery, useTrialQuery } from "@entities/subscription/api";
-import { canBuyMore, canRenew, redeemTargets } from "@entities/subscription/lib";
-import { formatNumber } from "@features/referral/links";
+import { canBuyMore, canRenew, cardNotice } from "@entities/subscription/lib";
 import { getErrorMessage } from "@shared/api/http";
+import { formatDate, formatMoney, formatNumber } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
+import { ActionTile } from "@shared/ui/ActionTile";
+import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
-import { Card } from "@shared/ui/Card";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { KpiTile } from "@shared/ui/KpiTile";
 import { Skeleton } from "@shared/ui/Skeleton";
+import { PulseButton } from "@shared/ui/PulseButton";
+import { FormError } from "@shared/ui/FormError";
+import { SuccessMessage } from "@shared/ui/SuccessCheck";
+import { CARD_ASPECT } from "@widgets/subscription-cards/card-aspect";
 import { DevicesCard } from "@widgets/devices/DevicesCard";
 import { HeaderSlot } from "@widgets/page-header/HeaderSlot";
 import { PromoDialog } from "@widgets/promo/PromoDialog";
 import { RedeemDaysSheet } from "@widgets/redeem-days/RedeemDaysSheet";
-import { CardsSlider, SlideCard } from "@widgets/subscription-cards/CardsSlider";
+import { CardsSlider } from "@widgets/subscription-cards/CardsSlider";
 import { pickSelected } from "@widgets/subscription-cards/select";
+import { Hero } from "@pages/connect/HeroArt";
+
+import { LogoArt } from "./EmptyArt";
 
 function Header() {
   const { t } = useTranslation();
@@ -33,12 +41,11 @@ function Header() {
   return (
     <HeaderSlot>
       <div className="flex min-w-0 items-center gap-2.5">
-        {/* the sidebar carries the brand on desktop */}
         <BrandMark className="size-8 shrink-0 text-primary lg:hidden" />
         <div className="min-w-0">
           <div className="truncate text-sm font-bold lg:hidden">{brand}</div>
           {me.data && (
-            <div className="truncate text-[11.5px] text-muted-foreground lg:text-[21px] lg:font-bold lg:tracking-tight lg:text-foreground">
+            <div className="truncate text-[12px] text-muted-foreground lg:text-[21px] lg:font-bold lg:tracking-tight lg:text-foreground">
               {t("home.welcome", { name: me.data.name })}
             </div>
           )}
@@ -48,57 +55,44 @@ function Header() {
   );
 }
 
-// balances at a glance; zero points, a zero discount and a switched-off referral program stay out
-// single layout: the tiles line up under the card (340px) and the two action columns beside it; two tiles just
-// split the row (grid-cols-2)
-const UNDER_CARD: Record<number, string> = {
-  1: "sm:grid-cols-[340px]",
-  3: "sm:grid-cols-[340px_repeat(2,minmax(0,1fr))]",
-  4: "sm:grid-cols-[repeat(2,164px)_repeat(2,minmax(0,1fr))]",
-};
-
-function StatsRow({ className, single = false }: { className: string; single?: boolean }) {
+// balances at a glance, desktop only; zero points, a zero discount and a switched-off referral program stay out
+function StatsRow({ className }: { className: string }) {
   const { t, i18n } = useTranslation();
   const me = useMeQuery();
   const referral = useReferralQuery();
-  const subscriptions = useSubscriptionsQuery();
   const [redeemOpen, setRedeemOpen] = useState(false);
+  const redeemTargets = useRedeemTargetsQuery((me.data?.bonus_days ?? 0) > 0);
   if (!me.data) return null;
   const bonusDays = me.data.bonus_days;
   // days to spend and a subscription that takes them
-  const canRedeem = bonusDays > 0 && redeemTargets(subscriptions.data?.items ?? []).length > 0;
+  const canRedeem = bonusDays > 0 && (redeemTargets.data?.subscription_ids.length ?? 0) > 0;
   // [label, value, the tile that takes the "apply" button]
   const stats: [string, string, boolean?][] = [];
   // the biggest of the three; the profile's balance card lists each one
-  const discount = Math.max(me.data.personal_discount, me.data.purchase_discount, me.data.loyalty_discount);
+  const discount = maxDiscount(me.data);
   if (discount > 0) stats.push([t("home.discount"), `−${discount}%`]);
   stats.push([t("profile.bonusDays"), String(bonusDays), canRedeem]);
   if (Number(me.data.points) > 0) stats.push([t("profile.points"), formatNumber(me.data.points, i18n.language)]);
   if (referral.data?.program.enabled) {
-    const invited = Object.values(referral.data.counts_by_level).reduce((sum, n) => sum + n, 0);
-    stats.push([t("referral.invited"), String(invited)]);
+    stats.push([t("referral.invited"), String(invitedCount(referral.data.counts_by_level))]);
   }
   return (
     <div
-      className={`${className} grid grid-cols-2 gap-3 ${
-        single ? UNDER_CARD[stats.length] : "lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none"
-      }`}
+      className={`${className} grid grid-cols-2 gap-3 max-lg:hidden lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none`}
     >
       {stats.map(([label, value, redeem]) => (
         <KpiTile
+          round
           key={label}
           label={label}
           value={value}
           tone={value.startsWith("−") ? "primary" : undefined}
           action={
             redeem && (
-              <button
-                type="button"
-                onClick={() => setRedeemOpen(true)}
-                className="-my-1 -mr-2 shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10"
-              >
+              // -my-2: the 32px button overhangs the eyebrow's line, so the tile keeps its neighbours' height
+              <Button variant="secondary" size="sm" className="-my-2 shrink-0" onClick={() => setRedeemOpen(true)}>
                 {t("home.redeem")}
-              </button>
+              </Button>
             )
           }
         />
@@ -108,87 +102,64 @@ function StatsRow({ className, single = false }: { className: string; single?: b
   );
 }
 
-function ActionTile({
-  to,
-  icon: Icon,
-  label,
-  main,
-  onClick,
-}: {
-  to?: string;
-  icon: LucideIcon;
-  label: string;
-  main?: boolean;
-  onClick?: () => void;
-}) {
-  // the KpiTile's box and height (16.5px eyebrow line + 6px + 39px value line + py-4 + 2px border), so the rows match
-  const className = `flex min-h-[95.5px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-2 py-4 text-center text-[13px] font-medium leading-tight transition-colors ${
-    main ? "border-primary/45 bg-primary/10 hover:bg-primary/15" : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]"
-  }`;
-  const content = (
-    <>
-      <span
-        className={`flex size-[34px] items-center justify-center rounded-full ${
-          main ? "bg-primary text-primary-foreground" : "bg-primary/12 text-primary"
-        }`}
-      >
-        <Icon className="size-4" />
-      </span>
-      {label}
-    </>
-  );
-  return to ? (
-    <Link to={to} onClick={onClick} className={className}>
-      {content}
-    </Link>
-  ) : (
-    <button type="button" onClick={onClick} className={className}>
-      {content}
-    </button>
-  );
-}
+// the desktop row by its tile count (2–4): the classes spelled out for Tailwind
+const ROW_GRID: Record<number, string> = { 2: "lg:grid-cols-2", 3: "lg:grid-cols-3", 4: "lg:grid-cols-4" };
 
+/** No subscription yet: the connect guide's full-screen hero, the trial first when there is one, then buying. */
 function EmptyState({ onActivated }: { onActivated: () => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const trial = useTrialQuery();
   const activate = useActivateTrial();
+  const offer = trial.data?.is_available ? trial.data : null;
+  // a paid trial: its days for the hint, its price on the button, the checkout behind it
+  const paid =
+    offer && !offer.is_free && offer.plan_id !== null && offer.price !== null && offer.currency !== null
+      ? { planId: offer.plan_id, price: formatMoney(offer.price, offer.currency, i18n.language) }
+      : null;
+  const hint = !offer
+    ? t("home.emptyHint")
+    : !offer.duration_days
+      ? t("home.trialTextShort")
+      : paid
+        ? t("home.trialPaidText", { count: offer.duration_days })
+        : t("home.trialText", { count: offer.duration_days });
   return (
-    <div className="flex flex-col gap-4">
-      {trial.data?.is_available && (
-        <Card className="flex flex-col gap-3">
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide">
-            <Gift className="size-3.5 text-primary" />
-            {t("home.trialTitle")}
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {trial.data.duration_days
-              ? t("home.trialText", { plan: trial.data.plan_name ?? "", count: trial.data.duration_days })
-              : t("home.trialTextShort")}
-          </p>
-          <Button
-            variant="solid"
-            disabled={activate.isPending}
+    <Hero title={t("home.empty")} hint={hint} art={<LogoArt />} lower>
+      {offer ? (
+        <>
+          {paid ? (
+            <PulseButton to={`/purchase/${paid.planId}`}>
+              <Gift className="size-5" />
+              {t("home.tryFor", { price: paid.price })}
+            </PulseButton>
+          ) : (
+          <PulseButton
             onClick={() => {
+              if (activate.isPending) return;
               haptic();
               activate.mutate(undefined, { onSuccess: onActivated });
             }}
           >
-            {t("home.activate")}
+            <Gift className="size-5" />
+            {t("home.tryFree")}
+          </PulseButton>
+          )}
+          <Button variant="outline" size="lg" onClick={() => void navigate("/purchase")}>
+            <ShoppingCart className="size-5" />
+            {t("home.buy")}
           </Button>
           {activate.isError && (
-            <p className="text-sm text-error">{getErrorMessage(activate.error, t("errors.generic"))}</p>
+            <FormError>{getErrorMessage(activate.error, t("errors.generic"))}</FormError>
           )}
-        </Card>
-      )}
-      <Card className="flex flex-col items-center gap-3 text-center">
-        <p className="text-sm text-muted-foreground">{t("home.empty")}</p>
-        <Button variant="accent" onClick={() => void navigate("/purchase")}>
-          <Plus className="size-4" />
+        </>
+      ) : (
+        <PulseButton to="/purchase">
+          <ShoppingCart className="size-5" />
           {t("home.buy")}
-        </Button>
-      </Card>
-    </div>
+        </PulseButton>
+      )}
+    </Hero>
   );
 }
 
@@ -196,39 +167,51 @@ function HomeSkeleton() {
   return (
     <div className="flex flex-col gap-4">
       <Skeleton className="h-9 w-48" />
-      <Skeleton className="aspect-[1.586] w-[85%] max-w-[340px] rounded-[20px]" />
-      <div className="grid grid-cols-4 gap-3">
+      <Skeleton round className={`${CARD_ASPECT} w-full max-w-[340px] sm:w-[85%]`} />
+      <div className="grid grid-cols-3 gap-3 lg:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-[95.5px]" />
+          // the first stands for "connect": a 64px pill on a phone, a tile beside the others on desktop
+          <Skeleton
+            round
+            key={i}
+            className={
+              i === 0 ? "col-span-full h-16 max-lg:rounded-full lg:col-span-1 lg:h-[95.5px]" : "h-[95.5px]"
+            }
+          />
         ))}
       </div>
-      <Skeleton className="h-28" />
+      <Skeleton round className="h-28" />
     </div>
   );
 }
 
 export function SubscriptionPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const subscriptions = useSubscriptionsQuery();
   const settings = useCabinetSettingsQuery();
-  const catalog = useCatalogQuery();
   // the user's last pick; what's shown goes through pickSelected so a refetch can't strand it
   const [chosenId, setChosenId] = useState<number | null>(null);
   const [trialActivated, setTrialActivated] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
+  // fixed per mount, as on the cards
+  const [now] = useState(() => new Date());
   const items = subscriptions.data?.items ?? [];
   const selectedId = pickSelected(
     chosenId,
     items.map((s) => s.id),
   );
+  // the plan the selected subscription renews into, as the backend decides (a link plan, one closed to new buyers)
+  const catalog = useCatalogQuery({ plan_code: null, renew_subscription_id: selectedId });
 
   if (subscriptions.isPending || settings.isPending) return <HomeSkeleton />;
-  if (subscriptions.isError || settings.isError) {
+  if ((subscriptions.isError && !subscriptions.data) || (settings.isError && !settings.data)) {
     return (
       <>
         <Header />
         <ErrorCard
+          round
+          error={subscriptions.error ?? settings.error}
           onRetry={() => {
             if (subscriptions.isError) void subscriptions.refetch();
             if (settings.isError) void settings.refetch();
@@ -239,72 +222,102 @@ export function SubscriptionPage() {
   }
 
   const selected = items.find((s) => s.id === selectedId);
-  const renewable = selected !== undefined && canRenew(selected, catalog.data?.items ?? []);
+  // the catalog didn't load: offer "renew" anyway (a trial never), the wizard says so if its plan is gone
+  const renewable =
+    selected !== undefined && (catalog.isError && !catalog.data ? !selected.is_trial : canRenew(selected, catalog.data?.items ?? []));
+  // without a plan to renew into, changing the plan stands for renewing
+  const renewTo =
+    selected &&
+    (renewable
+      ? `/purchase/${selected.plan_id}?type=RENEW&sub=${selected.id}`
+      : `/purchase?type=CHANGE&sub=${selected.id}`);
+  // no days or no traffic left: a new device would get no connection, so "connect" is gone until a renewal
+  const notice = selected && cardNotice(selected, now);
+  const cutOff = notice === "expired" || notice === "trafficOut" || notice === "expiredTraffic";
+  // the tiles side by side (connect among them): one row across the frame
+  const tileCount = (cutOff ? 0 : 1) + (renewable ? 1 : 0) + 2;
 
   // a user can only ever have this one subscription (an admin lowering the cap leaves extra ones in the slider)
   const single = settings.data.max_active_subscriptions === 1 && items.length === 1;
+  // a phone gets "connect" as the connect guide's pulsing button, a row of its own above the rest; from lg up, where
+  // the tiles go side by side, it is a tile among them
   const tiles = selected && (
     <>
-      <ActionTile
-        to={`/subscription/${selected.id}/connect`}
-        icon={Globe}
-        label={t("home.connect")}
-        main
-        onClick={haptic}
-      />
-      {/* without a plan to renew into, "renew" becomes "change plan"; no second tile for it */}
+      {!cutOff && (
+        <>
+          <PulseButton to={`/subscription/${selected.id}/connect`} className="col-span-full lg:hidden">
+            <Unplug className="size-5" />
+            {t("home.connect")}
+          </PulseButton>
+          <ActionTile
+            round
+            to={`/subscription/${selected.id}/connect`}
+            icon={Unplug}
+            label={t("home.connect")}
+            main
+            className="max-lg:hidden"
+            onClick={haptic}
+          />
+        </>
+      )}
       {renewable && (
         <ActionTile
-          to={`/purchase/${selected.plan_id}?type=RENEW&sub=${selected.id}`}
+          round
+          to={renewTo}
           icon={RefreshCw}
           label={t("home.renew")}
         />
       )}
       <ActionTile
+        round
         to={`/purchase?type=CHANGE&sub=${selected.id}`}
-        icon={ArrowUpRight}
+        icon={Settings2}
         label={t("home.changePlan")}
       />
-      <ActionTile icon={Percent} label={t("home.promo")} onClick={() => setPromoOpen(true)} />
+      <ActionTile round icon={Percent} label={t("home.promo")} onClick={() => setPromoOpen(true)} />
     </>
   );
 
   return (
     <>
       <Header />
-      {trialActivated && <Card className="mb-4 text-sm text-success">{t("home.trialActivated")}</Card>}
+      <BottomSheet
+        bare
+        open={trialActivated}
+        onClose={() => setTrialActivated(false)}
+        title={t("home.trialTitle")}
+      >
+        <SuccessMessage
+          hint={selected && t("home.trialActivatedHint", { date: formatDate(selected.expire_at, i18n.language) })}
+        >
+          {t("home.trialActivated")}
+        </SuccessMessage>
+        <Button variant="outline" size="lg" className="mt-6 w-full" onClick={() => setTrialActivated(false)}>
+          {t("common.continue")}
+        </Button>
+      </BottomSheet>
       {!selected ? (
         <>
           <EmptyState onActivated={() => setTrialActivated(true)} />
           <StatsRow className="mt-4" />
         </>
       ) : (
-        // desktop: cards across the frame, devices down to the frame's bottom
         <div className="flex flex-col lg:flex-1">
-          {single ? (
-            // one subscription per user: no slider, the actions stand beside the card in two rows
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <div className="w-full sm:w-[340px] sm:shrink-0">
-                <SlideCard sub={selected} index={0} />
-              </div>
-              <div className={`grid flex-1 gap-3 ${renewable ? "grid-cols-4" : "grid-cols-3"} sm:grid-cols-2 sm:grid-rows-2`}>
-                {tiles}
-              </div>
+          <div>
+            <CardsSlider
+              subscriptions={items}
+              selectedId={selectedId}
+              onSelect={setChosenId}
+              single={single}
+              canBuy={canBuyMore(settings.data.max_active_subscriptions, items)}
+              onBuy={() => void navigate("/purchase")}
+              renewTo={renewTo}
+            />
+            <div className={`grid gap-3 ${renewable ? "grid-cols-3" : "grid-cols-2"} ${ROW_GRID[tileCount]}`}>
+              {tiles}
             </div>
-          ) : (
-            <div>
-              <CardsSlider
-                subscriptions={items}
-                selectedId={selectedId}
-                onSelect={setChosenId}
-                canBuy={canBuyMore(settings.data.max_active_subscriptions, items.length)}
-                onBuy={() => void navigate("/purchase")}
-              />
-              <div className={`grid gap-3 ${renewable ? "grid-cols-4" : "grid-cols-3"}`}>{tiles}</div>
-            </div>
-          )}
-          {/* the panel's dashboard: 16px between rows, 12px inside one */}
-          <StatsRow className="mt-4" single={single} />
+          </div>
+          <StatsRow className="mt-4" />
           <div className="mt-4 lg:flex lg:flex-1 lg:flex-col lg:*:flex-1">
             <DevicesCard key={selected.id} subscription={selected} />
           </div>

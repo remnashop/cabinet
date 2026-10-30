@@ -54,6 +54,17 @@ export function getInitDataRaw(): string | null {
   }
 }
 
+/** The user's Telegram photo inside the Mini App; null outside it, without one, or off https. */
+export function getTelegramPhotoUrl(): string | null {
+  if (!active) return null;
+  try {
+    const url = retrieveLaunchParams().tgWebAppData?.user?.photo_url;
+    return url && isHttpsUrl(url) ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 export function getStartParam(): string | null {
   if (!active) return null;
   try {

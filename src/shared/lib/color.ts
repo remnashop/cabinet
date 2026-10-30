@@ -82,7 +82,7 @@ export function hexToHueDegrees(hex: string): number {
   return hue < 0 ? hue + 360 : hue;
 }
 
-// Row-major hue-rotation matrix (as CSS's hue-rotate()), shared by the shader uniform and hueRotateHex.
+// Row-major hue-rotation matrix (as CSS's hue-rotate()), for the shader uniform.
 export function hueRotationCoefficients(
   angleRadians: number,
 ): [number, number, number, number, number, number, number, number, number] {
@@ -99,18 +99,6 @@ export function hueRotationCoefficients(
     0.715 - cosA * 0.715 + sinA * 0.715,
     0.072 + cosA * 0.928 + sinA * 0.072,
   ];
-}
-
-// the shader's hue rotation applied to a hex color, for swatch previews
-export function hueRotateHex(hex: string, angleRadians: number): string {
-  const [r, g, b] = hexToRgbNormalized(hex);
-  const [m11, m12, m13, m21, m22, m23, m31, m32, m33] = hueRotationCoefficients(angleRadians);
-  const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
-  return rgbToHex(
-    clamp01(m11 * r + m12 * g + m13 * b) * 255,
-    clamp01(m21 * r + m22 * g + m23 * b) * 255,
-    clamp01(m31 * r + m32 * g + m33 * b) * 255,
-  );
 }
 
 export interface DerivedTheme {

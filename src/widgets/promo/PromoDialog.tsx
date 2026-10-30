@@ -1,18 +1,21 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CircleCheck, Percent } from "lucide-react";
+import { Percent, TriangleAlert } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
-import { activatePromocode, type PromocodeActivation } from "@entities/plan/api";
+import { activatePromocode, usePromocodeTargetsQuery, type PromocodeActivation } from "@entities/plan/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { ApiError, getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
 import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
-import { Card } from "@shared/ui/Card";
+import { ButtonLink } from "@shared/ui/ButtonLink";
 import { TextInput } from "@shared/ui/TextInput";
 import { ErrorCard } from "@shared/ui/ErrorCard";
+import { RippleButton } from "@shared/ui/RippleButton";
 import { Skeleton } from "@shared/ui/Skeleton";
+import { SuccessMessage } from "@shared/ui/SuccessCheck";
+import { FormError } from "@shared/ui/FormError";
 import { rewardText } from "@widgets/promo/reward-text";
 import { SubscriptionCard } from "@widgets/subscription-cards/SubscriptionCard";
 
@@ -50,57 +53,81 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
     activation.reset();
   };
 
-  // only subscriptions a reward can be applied to
-  const targets = subscriptions.data?.items.filter((s) => s.status === "ACTIVE" || s.status === "LIMITED");
+  // the backend says which ones the reward can go to; the cards come from the subscriptions list
+  const targetIds = usePromocodeTargetsQuery(code.trim(), picking);
+  const targets =
+    subscriptions.data && targetIds.data
+      ? subscriptions.data.items.filter((s) => targetIds.data.subscription_ids.includes(s.id))
+      : undefined;
+  const listError =
+    subscriptions.isError && !subscriptions.data
+      ? subscriptions.error
+      : targetIds.isError && !targetIds.data
+        ? targetIds.error
+        : null;
+  const cancelPick = () => {
+    setPicking(false);
+    activation.reset();
+  };
   const error = activation.error && !picking ? getErrorMessage(activation.error, t("errors.generic")) : null;
 
   let body;
   if (result) {
     body = (
-      <div className="flex flex-col items-center gap-3 text-center">
-        <CircleCheck className="size-12 text-success" />
-        <p className="font-semibold">{rewardText(result)}</p>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setResult(null);
-            setCode("");
-          }}
-        >
-          {t("promo.another")}
+      <>
+        <SuccessMessage hint={rewardText(result)}>{t("promo.success")}</SuccessMessage>
+        <Button variant="outline" size="lg" className="mt-6 w-full" onClick={close}>
+          {t("common.continue")}
         </Button>
-      </div>
+      </>
+    );
+  } else if (picking && targets?.length === 0) {
+    // nothing the reward can go to: no question to answer, the way to a subscription instead
+    body = (
+      <>
+        <div className="flex flex-col items-center gap-3 pt-4 text-center">
+          <TriangleAlert className="size-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">{t("promo.noTargetTitle")}</p>
+        </div>
+        <div className="mt-5 flex gap-2">
+          <Button variant="outline" className="flex-1" onClick={cancelPick}>
+            {t("common.cancel")}
+          </Button>
+          <ButtonLink to="/purchase" onClick={close} variant="accent" className="flex-1">
+            {t("home.buy")}
+          </ButtonLink>
+        </div>
+      </>
     );
   } else if (picking) {
     body = (
       <>
-        <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
           {t("promo.pickTitle")}
-        </h2>
+        </h3>
         <div className="flex flex-col gap-3">
-          {subscriptions.isError && <ErrorCard onRetry={() => void subscriptions.refetch()} />}
-          {!targets && !subscriptions.isError && <Skeleton className="aspect-[2.6] w-full rounded-[20px]" />}
-          {targets?.length === 0 && <Card className="text-sm text-muted-foreground">{t("promo.noSubs")}</Card>}
-          {targets?.map((sub, i) => (
-            <button
+          {listError && (
+            <ErrorCard
+              round
+              error={listError}
+              onRetry={() => void (subscriptions.isError && !subscriptions.data ? subscriptions.refetch() : targetIds.refetch())}
+            />
+          )}
+          {!targets && !listError && <Skeleton round className="aspect-[2.6] w-full" />}
+          {targets?.map((sub) => (
+            <RippleButton
+              bounce={0.05}
               key={sub.id}
               type="button"
               disabled={activation.isPending}
-              className="text-left disabled:opacity-50"
+              className="relative rounded-home text-left disabled:opacity-50"
               onClick={() => submit(sub.id)}
             >
-              <SubscriptionCard sub={sub} index={i} compact />
-            </button>
+              <SubscriptionCard sub={sub} compact />
+            </RippleButton>
           ))}
         </div>
-        <Button
-          variant="outline"
-          className="mt-3 w-full"
-          onClick={() => {
-            setPicking(false);
-            activation.reset();
-          }}
-        >
+        <Button variant="outline" className="mt-5 w-full" onClick={cancelPick}>
           {t("common.cancel")}
         </Button>
       </>
@@ -123,8 +150,8 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
             activation.reset();
           }}
         />
-        {error && <p className="text-[12px] text-error">{error}</p>}
-        <div className="mt-1 flex gap-2">
+        {error && <FormError>{error}</FormError>}
+        <div className="mt-2 flex gap-2">
           <Button variant="outline" className="flex-1" type="button" onClick={close}>
             {t("common.cancel")}
           </Button>
@@ -137,7 +164,7 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
   }
 
   return (
-    <BottomSheet variant="dialog" narrow icon={Percent} open={open} onClose={close} title={t("promo.title")}>
+    <BottomSheet narrow bare={result !== null} icon={Percent} open={open} onClose={close} title={t("promo.title")}>
       {body}
     </BottomSheet>
   );

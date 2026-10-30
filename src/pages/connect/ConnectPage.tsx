@@ -1,18 +1,21 @@
-import { QrCode } from "lucide-react";
+import { CloudOff, QrCode, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import { useConnectGuideQuery } from "@entities/connect-guide/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
+import { ButtonLink } from "@shared/ui/ButtonLink";
 import { Card } from "@shared/ui/Card";
 import { ErrorCard } from "@shared/ui/ErrorCard";
+import { PageEmpty } from "@shared/ui/PageEmpty";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 
 import { GuideView } from "./GuideView";
+import { Hero, HeroArt } from "./HeroArt";
 import { LinkPanel } from "./LinkPanel";
 
 export function ConnectPage() {
@@ -20,19 +23,19 @@ export function ConnectPage() {
   const id = Number(useParams().id);
   const subscriptions = useSubscriptionsQuery();
   const guide = useConnectGuideQuery();
+  const navigate = useNavigate();
   const [linkOpen, setLinkOpen] = useState(false);
 
   const header = <PageHeader title={t("connect.title")} backTo="/" />;
 
-  if (subscriptions.isError) {
+  if (subscriptions.isError && !subscriptions.data) {
     return (
       <>
         {header}
-        <ErrorCard onRetry={() => void subscriptions.refetch()} />
+        <ErrorCard error={subscriptions.error} onRetry={() => void subscriptions.refetch()} />
       </>
     );
   }
-  // a guide that failed to load is no guide: the plain link page still connects
   if (!subscriptions.data || guide.isPending) {
     return (
       <>
@@ -47,17 +50,17 @@ export function ConnectPage() {
     return (
       <>
         {header}
-        <Card className="flex flex-col items-center gap-3 text-center">
-          <p className="text-sm text-muted-foreground">{t("connect.notFound")}</p>
-          <Link to="/" className="text-sm text-primary">
+        <PageEmpty icon={TriangleAlert} text={t("connect.notFound")}>
+          <ButtonLink to="/" variant="outline" className="mt-1">
             {t("common.home")}
-          </Link>
-        </Card>
+          </ButtonLink>
+        </PageEmpty>
       </>
     );
   }
 
-  if (!guide.data?.platforms.length) {
+  // the guide didn't load: the plain link page still connects
+  if (guide.isError && !guide.data) {
     return (
       <>
         {header}
@@ -67,22 +70,36 @@ export function ConnectPage() {
       </>
     );
   }
+  // switched off or empty in the dashboard: nothing to set up with, said the way the wizard says it
+  if (!guide.data.platforms.length) {
+    return (
+      <>
+        {header}
+        <Hero title={t("connect.unavailableTitle")} hint={t("connect.guideOffHint")} art={<HeroArt icon={CloudOff} />}>
+          <Button variant="solid" size="lg" onClick={() => void navigate("/")}>
+            {t("connect.backHome")}
+          </Button>
+        </Hero>
+      </>
+    );
+  }
 
+  // the guide draws its own header: its back walks the wizard's steps
   return (
     <>
-      {header}
       <GuideView
         guide={guide.data}
         subscription={subscription}
-        linkAction={
-          <Button variant="secondary" size="sm" className="gap-1.5" onClick={() => setLinkOpen(true)}>
-            <QrCode className="size-3.5" />
-            {t("connect.linkAndQr")}
-          </Button>
-        }
+        onShowLink={() => setLinkOpen(true)}
       />
-      <BottomSheet variant="dialog" narrow open={linkOpen} onClose={() => setLinkOpen(false)} title={t("connect.linkAndQr")}>
-        <LinkPanel subscription={subscription} />
+      <BottomSheet
+        narrow
+        icon={QrCode}
+        open={linkOpen}
+        onClose={() => setLinkOpen(false)}
+        title={t("connect.linkAndQr")}
+      >
+        <LinkPanel subscription={subscription} dialog />
       </BottomSheet>
     </>
   );

@@ -2,13 +2,15 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useShownLegalLocale } from "@entities/legal/api";
+import { legalLocale, useShownLegalLocale } from "@entities/legal/api";
 import { authApi, completeLogin, type CaptchaConfig } from "@features/auth/api";
-import { isUnlistedDomain } from "@features/auth/email-domain";
 import { CaptchaWidget } from "@features/auth/ui/CaptchaWidget";
 import { getErrorMessage } from "@shared/api/http";
+import { CodeInput } from "@shared/ui/CodeInput";
 import { Button } from "@shared/ui/Button";
 import { TextInput } from "@shared/ui/TextInput";
+import { StepTransition } from "@shared/ui/StepTransition";
+import { FormError } from "@shared/ui/FormError";
 
 const RESEND_SECONDS = 60;
 
@@ -28,18 +30,19 @@ const signInFlow = (legal?: string): EmailCodeFlow => ({
 });
 
 export function EmailLogin({
-  allowedDomains,
   flow: customFlow,
   captcha = null,
+  emailHint,
 }: {
-  allowedDomains: string[] | null;
   flow?: EmailCodeFlow;
   /** asked before every code, the resend too */
   captcha?: CaptchaConfig | null;
+  /** over the address only: the code step says where the code went instead */
+  emailHint?: string;
 }) {
   const legal = useShownLegalLocale();
   const flow = customFlow ?? signInFlow(legal);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [invalid, setInvalid] = useState<ReturnType<typeof emailError>>(null);
   const [code, setCode] = useState("");
@@ -57,7 +60,7 @@ export function EmailLogin({
 
   const sendCode = useMutation({
     mutationFn: () =>
-      flow.sendCode(email.trim(), i18n.language.startsWith("ru") ? "ru" : "en", captchaToken ?? undefined),
+      flow.sendCode(email.trim(), legalLocale(), captchaToken ?? undefined),
     // the token is spent either way
     onSettled: () => captcha && setCaptchaRound((round) => round + 1),
     onSuccess: () => {
@@ -81,77 +84,74 @@ export function EmailLogin({
       sendCode.mutate();
     };
     return (
-      <form onSubmit={onSubmit} className="flex w-full flex-col gap-2">
-        <TextInput
-          type="email"
-          required
-          autoComplete="email"
-          placeholder={t("auth.emailPlaceholder")}
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            // re-checked while typing once shown, gone when the value passes
-            if (invalid) setInvalid(emailError(e.target));
-          }}
-          // the browser's own bubble is unstyled; the message goes under the field instead
-          onInvalid={(e) => {
-            e.preventDefault();
-            setInvalid(emailError(e.currentTarget));
-          }}
-          aria-invalid={invalid !== null}
-          className="w-full"
-        />
-        {invalid && <p className="text-left text-[12px] text-error">{t(invalid)}</p>}
-        {isUnlistedDomain(email, allowedDomains) && (
-          <p className="text-sm text-muted-foreground">{t("auth.domainHint")}</p>
-        )}
-        {captcha && <CaptchaWidget config={captcha} round={captchaRound} onToken={setCaptchaToken} />}
-        <Button type="submit" variant="accent" className="w-full" disabled={sendCode.isPending || captchaMissing}>
-          {t("auth.sendCode")}
-        </Button>
-        {sendCode.isError && <p className="text-sm text-error">{getErrorMessage(sendCode.error, t("errors.generic"))}</p>}
-      </form>
+      <StepTransition stepKey="email" className="w-full">
+        <form onSubmit={onSubmit} className="flex w-full flex-col gap-2">
+          {emailHint && <p className="pb-1 text-sm text-muted-foreground">{emailHint}</p>}
+          <TextInput
+            type="email"
+            required
+            autoComplete="email"
+            placeholder={t("auth.emailPlaceholder")}
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              // re-checked while typing once shown, gone when the value passes
+              if (invalid) setInvalid(emailError(e.target));
+            }}
+            onInvalid={(e) => {
+              e.preventDefault();
+              setInvalid(emailError(e.currentTarget));
+            }}
+            aria-invalid={invalid !== null}
+            className="w-full"
+          />
+          {invalid && <FormError className="px-[13px] text-left">{t(invalid)}</FormError>}
+          {captcha && <CaptchaWidget config={captcha} round={captchaRound} onToken={setCaptchaToken} />}
+          <Button type="submit" variant="accent" className="w-full" disabled={sendCode.isPending || captchaMissing}>
+            {t("auth.sendCode")}
+          </Button>
+          {sendCode.isError && <FormError>{getErrorMessage(sendCode.error, t("errors.generic"))}</FormError>}
+        </form>
+      </StepTransition>
     );
   }
 
   const error = verify.error ?? sendCode.error;
   return (
-    <div className="flex w-full flex-col gap-2">
-      <p className="text-sm text-muted-foreground">{t("auth.codeSent", { email: email.trim() })}</p>
-      <TextInput
-        autoFocus
-        inputMode="numeric"
-        autoComplete="one-time-code"
-        maxLength={CODE_LENGTH}
-        placeholder={t("auth.codePlaceholder")}
-        value={code}
-        aria-invalid={verify.isError}
-        onChange={(e) => onCodeChange(e.target.value)}
-        className="w-full text-center tracking-[0.4em]"
-      />
-      {error && <p className="text-sm text-error">{getErrorMessage(error, t("errors.generic"))}</p>}
-      {captcha && cooldown === 0 && (
-        <CaptchaWidget config={captcha} round={captchaRound} onToken={setCaptchaToken} />
-      )}
-      <Button
-        variant="outline"
-        className="w-full"
-        disabled={cooldown > 0 || sendCode.isPending || captchaMissing}
-        onClick={() => sendCode.mutate()}
-      >
-        {cooldown > 0 ? t("auth.resendIn", { seconds: cooldown }) : t("auth.resend")}
-      </Button>
-      <button
-        type="button"
-        className="text-sm text-muted-foreground hover:text-foreground"
-        onClick={() => {
-          setStep("email");
-          verify.reset();
-          sendCode.reset();
-        }}
-      >
-        {t("auth.changeEmail")}
-      </button>
-    </div>
+    <StepTransition stepKey="code" className="w-full">
+      <div className="flex w-full flex-col gap-2">
+        <p className="text-sm text-muted-foreground">{t("auth.codeSent", { email: email.trim() })}</p>
+        <CodeInput
+          value={code}
+          length={CODE_LENGTH}
+          invalid={verify.isError}
+          label={t("auth.codePlaceholder")}
+          onChange={onCodeChange}
+        />
+        {error && <FormError>{getErrorMessage(error, t("errors.generic"))}</FormError>}
+        {captcha && cooldown === 0 && (
+          <CaptchaWidget config={captcha} round={captchaRound} onToken={setCaptchaToken} />
+        )}
+        <Button
+          variant="outline"
+          className="w-full"
+          disabled={cooldown > 0 || sendCode.isPending || captchaMissing}
+          onClick={() => sendCode.mutate()}
+        >
+          {cooldown > 0 ? t("auth.resendIn", { seconds: cooldown }) : t("auth.resend")}
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => {
+            setStep("email");
+            verify.reset();
+            sendCode.reset();
+          }}
+        >
+          {t("auth.changeEmail")}
+        </Button>
+      </div>
+    </StepTransition>
   );
 }

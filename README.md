@@ -63,5 +63,5 @@ The same, with `API_URL: https://api.example.com` (the public address of the rem
 - Publish the cabinet port on `127.0.0.1` only and put a reverse proxy in front. The image trusts `X-Forwarded-For` from private addresses, which is what that proxy is; exposed directly, a client could choose its own IP.
 - On the backend: `CABINET_PROXY_SECRET` (same value), `CABINET_DOMAIN=cabinet.example.com`.
 - Register `https://cabinet.example.com/login/callback/<provider>` as a redirect URI with Telegram OIDC, Google and Yandex.
-- Behind Cloudflare's proxy, add Cloudflare's ranges to `set_real_ip_from` in `docker/default.conf.template`, or every client shares Cloudflare's addresses in the rate limits.
+- Behind Cloudflare's proxy, make the reverse proxy take the client from `CF-Connecting-IP` ([setup](https://remnashop.dev/docs/reverse-proxy/cloudflare)), or every client shares Cloudflare's addresses in the rate limits. The image needs no change: it reads the address that proxy writes.
 - A leaked `CABINET_PROXY_SECRET` lets its holder pick the client IP the backend sees (rate limits, staff IP allowlists), never a session. Rotate it on both sides if it leaks.

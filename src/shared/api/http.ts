@@ -108,7 +108,7 @@ async function send(path: string, init: RequestInit | undefined, token: string |
 }
 
 function endSession(): void {
-  clearAccessToken();
+  clearAccessToken(true);
   onSessionEnd();
 }
 
@@ -191,8 +191,10 @@ export function apiDelete(path: string): Promise<void> {
 }
 
 export function getErrorMessage(err: unknown, fallback: string): string {
-  if (err instanceof NetworkError) return i18n.t("errors.network");
+  // no answer: the device being offline is the likelier reason, and the one the user can fix
+  if (err instanceof NetworkError) return i18n.t(navigator.onLine ? "errors.network" : "errors.offline");
   if (!(err instanceof ApiError)) return fallback;
   const key = `apiErrors.${err.code}`;
-  return err.code && i18n.exists(key) ? i18n.t(key as ParseKeys) : err.message;
+  // the backend's own message is English and not for users: a code without a translation reads as the fallback
+  return err.code && i18n.exists(key) ? i18n.t(key as ParseKeys) : fallback;
 }

@@ -14,17 +14,17 @@ interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
   icon?: ComponentType<{ className?: string }>;
   /** renders the title as a <label> for this input id */
   titleFor?: string;
-  /** layout only (flex, gap, w-full, relative...), no padding: it belongs to the variant */
+  round?: boolean;
   className?: string;
   children: ReactNode;
 }
 
-export function Card({ variant = "page", title, icon: Icon, titleFor, className = "", children, ...props }: CardProps) {
+export function Card({ variant = "page", title, icon: Icon, titleFor, round, className = "", children, ...props }: CardProps) {
   // the title's own pt-2 plus pt-1.5 lines its text up where pt-3.5 would put untitled content
   const top = variant === "form" ? (title ? "pt-1.5" : "pt-3.5") : "";
   const Title = titleFor ? "label" : "h3";
   return (
-    <div className={`rounded-2xl border border-white/[0.08] bg-white/[0.03] ${PADDING[variant]} ${top} ${className}`} {...props}>
+    <div className={`${round ? "rounded-home" : "rounded-2xl"} border border-white/[0.08] bg-white/[0.03] ${PADDING[variant]} ${top} ${className}`} {...props}>
       {title && (
         <Title
           htmlFor={titleFor}

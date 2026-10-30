@@ -3,7 +3,7 @@ import { act, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createCheckout, type PaymentMethod, type Plan } from "@entities/plan/api";
+import { createCheckout, type PaymentMethod, type Plan, type PlanAccess } from "@entities/plan/api";
 import type { PurchaseType } from "@features/purchase/wizard";
 import "@shared/i18n";
 
@@ -30,6 +30,14 @@ vi.mock("@entities/plan/api", async () => {
   };
 });
 vi.mock("@entities/session/api", () => ({ useMeQuery: () => ({ data: { email: null } }) }));
+// the wait itself (polling, the result screen) is its own; here only how the summary hands over and takes back
+vi.mock("@features/payment/AwaitPaymentButton", () => ({
+  AwaitPaymentButton: ({ orderId, onStop }: { orderId: number; onStop: (reason: string | null) => void }) => (
+    <button type="button" onClick={() => onStop(null)}>
+      waiting {orderId}
+    </button>
+  ),
+}));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -38,7 +46,13 @@ let root: ReturnType<typeof createRoot>;
 let container: HTMLElement;
 
 // the wizard owns the typed email
-function Harness(props: { method: PaymentMethod; type: PurchaseType; subId: number | null; onCreated: () => Promise<void> }) {
+function Harness(props: {
+  method: PaymentMethod;
+  type: PurchaseType;
+  subId: number | null;
+  access: PlanAccess;
+  onCreated: () => Promise<number | null>;
+}) {
   const [email, setEmail] = useState<string | null>(null);
   return <SummaryStep plan={plan} days={30} typedEmail={email} onEmailChange={setEmail} {...props} />;
 }
@@ -47,14 +61,15 @@ async function render(
   type: PurchaseType,
   subId: number | null,
   requiresEmail = false,
-  onCreated: () => Promise<void> = async () => {},
+  onCreated: () => Promise<number | null> = async () => null,
+  access: PlanAccess = { plan_code: null, renew_subscription_id: type === "RENEW" ? subId : null },
 ) {
   const method: PaymentMethod = { gateway_type: "YOOKASSA", currency: "RUB", requires_email: requiresEmail };
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   await act(async () => {
     root.render(
       <QueryClientProvider client={client}>
-        <Harness method={method} type={type} subId={subId} onCreated={onCreated} />
+        <Harness method={method} type={type} subId={subId} access={access} onCreated={onCreated} />
       </QueryClientProvider>,
     );
   });
@@ -121,6 +136,16 @@ describe("SummaryStep", () => {
     await act(async () => payButton().click());
     await until(() => expect(createCheckout).toHaveBeenCalled());
     expect(checkoutBody()).not.toHaveProperty("target_subscription_id");
+    expect(checkoutBody()).not.toHaveProperty("plan_code");
+  });
+
+  it("quotes and orders a link plan with its code", async () => {
+    await render("NEW", null, false, undefined, { plan_code: "vip", renew_subscription_id: null });
+    await until(() => expect(payButton().disabled).toBe(false));
+    await act(async () => payButton().click());
+    await until(() => expect(createCheckout).toHaveBeenCalled());
+    expect(fetchQuote.mock.calls[0][0].queryKey[1]).toMatchObject({ plan_code: "vip", renew_subscription_id: null });
+    expect(checkoutBody()).toMatchObject({ plan_code: "vip" });
   });
 
   it("sends no legal_locale when the documents failed to load", async () => {
@@ -139,6 +164,12 @@ describe("SummaryStep", () => {
     await act(async () => payButton().click());
     await until(() => expect(createCheckout).toHaveBeenCalled());
     expect(checkoutBody()).toMatchObject({ purchase_type: type, target_subscription_id: 9 });
+  });
+
+  it("quotes a renewal for its subscription, as the backend prices a plan closed to new buyers", async () => {
+    await render("RENEW", 9);
+    await until(() => expect(fetchQuote).toHaveBeenCalled());
+    expect(fetchQuote.mock.calls[0][0].queryKey[1]).toMatchObject({ renew_subscription_id: 9 });
   });
 
   it("creates one order for two taps in the same frame", async () => {
@@ -183,6 +214,18 @@ describe("SummaryStep", () => {
     await act(async () => resolve({ ...QUOTE, final_price: "120" }));
     await until(() => expect(payButton().disabled).toBe(false));
     expect(payButton().textContent).toContain("120");
+  });
+
+  it("waits for the Mini App's order on the button, and a tap on it brings Pay back", async () => {
+    await render("NEW", null, false, async () => 7);
+    await until(() => expect(payButton().disabled).toBe(false));
+    await act(async () => payButton().click());
+    await until(() => expect(payButton().textContent).toBe("waiting 7"));
+    await act(async () => payButton().click());
+    await until(() => expect(payButton().textContent).toContain("Pay"));
+    await until(() => expect(payButton().disabled).toBe(false));
+    await act(async () => payButton().click());
+    await until(() => expect(createCheckout).toHaveBeenCalledTimes(2));
   });
 
   it("keeps Pay disabled while a required email is empty", async () => {

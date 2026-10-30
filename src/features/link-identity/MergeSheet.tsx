@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { GitMerge } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -8,6 +9,7 @@ import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
+import { FormError } from "@shared/ui/FormError";
 
 import { linkApi } from "./api";
 import type { MergeOffer } from "./useLinkResult";
@@ -73,14 +75,15 @@ export function MergeBody({ offer, onClose, onMerged, onExpired }: MergeSheetPro
           <InfoRow key={label} label={label} value={<span className="truncate">{value}</span>} />
         ))}
       </Card>
-      <p className="text-xs text-muted-foreground">{t("link.mergeRules")}</p>
-      {merge.isError && <p className="text-sm text-error">{getErrorMessage(merge.error, t("errors.generic"))}</p>}
-      <div className="flex gap-2">
+      <p className="text-[12px] text-muted-foreground">{t("link.mergeRules")}</p>
+      {merge.isError && <FormError>{getErrorMessage(merge.error, t("errors.generic"))}</FormError>}
+      <div className="mt-2 flex gap-2">
+        {/* the one Cancel locked in flight: closing drops this body, and with it the answer to a merge for good */}
         <Button variant="outline" className="flex-1" disabled={merge.isPending} onClick={onClose}>
           {t("common.cancel")}
         </Button>
         <Button
-          variant="solid"
+          variant="accent"
           className="flex-1"
           disabled={left === 0 || merge.isPending || failed}
           onClick={() => {
@@ -91,7 +94,7 @@ export function MergeBody({ offer, onClose, onMerged, onExpired }: MergeSheetPro
           {t("link.merge")}
         </Button>
       </div>
-      <p className="text-center text-xs text-muted-foreground">
+      <p className="text-center text-[12px] text-muted-foreground">
         {left === 0 ? t("link.mergeExpired") : t("link.mergeCountdown", { count: Math.ceil(left / 60_000) })}
       </p>
     </div>
@@ -104,7 +107,7 @@ export function MergeSheet(props: MergeSheetProps) {
   const [shown, setShown] = useState(props.offer);
   if (props.offer && props.offer !== shown) setShown(props.offer);
   return (
-    <BottomSheet open={props.offer !== null} onClose={props.onClose} title={t("link.mergeTitle")}>
+    <BottomSheet narrow icon={GitMerge} open={props.offer !== null} onClose={props.onClose} title={t("link.mergeTitle")}>
       {shown && <MergeBody key={shown.token} {...props} offer={shown} />}
     </BottomSheet>
   );

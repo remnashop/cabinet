@@ -1,13 +1,13 @@
-import { Check, Copy } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { Check, Copy, TriangleAlert } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useConnectGuideQuery, useVerifyHopQuery } from "@entities/connect-guide/api";
 import { catalogBuilds, decodeHop } from "@entities/connect-guide/lib";
 import { Button } from "@shared/ui/Button";
-import { buttonClass } from "@shared/ui/button-class";
+import { ButtonLink } from "@shared/ui/ButtonLink";
 import { Spinner } from "@shared/ui/Spinner";
-import { FullScreen } from "@widgets/full-screen/FullScreen";
+import { FullScreen, FullScreenMessage as Message } from "@widgets/full-screen/FullScreen";
 
 import { useCopyLink } from "./use-copy-link";
 
@@ -28,11 +28,11 @@ export function OpenInAppPage() {
   const [copied, copy] = useCopyLink(hop?.sub ?? "");
 
   if (hop === null || (guide.data !== undefined && !built)) {
-    return <Message title={t("connect.openInvalid")} text={t("connect.openInvalidHint")} />;
+    return <Message icon={TriangleAlert} title={t("connect.openInvalid")} text={t("connect.openInvalidHint")} />;
   }
   if (guide.isError || verify.isError) {
     return (
-      <Message title={t("connect.openFailed")} text={t("connect.openFailedHint")}>
+      <Message icon={TriangleAlert} title={t("connect.openFailed")} text={t("connect.openFailedHint")}>
         <Button variant="outline" onClick={() => void (guide.isError ? guide.refetch() : verify.refetch())}>
           {t("common.retry")}
         </Button>
@@ -47,31 +47,21 @@ export function OpenInAppPage() {
     );
   }
   if (!verify.data.valid) {
-    return <Message title={t("connect.openUnverified")} text={t("connect.openUnverifiedHint")} />;
+    return <Message icon={TriangleAlert} title={t("connect.openUnverified")} text={t("connect.openUnverifiedHint")} />;
   }
   return (
     <Message title={t("connect.openTitle")} text={t("connect.openHint")}>
       <p className="break-all text-[12px] text-muted-foreground">
         {t("connect.openSource", { host: new URL(hop.sub).host })}
       </p>
-      <a href={hop.link} className={`${buttonClass("solid")} w-full`}>
+      <ButtonLink href={hop.link} variant="solid" className="w-full">
         {t("connect.open")}
-      </a>
+      </ButtonLink>
       <Button variant="outline" className="w-full gap-2" onClick={() => void copy()}>
         {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
         {copied ? t("connect.copied") : t("connect.copy")}
       </Button>
       <p className="text-[12px] text-muted-foreground">{t("connect.openNotOpened")}</p>
     </Message>
-  );
-}
-
-function Message({ title, text, children }: { title: string; text: string; children?: ReactNode }) {
-  return (
-    <FullScreen>
-      <h1 className="text-lg font-bold">{title}</h1>
-      <p className="text-sm text-muted-foreground">{text}</p>
-      {children}
-    </FullScreen>
   );
 }

@@ -5,13 +5,15 @@ interface InfoRowProps {
   label: string;
   value: ReactNode;
   onClick?: () => void;
+  /** the label and its icon in the foreground, not muted */
+  bright?: boolean;
 }
 
 /** "icon · label · value" row for Card variant="list". */
-export function InfoRow({ icon: Icon, label, value, onClick }: InfoRowProps) {
+export function InfoRow({ icon: Icon, label, value, onClick, bright }: InfoRowProps) {
   const content = (
     <>
-      <span className="flex shrink-0 items-center gap-2.5 text-muted-foreground">
+      <span className={`flex shrink-0 items-center gap-2.5 ${bright ? "text-foreground" : "text-muted-foreground"}`}>
         {Icon && <Icon className="size-[15px]" />}
         <span className="text-[12.5px]">{label}</span>
       </span>

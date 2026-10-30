@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router";
 import { isMiniApp, useTelegramBackButton } from "@shared/telegram";
 import { HeaderSlot } from "@widgets/page-header/HeaderSlot";
 
-const BACK_CLASS = "flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/[0.06]";
+const BACK_CLASS = "flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06]";
 
 interface PageHeaderProps {
   title: string;

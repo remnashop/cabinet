@@ -1,0 +1,54 @@
+import { useState } from "react";
+
+/**
+ * A one-time code as a row of cells. One real input lies over them, see-through: paste, the keyboard's
+ * one-time-code suggestion and backspace keep working as in any field; the cells only draw its digits.
+ */
+export function CodeInput({
+  value,
+  length,
+  onChange,
+  invalid,
+  label,
+}: {
+  value: string;
+  length: number;
+  onChange: (value: string) => void;
+  invalid?: boolean;
+  /** the field's accessible name: the cells say nothing to a reader */
+  label: string;
+}) {
+  const [focused, setFocused] = useState(false);
+  // the cell the next digit lands in; none once the code is whole
+  const active = focused && value.length < length ? value.length : -1;
+  return (
+    <div className="relative">
+      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${length}, minmax(0, 1fr))` }}>
+        {Array.from({ length }, (_, i) => (
+          <span
+            key={i}
+            aria-hidden
+            className={`flex h-13 items-center justify-center rounded-xl border bg-input text-xl font-semibold tabular-nums transition-colors ${
+              invalid ? "border-error" : i === active ? "border-primary" : "border-border"
+            }`}
+          >
+            {value[i] ?? (i === active && <span className="h-5 w-px animate-pulse bg-primary" />)}
+          </span>
+        ))}
+      </div>
+      <input
+        autoFocus
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        maxLength={length}
+        value={value}
+        aria-label={label}
+        aria-invalid={invalid}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        className="absolute inset-0 size-full cursor-default bg-transparent text-transparent caret-transparent outline-none selection:bg-transparent"
+      />
+    </div>
+  );
+}

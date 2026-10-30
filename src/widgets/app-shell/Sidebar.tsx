@@ -1,4 +1,4 @@
-import { ChevronsLeft, ChevronsRight, CircleQuestionMark, Gift, Info, type LucideIcon } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, Gift, Headset, Info, type LucideIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
@@ -6,26 +6,29 @@ import { useTranslation } from "react-i18next";
 import { Link, NavLink, useLocation } from "react-router";
 
 import { useBrandName } from "@entities/appearance/api";
+import { useHasLegalDocuments } from "@entities/legal/api";
 import { BrandMark } from "@entities/appearance/BrandMark";
 import { useReferralQuery } from "@entities/referral/api";
 import { rewardTerms } from "@features/referral/links";
 import { bounceTap } from "@shared/lib/bounceState";
+import { PILL_SPRING } from "@shared/lib/motion";
 import { toggleSidebarCollapsed, useSidebarCollapsed } from "@shared/lib/sidebar-collapse";
 import { BounceIcon } from "@shared/ui/BounceIcon";
 import { useNavItems } from "@widgets/app-shell/nav-items";
 import { InfoDialog } from "@widgets/info/InfoDialog";
+import { useSupport } from "@widgets/support/use-support";
 
 // only while the program runs and the user has a link to share; the referral page already leads with it
 function InviteCard() {
   const { t, i18n } = useTranslation();
   const referral = useReferralQuery();
-  const onReferralPage = useLocation().pathname.startsWith("/referral");
+  const onReferralPage = useLocation().pathname.startsWith("/invite");
   if (onReferralPage || !referral.data?.program.enabled || !referral.data.referral_code) return null;
   return (
     // the icon rail has no room for it; a fixed width (w-62 less p-3.5 twice), so the text doesn't reflow while the
     // sidebar widens, it is uncovered instead
     <Link
-      to="/referral"
+      to="/invite"
       className="hidden w-[220px] shrink-0 rounded-2xl xl:group-data-expanded/sidebar:block border border-border bg-primary/[0.06] p-3 transition-colors hover:border-primary/45"
     >
       <span className="flex items-center gap-2 text-sm font-semibold">
@@ -34,7 +37,7 @@ function InviteCard() {
         </span>
         {t("referral.title")}
       </span>
-      <p className="mt-1.5 text-xs leading-snug text-muted-foreground">
+      <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground">
         {rewardTerms(referral.data.program, t, i18n.language)}
       </p>
     </Link>
@@ -51,7 +54,7 @@ const PILL = `${PILL_SHAPE} font-medium text-muted-foreground transition-colors 
 // labels show from xl, and only while the sidebar is expanded
 const LABEL = "hidden whitespace-nowrap xl:group-data-expanded/sidebar:inline";
 const HINT_BUBBLE =
-  "pointer-events-none z-50 w-max max-w-56 -translate-y-1/2 rounded-popover-item border border-white/[0.14] bg-popover px-3 py-2 text-xs text-foreground shadow-[0_24px_48px_-20px_rgba(4,8,20,0.6)] transition-opacity duration-150";
+  "pointer-events-none z-50 w-max max-w-56 -translate-y-1/2 rounded-popover-item border border-white/[0.14] bg-popover px-3 py-2 text-[12px] text-foreground shadow-[0_24px_48px_-20px_rgba(4,8,20,0.6)] transition-opacity duration-150";
 
 interface Hint {
   text: string;
@@ -103,6 +106,9 @@ export function Sidebar() {
   const navItems = useNavItems();
   const brand = useBrandName();
   const [infoOpen, setInfoOpen] = useState(false);
+  const support = useSupport();
+  const hasSupport = support.available;
+  const hasDocuments = useHasLegalDocuments();
   const collapsed = useSidebarCollapsed();
   const [hint, setHint] = useState<Hint | null>(null);
   // kept after leave so the bubble fades out in place instead of jumping
@@ -135,7 +141,6 @@ export function Sidebar() {
             onClick={toggleSidebarCollapsed}
             initial="rest"
             whileHover="hover"
-            {...bounceTap(0.12)}
             className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
           >
             <BounceIcon icon={collapsed ? ChevronsRight : ChevronsLeft} size={17} hoverSize={21.25} />
@@ -158,12 +163,11 @@ export function Sidebar() {
           >
             {({ isActive }) => (
               <>
-                {/* one layoutId, so the highlight glides between rows instead of jumping */}
                 {isActive && (
                   <motion.span
                     layoutId="sidebar-active-pill"
                     className="absolute inset-0 -z-10 rounded-full bg-accent"
-                    transition={{ type: "spring", stiffness: 420, damping: 36 }}
+                    transition={PILL_SPRING}
                   />
                 )}
                 <BounceIcon icon={Icon} size={17} hoverSize={23.5} />
@@ -188,16 +192,22 @@ export function Sidebar() {
           document.body,
         )}
 
-      {/* sign-out lives in the header's account menu, as in the panel */}
       <div className="mt-auto flex flex-col gap-3.5">
         <InviteCard />
-        <div className="flex flex-col gap-0.5 border-t border-border pt-3.5">
-          {/* a stub until the shop has a support link setting */}
-          <FooterButton icon={CircleQuestionMark} label={t("help.support")} onHint={onHint} />
-          <FooterButton icon={Info} label={t("help.info")} onClick={() => setInfoOpen(true)} onHint={onHint} />
-        </div>
+        {/* nowhere to send anyone, nothing published: no button; neither, no footer */}
+        {(hasSupport || hasDocuments) && (
+          <div className="flex flex-col gap-0.5 border-t border-border pt-3.5">
+            {hasSupport && (
+              <FooterButton icon={Headset} label={t("help.support")} onClick={support.open} onHint={onHint} />
+            )}
+            {hasDocuments && (
+              <FooterButton icon={Info} label={t("help.info")} onClick={() => setInfoOpen(true)} onHint={onHint} />
+            )}
+          </div>
+        )}
       </div>
       <InfoDialog open={infoOpen} onClose={() => setInfoOpen(false)} />
+      {support.dialog}
     </aside>
   );
 }

@@ -1,17 +1,19 @@
+import { TriangleAlert } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import { authApi, completeLogin } from "@features/auth/api";
-import { readOAuthState, takeOAuthNext } from "@features/auth/oauth-redirect";
+import { readOAuthLegal, readOAuthState, takeOAuthNext } from "@features/auth/oauth-redirect";
 import { linkApi } from "@features/link-identity/api";
 import { takeOAuthLink } from "@shared/lib/oauth-link-marker";
 import { getErrorMessage } from "@shared/api/http";
 import { INTRO_STATE } from "@shared/lib/intro";
 import { parseOAuthCallback } from "@shared/lib/oauth-callback";
 import { Spinner } from "@shared/ui/Spinner";
-import { FullScreen } from "@widgets/full-screen/FullScreen";
+import { ButtonLink } from "@shared/ui/ButtonLink";
+import { FullScreen, FullScreenMessage } from "@widgets/full-screen/FullScreen";
 
 export function LoginCallbackPage() {
   const { t } = useTranslation();
@@ -26,9 +28,10 @@ export function LoginCallbackPage() {
     mutationFn: async ({ code, state, link }: { code: string; state: string; link: boolean }) => {
       if (link) {
         const linkResult = await linkApi.oauthCallback(provider, code, state);
-        void navigate(takeOAuthNext(), { replace: true, state: { linkResult } });
+        // the route's provider is the method: google -> GOOGLE
+        void navigate(takeOAuthNext(), { replace: true, state: { linkResult, linkKind: provider.toUpperCase() } });
       } else {
-        completeLogin(await authApi.oauthCallback(provider, code, state));
+        completeLogin(await authApi.oauthCallback(provider, code, state, readOAuthLegal()));
         void navigate(takeOAuthNext(), { replace: true, state: INTRO_STATE });
       }
     },
@@ -54,14 +57,14 @@ export function LoginCallbackPage() {
     );
   }
   return (
-    <FullScreen>
-      <h1 className="text-lg font-bold">{t(linking ? "link.failed" : "auth.callbackFailed")}</h1>
-      {exchange.isError && (
-        <p className="text-sm text-muted-foreground">{getErrorMessage(exchange.error, t("errors.generic"))}</p>
-      )}
-      <Link to={linking ? "/profile" : "/login"} className="text-sm text-primary">
+    <FullScreenMessage
+      icon={TriangleAlert}
+      title={t(linking ? "link.failed" : "auth.callbackFailed")}
+      text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : null}
+    >
+      <ButtonLink to={linking ? "/profile" : "/login"} variant="outline" className="w-full">
         {t(linking ? "link.toProfile" : "auth.backToLogin")}
-      </Link>
-    </FullScreen>
+      </ButtonLink>
+    </FullScreenMessage>
   );
 }

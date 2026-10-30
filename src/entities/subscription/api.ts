@@ -18,6 +18,8 @@ export interface OwnSubscription {
   plan_id: number;
   // bytes, null = unknown
   used_traffic: number | null;
+  // the last "delete all devices", what the shop's cooldown counts from
+  device_all_reset_at: string | null;
   link_reset_at: string | null;
   // the backend's signature over url: what the connect page's browser hop is vouched for with
   connect_signature: string;
@@ -25,8 +27,14 @@ export interface OwnSubscription {
 
 export interface Trial {
   is_available: boolean;
+  plan_id: number | null;
   plan_name: string | null;
   duration_days: number | null;
+  // a paid trial isn't activated: it's bought at checkout by plan_id, its one duration priced below
+  is_free: boolean;
+  price: string | null;
+  currency: string | null;
+  prices: { currency: string; price: string }[];
 }
 
 export interface Device {

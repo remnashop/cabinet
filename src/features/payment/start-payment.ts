@@ -19,23 +19,30 @@ export class UnsafePaymentUrlError extends Error {
   }
 }
 
+/** Opens the payment. Resolves to the order to wait for in place (the Mini App: the gateway opens beside it, the
+ *  summary's button waits), or null when the page has moved on: to the gateway (the web, which comes back to the
+ *  result screen) or straight to the result (nothing to pay at a gateway). */
 export async function startPayment(
   result: { order_id: number; confirmation_url: string | null },
   gateway: string,
   navigate: NavigateFunction,
-): Promise<void> {
+): Promise<number | null> {
   const url = result.confirmation_url;
-  const toResult = () => void navigate(`/payment/result?order_id=${result.order_id}`);
-  if (url === null) return toResult();
+  if (url === null) {
+    void navigate(`/payment/result?order_id=${result.order_id}`);
+    return null;
+  }
   if (!isHttpsUrl(url)) throw new UnsafePaymentUrlError();
-  if (!isMiniApp()) return window.location.assign(url);
-  // the Mini App stays open: the result screen polls while the user pays
+  if (!isMiniApp()) {
+    window.location.assign(url);
+    return null;
+  }
   if (gateway === "TELEGRAM_STARS") {
-    // "paid"/"pending" (or a popup that broke) leave it to the order status on the result screen
+    // "paid"/"pending" (or a popup that broke) leave it to the order status
     const outcome = await openStarsInvoice(url).catch(() => "pending" as const);
     if (outcome === "cancelled" || outcome === "failed") throw new StarsInvoiceError(outcome);
   } else {
     openExternal(url);
   }
-  toResult();
+  return result.order_id;
 }

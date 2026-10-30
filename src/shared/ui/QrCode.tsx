@@ -4,8 +4,11 @@ import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "@shared/ui/Skeleton";
 
-/** The SVG comes from the library and the value is our backend's subscription URL, so injecting it is safe. */
-export function QrCode({ value, size = 200 }: { value: string; size?: number }) {
+/**
+ * The SVG comes from the library and the value is our backend's subscription URL, so injecting it is safe.
+ * size "full": a square across the container.
+ */
+export function QrCode({ value, size = 200 }: { value: string; size?: number | "full" }) {
   const { t } = useTranslation();
   // markup null = the library failed (e.g. the value is too long for a QR code)
   const [svg, setSvg] = useState<{ value: string; markup: string | null } | null>(null);
@@ -21,7 +24,7 @@ export function QrCode({ value, size = 200 }: { value: string; size?: number }) 
     };
   }, [value]);
 
-  const style = { width: size, height: size };
+  const style = size === "full" ? { width: "100%", aspectRatio: "1" } : { width: size, height: size };
   if (svg?.value !== value) return <div style={style}><Skeleton className="size-full rounded-xl" /></div>;
   if (svg.markup === null) {
     return (

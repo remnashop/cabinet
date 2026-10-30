@@ -11,7 +11,8 @@ it("formats money; XTR is a number with a star", () => {
 
 it("formats bytes as GB or MB with one decimal", () => {
   expect(formatBytes(12.4 * 1024 ** 3, "ru")).toBe("12,4 ГБ");
-  expect(formatBytes(0, "ru")).toBe("0 МБ");
+  expect(formatBytes(0, "ru")).toBe("0 ГБ");
+  expect(formatBytes(512 * 1024 ** 2, "ru")).toBe("512 МБ");
   expect(formatGb(100, "ru")).toBe("100 ГБ");
 });
 

@@ -70,7 +70,7 @@ describe("LoginCallbackPage", () => {
     const router = await render();
     expect(calls()).toEqual(["/api/users/me/identities/oauth/google/callback"]);
     expect(router.state.location.pathname).toBe("/profile");
-    expect(router.state.location.state).toEqual({ linkResult: { status: "linked" } });
+    expect(router.state.location.state).toEqual({ linkResult: { status: "linked" }, linkKind: "GOOGLE" });
     expect(sessionStorage.getItem("cabinet_oauth_link")).toBeNull();
   });
 
@@ -86,6 +86,14 @@ describe("LoginCallbackPage", () => {
   it("signs in without a marker", async () => {
     await render();
     expect(calls()).toEqual(["/api/auth/oauth/google/callback"]);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ code: "c1", state: "s1" });
+  });
+
+  it("sends the locale of the legal notice the sign-in showed, then forgets it", async () => {
+    sessionStorage.setItem("cabinet_oauth_legal", "ru");
+    await render();
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ code: "c1", state: "s1", legal_locale: "ru" });
+    expect(sessionStorage.getItem("cabinet_oauth_legal")).toBeNull();
   });
 
   it("signs in when the marker is for another provider, and drops it", async () => {

@@ -1,21 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRef } from "react";
+import { useCallback, useRef, useState } from "react";
+import { CreditCard, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { createCheckout, useQuoteQuery, type PaymentMethod, type Plan } from "@entities/plan/api";
+import { createCheckout, useQuoteQuery, type PaymentMethod, type Plan, type PlanAccess } from "@entities/plan/api";
 import { useShownLegalLocale } from "@entities/legal/api";
 import { LegalNotice } from "@entities/legal/LegalNotice";
 import { useMeQuery } from "@entities/session/api";
+import { AwaitPaymentButton } from "@features/payment/AwaitPaymentButton";
 import { StarsInvoiceError, UnsafePaymentUrlError } from "@features/payment/start-payment";
-import { durationUnit, gatewayLabel, isValidEmail, type PurchaseType } from "@features/purchase/wizard";
+import { gatewayLabel, isValidEmail, type PurchaseType } from "@features/purchase/wizard";
 import { getErrorMessage } from "@shared/api/http";
 import { formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
-import { Skeleton } from "@shared/ui/Skeleton";
 import { TextInput } from "@shared/ui/TextInput";
+import { FormError } from "@shared/ui/FormError";
 
 type CheckoutResult = Awaited<ReturnType<typeof createCheckout>>;
 
@@ -25,6 +27,7 @@ export function SummaryStep({
   method,
   type,
   subId,
+  access,
   typedEmail,
   onEmailChange,
   onCreated,
@@ -34,10 +37,12 @@ export function SummaryStep({
   method: PaymentMethod;
   type: PurchaseType;
   subId: number | null;
+  access: PlanAccess;
   /** owned by the wizard so a step back and forth keeps what was typed */
   typedEmail: string | null;
   onEmailChange: (value: string) => void;
-  onCreated: (result: CheckoutResult) => Promise<void>;
+  /** opens the payment; resolves to the order to wait for here (the Mini App), null when the page moved on */
+  onCreated: (result: CheckoutResult) => Promise<number | null>;
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -47,11 +52,15 @@ export function SummaryStep({
     plan_id: plan.id,
     duration_days: days,
     currency: method.currency,
+    ...access,
   });
   const queryClient = useQueryClient();
+  // the Mini App's order paid beside it: the button waits for it; why the last wait ended, if not by a tap
+  const [awaited, setAwaited] = useState<number | null>(null);
+  const [stopReason, setStopReason] = useState<string | null>(null);
   const checkout = useMutation({
     mutationFn: createCheckout,
-    onSuccess: onCreated,
+    onSuccess: async (result) => setAwaited(await onCreated(result)),
     // an attempt may spend a one-time discount: the next total must come from a fresh quote
     onSettled: () => void queryClient.invalidateQueries({ queryKey: ["quote"] }),
   });
@@ -59,7 +68,6 @@ export function SummaryStep({
   const email = (typedEmail ?? me.data?.email ?? "").trim();
   const emailInvalid = email !== "" && !isValidEmail(email);
   const emailOk = email ? !emailInvalid : !method.requires_email;
-  const { unit, count } = durationUnit(days);
   const amount = quote.data ? formatMoney(quote.data.final_price, quote.data.currency, locale) : null;
 
   const legal = useShownLegalLocale();
@@ -70,6 +78,7 @@ export function SummaryStep({
     if (inFlight.current) return;
     inFlight.current = true;
     haptic();
+    setStopReason(null);
     checkout.mutate(
       {
         plan_id: plan.id,
@@ -80,89 +89,95 @@ export function SummaryStep({
         ...(quote.data && { expected_price: quote.data.final_price }),
         ...(legal && { legal_locale: legal }),
         ...(subId !== null && { target_subscription_id: subId }),
+        ...(access.plan_code && { plan_code: access.plan_code }),
         ...(email && { customer_email: email }),
       },
       { onError: () => (inFlight.current = false) },
     );
   };
+  // back to "pay": a new tap opens a new order
+  const stopWaiting = useCallback(
+    (reason: string | null) => {
+      setAwaited(null);
+      setStopReason(reason);
+      checkout.reset();
+      inFlight.current = false;
+    },
+    [checkout],
+  );
+
+  // isSuccess too: the page is leaving for the gateway, a second click would open a second order
+  const canPay =
+    awaited === null && !!quote.data && !quote.isFetching && emailOk && !checkout.isPending && !checkout.isSuccess;
 
   return (
-    <div className="flex flex-col gap-4">
-      <Card variant="list">
-        <InfoRow label={t("purchase.plan")} value={plan.name} />
-        <InfoRow label={t("purchase.duration")} value={t(`purchase.${unit}`, { count })} />
-        <InfoRow label={t("purchase.method")} value={gatewayLabel(method.gateway_type)} />
-        {quote.data && quote.data.plan_discount_percent > 0 && (
-          <InfoRow
-            label={t("purchase.planDiscount")}
-            value={<span className="text-success">−{quote.data.plan_discount_percent}%</span>}
-          />
-        )}
-        {quote.data && quote.data.discount_percent > 0 && (
-          <InfoRow
-            label={t("purchase.discount")}
-            value={
-              <span className="text-success">
-                {t("purchase.discountValue", {
-                  percent: quote.data.discount_percent,
-                  source: t(`purchase.discountSource.${quote.data.discount_source}`),
-                })}
-              </span>
-            }
-          />
-        )}
-        <div className="mt-1 flex items-center justify-between border-t border-border px-2.5 pb-1.5 pt-2.5 text-[15px] font-bold">
-          <span>{t("purchase.total")}</span>
-          {amount ?? (quote.isError ? "—" : <Skeleton className="h-5 w-20" />)}
-        </div>
-      </Card>
-
-      <Card
-        variant="form"
-        title={method.requires_email ? t("purchase.email") : t("purchase.emailOptional")}
-        titleFor="receipt-email"
-      >
-        <TextInput
-          id="receipt-email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          value={typedEmail ?? me.data?.email ?? ""}
-          onChange={(e) => onEmailChange(e.target.value)}
-          aria-invalid={emailInvalid}
-          required={method.requires_email}
-          className="w-full"
-        />
-        {emailInvalid && <p className="text-[12px] text-error">{t("purchase.emailInvalid")}</p>}
-      </Card>
+    // a form: Enter in the email field pays; noValidate keeps the browser's bubble out, the field says it itself
+    <form
+      noValidate
+      className="flex flex-col gap-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (canPay) pay();
+      }}
+    >
+      {me.data && !me.data.email && (
+        <Card variant="bare" round>
+          <div className="flex flex-col gap-3 p-[13px]">
+            <InfoRow
+              icon={method.gateway_type === "TELEGRAM_STARS" ? Star : CreditCard}
+              label={t("purchase.method")}
+              value={gatewayLabel(method.gateway_type, t)}
+              bright
+            />
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="receipt-email" className="px-[13px] text-[12px] text-foreground">
+                {t("purchase.email")}
+              </label>
+              <TextInput
+                id="receipt-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={typedEmail ?? ""}
+                onChange={(e) => onEmailChange(e.target.value)}
+                aria-invalid={emailInvalid}
+                required={method.requires_email}
+                className="w-full"
+              />
+              {emailInvalid && <FormError className="px-[13px]">{t("purchase.emailInvalid")}</FormError>}
+            </div>
+          </div>
+        </Card>
+      )}
 
       {quote.isError && (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-error">{getErrorMessage(quote.error, t("errors.generic"))}</p>
+          <FormError>{getErrorMessage(quote.error, t("errors.generic"))}</FormError>
           <Button variant="outline" className="shrink-0" onClick={() => void quote.refetch()}>
             {t("common.retry")}
           </Button>
         </div>
       )}
       {checkout.isError && (
-        <p className="text-sm text-error">
+        <FormError>
           {checkout.error instanceof StarsInvoiceError
             ? t(`payment.stars.${checkout.error.outcome}`)
             : checkout.error instanceof UnsafePaymentUrlError
               ? t("payment.unsafeUrl")
               : getErrorMessage(checkout.error, t("errors.generic"))}
-        </p>
+        </FormError>
       )}
-      {/* isSuccess too: the page is leaving for the gateway, a second click would open a second order */}
-      <Button
-        variant="solid"
-        disabled={!quote.data || quote.isFetching || !emailOk || checkout.isPending || checkout.isSuccess}
-        onClick={pay}
-      >
-        {t("purchase.pay", { amount: amount ?? "…" })}
-      </Button>
-      <p className="text-center text-[11px] text-muted-foreground">{t("purchase.payNote")}</p>
-      <LegalNotice kinds={["OFFER"]} message="payNotice" />
-    </div>
+      {stopReason && <FormError>{stopReason}</FormError>}
+      <div className="flex flex-col gap-2">
+        {awaited !== null ? (
+          <AwaitPaymentButton key={awaited} orderId={awaited} onStop={stopWaiting} />
+        ) : (
+          <Button type="submit" variant="solid" size="lg" disabled={!canPay}>
+            {t("purchase.pay", { amount: amount ?? "…" })}
+          </Button>
+        )}
+        <LegalNotice kinds={["OFFER"]} message="payNotice" />
+      </div>
+    </form>
   );
 }

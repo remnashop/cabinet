@@ -6,12 +6,20 @@ export interface Transaction {
   id: number;
   status: "PENDING" | "PAID" | "FAILED" | "CANCELED" | "REFUNDED";
   final_price: string;
+  // what the discounts were taken off (Decimal string), the plan's own promotion, then the user's discount
+  base_price: string;
+  plan_discount_percent: number;
+  discount_percent: number;
+  discount_source: "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";
   currency: string;
   purchase_type: "NEW" | "RENEW" | "CHANGE";
   gateway_type: string;
   plan_name: string;
   duration_days: number;
   created_at: string | null;
+  // what a failed payment's "try again" reopens: the plan, and the subscription a renewal or change was for
+  plan_id: number;
+  target_subscription_id: number | null;
 }
 
 export function getTransaction(id: number | string, signal?: AbortSignal) {

@@ -10,7 +10,6 @@ import { PageHeader } from "./PageHeader";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 let telegramBack: (() => void) | null = null;
-// vitest hoists this above the imports
 vi.mock("@shared/telegram", () => ({
   isMiniApp: () => true,
   useTelegramBackButton: (onBack: (() => void) | null) => {

@@ -1,7 +1,8 @@
+import { TriangleAlert } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import { authApi, completeLogin } from "@features/auth/api";
 import { readBotSignInToken } from "@features/auth/bot-signin-token";
@@ -9,7 +10,8 @@ import { getErrorMessage } from "@shared/api/http";
 import { getAccessToken } from "@shared/api/tokens";
 import { INTRO_STATE } from "@shared/lib/intro";
 import { Spinner } from "@shared/ui/Spinner";
-import { FullScreen } from "@widgets/full-screen/FullScreen";
+import { ButtonLink } from "@shared/ui/ButtonLink";
+import { FullScreen, FullScreenMessage } from "@widgets/full-screen/FullScreen";
 
 export function BotSignInPage() {
   const { t } = useTranslation();
@@ -49,16 +51,16 @@ export function BotSignInPage() {
     );
   }
   return (
-    <FullScreen>
-      {/* a failed exchange has its own reason (blocked, rate-limited, expired...); only a
-          missing token is plainly an expired link */}
-      <h1 className="text-lg font-bold">{t(exchange.isError ? "auth.bootFailed" : "auth.botLinkExpired")}</h1>
-      {exchange.isError && (
-        <p className="text-sm text-muted-foreground">{getErrorMessage(exchange.error, t("errors.generic"))}</p>
-      )}
-      <Link to="/login" className="text-sm text-primary">
+    // a failed exchange has its own reason (blocked, rate-limited, expired...); only a
+    // missing token is plainly an expired link
+    <FullScreenMessage
+      icon={TriangleAlert}
+      title={t(exchange.isError ? "auth.bootFailed" : "auth.botLinkExpired")}
+      text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : null}
+    >
+      <ButtonLink to="/login" variant="outline" className="w-full">
         {t("auth.backToLogin")}
-      </Link>
-    </FullScreen>
+      </ButtonLink>
+    </FullScreenMessage>
   );
 }

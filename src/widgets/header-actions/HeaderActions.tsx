@@ -9,22 +9,28 @@ import { useChangeLanguage, useMeQuery } from "@entities/session/api";
 import { getErrorMessage } from "@shared/api/http";
 import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@shared/i18n";
 import { bounceTap } from "@shared/lib/bounceState";
+import { FADE_IN, FADE_OUT } from "@shared/lib/motion";
+import { isMiniApp } from "@shared/telegram";
+import { Avatar } from "@shared/ui/Avatar";
+import { GLASS } from "@shared/ui/BottomSheet";
 import { BounceIcon } from "@shared/ui/BounceIcon";
-import { useSignOut } from "@widgets/app-shell/sign-out";
+import { ICON_BUTTON_CLASS } from "@shared/ui/button-class";
+import { EventListEmpty } from "@shared/ui/EventList";
+import { useRipple } from "@shared/ui/use-ripple";
+import { FormError } from "@shared/ui/FormError";
+import { SignOutSheet } from "@widgets/app-shell/SignOutSheet";
 
 const MotionLink = motion.create(Link);
 
 // the panel's header popover: glass, grows out of its top-right corner toward the trigger
-const POPOVER =
-  "fixed z-[60] origin-top-right rounded-popover border border-white/[0.14] bg-popover/60 p-1.5 shadow-[0_24px_48px_-20px_rgba(4,8,20,0.6),inset_0_1px_0_rgba(232,236,251,0.16)] backdrop-blur-2xl backdrop-saturate-150";
+const POPOVER = `fixed z-[60] origin-top-right rounded-popover p-1.5 ${GLASS}`;
 const POPOVER_MOTION = {
   initial: { opacity: 0, scale: 0.85 },
-  animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.85 },
-  transition: { duration: 0.15, ease: "easeOut" },
+  animate: { opacity: 1, scale: 1, transition: FADE_IN },
+  exit: { opacity: 0, scale: 0.85, transition: FADE_OUT },
 } as const;
 const ITEM =
-  "flex h-9 w-full items-center gap-2.5 rounded-popover-item px-2.5 text-left text-[13px] font-medium transition-colors hover:bg-white/[0.07]";
+  "flex h-9 w-full items-center gap-2.5 rounded-popover-item px-2.5 text-left text-[13px] font-medium transition-colors hover:bg-white/[0.06]";
 
 type Popover = "language" | "bell" | "user";
 
@@ -66,7 +72,7 @@ function HeaderPopover({
 /** Language, bell and account menu on the right of a page title, as the panel's Header. */
 export function HeaderActions() {
   const { t, i18n } = useTranslation();
-  const signOut = useSignOut();
+  const [signOutOpen, setSignOutOpen] = useState(false);
   const me = useMeQuery();
   const [open, setOpen] = useState<Popover | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -75,6 +81,8 @@ export function HeaderActions() {
   const bellRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const changeLanguage = useChangeLanguage(() => setOpen(null));
+  const languageRipple = useRipple();
+  const bellRipple = useRipple();
   const current = (i18n.resolvedLanguage ?? "en") as SupportedLanguage;
 
   useEffect(() => {
@@ -106,22 +114,24 @@ export function HeaderActions() {
   };
   const name = me.data?.name;
 
-  // each menu hangs under its own button; the bell's w-80 one would leave a phone screen there, so below sm it
+  // each menu hangs under its own button; the bell's wide one would leave a phone screen there, so below sm it
   // lines up with the whole group instead
   const bellAnchor = () => (window.matchMedia("(min-width: 640px)").matches ? bellRef.current : ref.current);
   return (
     <div ref={ref} className="ml-auto flex shrink-0 items-center gap-3.5">
-      <div ref={languageRef} className="relative">
+      {/* a phone changes the language in the profile */}
+      <div ref={languageRef} className="relative hidden lg:block">
         <motion.button
           type="button"
           aria-label={t("header.language")}
           aria-expanded={open === "language"}
           onClick={() => toggle("language")}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          onPointerDown={languageRipple.onPointerDown}
+          {...bounceTap()}
           style={{ willChange: "transform" }}
-          className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-white/[0.05] px-3 text-[12.5px] font-semibold text-muted-foreground transition-colors hover:bg-white/[0.07] hover:text-foreground"
+          className="relative flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-white/[0.05] px-3 text-[12.5px] font-semibold text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
         >
+          {languageRipple.ripples}
           <Languages className="size-4 shrink-0" />
           {current.toUpperCase()}
         </motion.button>
@@ -147,34 +157,35 @@ export function HeaderActions() {
             </button>
           ))}
           {changeLanguage.isError && (
-            <p className="max-w-56 px-2.5 py-1.5 text-[12px] text-error">
+            <FormError className="max-w-56 px-2.5 py-1.5">
               {getErrorMessage(changeLanguage.error, t("errors.generic"))}
-            </p>
+            </FormError>
           )}
         </HeaderPopover>
       </div>
 
+      {/* dev only, dropped from builds: the mock panel's button portals here (mocks/DebugPanel); contents, so an
+          empty slot takes no gap */}
+      {import.meta.env.DEV && <span id="mock-debug-slot" className="contents" />}
       <div ref={bellRef}>
         <motion.button
           type="button"
           aria-label={t("header.notifications")}
           aria-expanded={open === "bell"}
           onClick={() => toggle("bell")}
-          {...bounceTap(0.12)}
-          className="flex size-9 shrink-0 items-center justify-center rounded-full border border-glass-border bg-white/[0.05] text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+          onPointerDown={bellRipple.onPointerDown}
+          className={`relative ${ICON_BUTTON_CLASS} text-muted-foreground hover:text-foreground`}
         >
+          {bellRipple.ripples}
           <Bell className="size-[17px]" />
         </motion.button>
         <HeaderPopover
           open={open === "bell"}
           anchor={bellAnchor}
           popoverRef={popoverRef}
-          className="w-80 max-w-[calc(100vw-2rem)]"
+          className="w-[calc(100vw-2rem)] max-w-[400px]"
         >
-          <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
-            <Bell className="size-5" />
-            <p className="text-sm">{t("header.notificationsEmpty")}</p>
-          </div>
+          <EventListEmpty icon={Bell} text={t("header.notificationsEmpty")} />
         </HeaderPopover>
       </div>
 
@@ -189,9 +200,7 @@ export function HeaderActions() {
           className="group relative isolate flex h-9 items-center gap-2.5 rounded-full pr-1"
         >
           <span className="absolute inset-0 -z-10 rounded-full transition-colors group-hover:bg-white/[0.06]" />
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-glass-border bg-white/[0.05] text-[12px] font-bold text-foreground">
-            {name ? (name.trim()[0] ?? "?").toUpperCase() : <User className="size-4" />}
-          </span>
+          <Avatar name={name} className="size-9 text-[12px]" />
           {name && <span className="hidden max-w-40 truncate text-[13px] font-semibold sm:block">{name}</span>}
           <ChevronDown
             className={`size-3.5 text-muted-foreground transition-transform ${open === "user" ? "rotate-180" : ""}`}
@@ -208,21 +217,25 @@ export function HeaderActions() {
             <BounceIcon icon={User} size={15} hoverSize={18.75} />
             {t("nav.profile")}
           </MotionLink>
-          <motion.button
-            type="button"
-            onClick={() => {
-              setOpen(null);
-              signOut();
-            }}
-            className={`${ITEM} text-error`}
-            initial="rest"
-            whileHover="hover"
-          >
-            <BounceIcon icon={LogOut} size={15} hoverSize={18.75} />
-            {t("common.logout")}
-          </motion.button>
+          {/* the Mini App signs back in with Telegram's data at once: no sign-out there */}
+          {!isMiniApp() && (
+            <motion.button
+              type="button"
+              onClick={() => {
+                setOpen(null);
+                setSignOutOpen(true);
+              }}
+              className={`${ITEM} text-error`}
+              initial="rest"
+              whileHover="hover"
+            >
+              <BounceIcon icon={LogOut} size={15} hoverSize={18.75} />
+              {t("common.logout")}
+            </motion.button>
+          )}
         </HeaderPopover>
       </div>
+      <SignOutSheet open={signOutOpen} onClose={() => setSignOutOpen(false)} />
     </div>
   );
 }

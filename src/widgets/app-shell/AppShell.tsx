@@ -7,6 +7,7 @@ import { revokeSession } from "@features/auth/logout";
 import { LegalReacceptanceGate } from "@features/legal-reacceptance/LegalReacceptanceGate";
 import { clearAccessToken } from "@shared/api/tokens";
 import type { INTRO_STATE } from "@shared/lib/intro";
+import { EASE_SOFT, FADE_IN, FADE_OUT } from "@shared/lib/motion";
 import { useSidebarCollapsed } from "@shared/lib/sidebar-collapse";
 import { Spinner } from "@shared/ui/Spinner";
 import { BottomNav } from "@widgets/app-shell/BottomNav";
@@ -26,8 +27,8 @@ function AnimatedOutlet({ className }: { className?: string }) {
         key={pathname.split("/")[1]}
         className={className}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1, transition: { duration: 0.18, ease: "easeOut" } }}
-        exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeIn" } }}
+        animate={{ opacity: 1, transition: FADE_IN }}
+        exit={{ opacity: 0, transition: FADE_OUT }}
       >
         <Suspense fallback={<Spinner size="page" />}>{outlet}</Suspense>
       </motion.div>
@@ -70,7 +71,7 @@ export function AppShell() {
       <motion.div
         initial={isIntro ? { opacity: 0, y: 14 } : false}
         animate={leaving ? { opacity: 0, y: 14 } : { opacity: 1, y: 0 }}
-        transition={leaving ? { duration: 0.25, ease: "easeIn" } : { delay: 0.1, duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+        transition={leaving ? { duration: 0.25, ease: "easeIn" } : { delay: 0.1, duration: 0.4, ease: EASE_SOFT }}
         className="min-w-0 lg:my-3 lg:mr-3 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden lg:rounded-3xl lg:border lg:border-glass-border lg:bg-surface/50 lg:shadow-2xl lg:backdrop-blur-[28px] lg:backdrop-saturate-150">
         {/* the panel's Header: across the frame and outside its scroller on desktop; pages put their title in the
             slot (HeaderSlot), the actions stay; a phone scrolls it away with the page */}
@@ -80,9 +81,8 @@ export function AppShell() {
         </header>
         {/* the stable gutter's 10px (the scrollbar, app/styles.css) comes out of the right padding */}
         <main
-          className={`mx-auto w-full max-w-[960px] min-w-0 px-4 pb-[calc(var(--safe-bottom)+80px)] lg:max-w-none lg:flex-1 lg:overflow-y-auto lg:pl-8 lg:pr-[calc(2rem-10px)] lg:pt-4 lg:pb-8 lg:[scrollbar-gutter:stable] ${wide ? "lg:flex lg:flex-col" : ""}`}
+          className={`mx-auto w-full max-w-[960px] min-w-0 px-4 pb-[calc(max(var(--safe-bottom),16px)+80px)] lg:max-w-none lg:flex-1 lg:overflow-y-auto lg:pl-8 lg:pr-[calc(2rem-10px)] lg:pt-4 lg:pb-8 lg:[scrollbar-gutter:stable] ${wide ? "lg:flex lg:flex-col" : ""}`}
         >
-          {/* pages span the frame from the title's edge, as the panel's; home also fills it down to the bottom */}
           <HeaderSlotContext.Provider value={headerSlot}>
             <AnimatedOutlet className={wide ? "lg:flex lg:flex-1 lg:flex-col" : undefined} />
           </HeaderSlotContext.Provider>

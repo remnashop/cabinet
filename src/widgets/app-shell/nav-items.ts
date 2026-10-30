@@ -1,12 +1,12 @@
-import { House, ShoppingCart, User, Users } from "lucide-react";
+import { CircleUser, House, ShoppingCart, UserPlus } from "lucide-react";
 
 import { useReferralQuery } from "@entities/referral/api";
 
 export const NAV_ITEMS = [
   { key: "subscription", to: "/", end: true, icon: House },
   { key: "purchase", to: "/purchase", end: false, icon: ShoppingCart },
-  { key: "referral", to: "/referral", end: false, icon: Users },
-  { key: "profile", to: "/profile", end: false, icon: User },
+  { key: "referral", to: "/invite", end: false, icon: UserPlus },
+  { key: "profile", to: "/profile", end: false, icon: CircleUser },
 ] as const;
 
 /** The referral tab shows only once the program is known to run: switched off in the panel, it is gone. */

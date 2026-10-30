@@ -1,248 +1,401 @@
 import {
+  ArrowRight,
   Check,
-  CircleCheck,
-  Download,
-  Globe,
-  Info,
-  Link2,
+  CircleFadingPlus,
+  CloudOff,
+  CloudUpload,
+  Copy,
+  House,
+  Laptop,
+  Monitor,
   Plus,
-  Power,
-  QrCode,
-  Settings,
-  ShieldCheck,
+  Smartphone,
+  Tablet,
+  Terminal,
+  Tv,
+  Unplug,
   type LucideIcon,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useCallback, useState, type ComponentType, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
-import type { ConnectButton, ConnectGuide, PlatformId, StepIcon } from "@entities/connect-guide/api";
-import { buildDeepLink, chooseApp, detectPlatform, encodeHop, localized } from "@entities/connect-guide/lib";
+import type { ConnectButton, ConnectGuide, PlatformId } from "@entities/connect-guide/api";
+import { buildDeepLink, chooseApp, detectPlatform, encodeHop, splitSteps } from "@entities/connect-guide/lib";
 import type { OwnSubscription } from "@entities/subscription/api";
-import { daysLeft, STATUS_TONE, urgency } from "@entities/subscription/lib";
-import { formatBytes, formatDate, formatGb } from "@shared/lib/format";
 import { readStorage, writeStorage } from "@shared/lib/safe-storage";
 import { haptic, isMiniApp, openExternal } from "@shared/telegram";
-import { Badge } from "@shared/ui/Badge";
 import { Button } from "@shared/ui/Button";
-import { buttonClass } from "@shared/ui/button-class";
-import { Card } from "@shared/ui/Card";
+import { AndroidIcon, AppleIcon, LinuxIcon, TvIcon, WindowsIcon } from "@shared/ui/PlatformIcons";
+import { StepTransition } from "@shared/ui/StepTransition";
+import { PulseButton } from "@shared/ui/PulseButton";
+import { RippleButton } from "@shared/ui/RippleButton";
+import { useRipple } from "@shared/ui/use-ripple";
+import { PageHeader } from "@widgets/page-header/PageHeader";
 
+import { Confetti } from "./Confetti";
+import { CopyLinkField } from "./CopyLinkField";
+import { Hero, HeroArt, SuccessArt } from "./HeroArt";
 import { useCopyLink } from "./use-copy-link";
 
-const STEP_ICON: Record<StepIcon, LucideIcon> = {
-  download: Download,
-  plus: Plus,
-  power: Power,
-  settings: Settings,
-  check: CircleCheck,
-  link: Link2,
-  qr: QrCode,
-  info: Info,
-  shield: ShieldCheck,
-  globe: Globe,
-};
-
-const PLATFORM_KEY = "cabinet_connect_platform";
 const appKey = (platform: PlatformId) => `cabinet_connect_app_${platform}`;
 
 const CHIP = "flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[12.5px] font-semibold transition-colors";
 const chipClass = (active: boolean) =>
   `${CHIP} ${active ? "border-primary/45 bg-accent text-primary" : "border-white/[0.08] text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"}`;
 
-function Fact({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-1.5 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-[18px] py-4">
-      <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
-      <span className="truncate text-[15px] font-semibold">{children}</span>
-    </div>
-  );
-}
+type DeepLinkButton = Extract<ConnectButton, { kind: "deep_link" }>;
 
-function Facts({ subscription }: { subscription: OwnSubscription }) {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.language;
-  const [now] = useState(() => new Date());
-  const state = urgency(subscription, now);
-  const limit = subscription.effective_traffic_limit === 0 ? "∞" : formatGb(subscription.effective_traffic_limit, locale);
-  return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <Fact label={t("connect.plan")}>{subscription.plan_name}</Fact>
-      <Fact label={t("connect.status")}>
-        <Badge tone={STATUS_TONE[subscription.status]}>{t(`home.status.${subscription.status}`)}</Badge>
-      </Fact>
-      <Fact label={t("connect.until", { date: formatDate(subscription.expire_at, locale) })}>
-        <span className={state === "expired" ? "text-error" : state === "soon" ? "text-warning" : ""}>
-          {state === "expired" ? t("home.expired") : t("home.days", { count: daysLeft(subscription.expire_at, now) })}
-        </span>
-      </Fact>
-      <Fact label={t("connect.traffic")}>
-        {subscription.used_traffic === null ? limit : `${formatBytes(subscription.used_traffic, locale)} / ${limit}`}
-      </Fact>
-    </div>
-  );
-}
-
-function StepButton({ button, subscription }: { button: ConnectButton; subscription: OwnSubscription }) {
-  const { t, i18n } = useTranslation();
-  const [copied, copy] = useCopyLink(subscription.url);
-  const label = localized(button.label, i18n.language);
-
-  if (button.kind === "copy_link") {
-    return (
-      <Button variant="secondary" size="sm" className="gap-1.5" onClick={() => void copy()}>
-        {copied && <Check className="size-3.5" />}
-        {copied ? t("connect.copied") : label}
-      </Button>
-    );
-  }
-  if (button.kind === "external") {
-    return (
-      <Button variant="secondary" size="sm" onClick={() => openExternal(button.url)}>
-        {label}
-      </Button>
-    );
-  }
+/** How a deep link opens the app: a link to follow, or from a Mini App a hop through the browser. */
+function deepLinkAction(button: DeepLinkButton, subscription: OwnSubscription): { href: string } | { onClick: () => void } {
   const link = buildDeepLink(button.template, button.encode, subscription.url);
   if (isMiniApp()) {
     // the Mini App webview can't open an app scheme: hop into the browser, onto a page that can, and
     // hand it the signature it checks the subscription with (the page is public, its address forgeable)
     const hop = encodeHop({ link, sub: subscription.url, sig: subscription.connect_signature });
-    return (
-      <Button
-        variant="accent"
-        size="sm"
-        onClick={() => {
-          haptic();
-          openExternal(`${window.location.origin}/connect/open#${hop}`);
-        }}
-      >
-        {label}
-      </Button>
-    );
+    return {
+      onClick: () => {
+        haptic();
+        openExternal(`${window.location.origin}/connect/open#${hop}`);
+      },
+    };
   }
   // a real anchor: browsers hand an app scheme to the OS from a followed link, a scripted navigation
   // to one is what gets swallowed
+  return { href: link };
+}
+
+type Stage = "start" | "device" | "app" | "add" | "done";
+
+const PLATFORM_MARKS: { id: PlatformId; mark: ComponentType<SVGProps<SVGSVGElement>> }[] = [
+  { id: "ios", mark: AppleIcon },
+  { id: "android", mark: AndroidIcon },
+  { id: "macos", mark: AppleIcon },
+  { id: "windows", mark: WindowsIcon },
+  { id: "androidtv", mark: TvIcon },
+  { id: "appletv", mark: TvIcon },
+  { id: "linux", mark: LinuxIcon },
+];
+const MAIN_PLATFORMS: PlatformId[] = ["ios", "android", "macos", "windows"];
+
+// what a person picks; iPhone and iPad share the catalog's one iOS section
+type DeviceKey = "iphone" | "ipad" | "android" | "windows" | "mac" | "androidtv" | "appletv" | "linux";
+/** The device to highlight: the browser's platform, an iPad told from an iPhone the way detectPlatform does. */
+function detectDevice(): DeviceKey | null {
+  const platform = detectPlatform(navigator.userAgent, navigator.maxTouchPoints);
+  if (platform !== "ios") return DEVICES.find((d) => d.platform === platform)?.key ?? null;
+  return /ipad|macintosh/i.test(navigator.userAgent) ? "ipad" : "iphone";
+}
+
+const DEVICES: { key: DeviceKey; platform: PlatformId; icon: LucideIcon }[] = [
+  { key: "iphone", platform: "ios", icon: Smartphone },
+  { key: "ipad", platform: "ios", icon: Tablet },
+  { key: "android", platform: "android", icon: Smartphone },
+  { key: "windows", platform: "windows", icon: Monitor },
+  { key: "mac", platform: "macos", icon: Laptop },
+  { key: "androidtv", platform: "androidtv", icon: Tv },
+  { key: "appletv", platform: "appletv", icon: Tv },
+  { key: "linux", platform: "linux", icon: Terminal },
+];
+
+function PlatformTile({
+  mark: Mark,
+  title,
+  hint,
+  onClick,
+}: {
+  mark: ComponentType<SVGProps<SVGSVGElement>>;
+  title: string;
+  hint: string;
+  onClick: () => void;
+}) {
+  const ripple = useRipple();
   return (
-    <a href={link} onClick={() => haptic()} className={buttonClass("accent", "sm")}>
-      {label}
-    </a>
+    <button
+      type="button"
+      onClick={onClick}
+      onPointerDown={ripple.onPointerDown}
+      // an odd one out on a phone takes the whole last row; three to a row on desktop, it stays one
+      className="relative flex flex-col gap-4 rounded-2xl border border-white/[0.08] bg-linear-160 from-primary/10 to-white/[0.02] to-60% p-4 text-left transition-colors last:odd:col-span-2 hover:bg-white/[0.04] lg:last:odd:col-span-1"
+    >
+      {ripple.ripples}
+      <span className="flex size-11 items-center justify-center rounded-xl bg-accent text-primary">
+        <Mark className="size-6" strokeWidth={1.67} />
+      </span>
+      <span className="flex flex-col leading-snug">
+        <span className="text-base font-bold">{title}</span>
+        <span className="text-[12px] text-muted-foreground">{hint}</span>
+      </span>
+    </button>
   );
 }
 
-/** The connect screen: the subscription's facts, then one card with platform, app and the steps. */
+/** The connect screen, a wizard: the detected device or a pick, the app, adding the subscription, done. */
 export function GuideView({
   guide,
   subscription,
-  linkAction,
+  onShowLink,
 }: {
   guide: ConnectGuide;
   subscription: OwnSubscription;
-  linkAction: ReactNode;
+  /** opens the link-and-QR dialog: how the subscription reaches another device */
+  onShowLink: () => void;
 }) {
-  const { t, i18n } = useTranslation();
-  const language = i18n.language;
-  const ids = guide.platforms.map((p) => p.id);
-  const [detected] = useState(() => detectPlatform(navigator.userAgent, navigator.maxTouchPoints));
-  const [chosen, setChosen] = useState(() => {
-    const saved = readStorage(PLATFORM_KEY) as PlatformId | null;
-    return saved !== null && ids.includes(saved) ? saved : null;
-  });
-  const platformId = chosen ?? (detected !== null && ids.includes(detected) ? detected : ids[0]!);
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [detected] = useState(detectDevice);
+  const devices = DEVICES.filter((d) => guide.platforms.some((p) => p.id === d.platform));
+  const here = devices.find((d) => d.key === detected);
+  const [stage, setStage] = useState<Stage>(here ? "start" : "device");
+  const [platformId, setPlatformId] = useState<PlatformId | null>(null);
+  // set up from the start screen, on the device in hand: no link or QR to carry it over to another
+  const [onThisDevice, setOnThisDevice] = useState(false);
   const [appIds, setAppIds] = useState<Partial<Record<PlatformId, string>>>({});
-  const platform = guide.platforms.find((p) => p.id === platformId) ?? guide.platforms[0]!;
-  const app = chooseApp(platform, appIds[platform.id] ?? readStorage(appKey(platform.id)));
+  const platform = guide.platforms.find((p) => p.id === platformId);
+  const app = platform && chooseApp(platform, appIds[platform.id] ?? readStorage(appKey(platform.id)));
+  const steps = splitSteps(app?.steps ?? []);
+  const [copied, copyLink] = useCopyLink(subscription.url);
+  // the store link: the first external button of the install steps, else of any step
+  const download = [...steps.app, ...(app?.steps ?? [])]
+    .flatMap((step) => step.buttons)
+    .find((button) => button.kind === "external");
+  // for another device the store link is copied to pass on, not opened here
+  const [storeCopied, copyStore] = useCopyLink(download?.url ?? "");
+  const [showAll, setShowAll] = useState(false);
+  const platforms = PLATFORM_MARKS.filter((p) => guide.platforms.some((g) => g.id === p.id));
+  const go = (next: Stage) => {
+    haptic();
+    setStage(next);
+  };
+  // the header's back walks the steps; from the first one it leaves for home
+  const prev: Stage | null = {
+    start: null,
+    device: here ? "start" : null,
+    app: onThisDevice ? "start" : "device",
+    add: "app",
+    done: "add",
+  }[stage] as Stage | null;
+  const onBack = useCallback(() => {
+    if (!prev) return;
+    haptic();
+    setStage(prev);
+  }, [prev]);
+  const header = <PageHeader title={t("connect.title")} backTo="/" onBack={prev ? onBack : undefined} />;
 
+  if (stage === "start" && here) {
+    return (
+      <StepTransition stepKey={stage}>
+        {header}
+        <Hero
+          title={t("connect.setupOn", { device: t(`connect.devices.${here.key}`) })}
+          hint={t("connect.setupHint")}
+          art={<HeroArt icon={Unplug} />}
+        >
+          <PulseButton
+            onClick={() => {
+              setPlatformId(here.platform);
+              setOnThisDevice(true);
+              go("app");
+            }}
+          >
+            {t("connect.startHere")}
+          </PulseButton>
+          <Button variant="outline" size="lg" onClick={() => go("device")}>
+            {t("connect.otherDevice")}
+          </Button>
+        </Hero>
+      </StepTransition>
+    );
+  }
+
+  if (stage === "app" && platform && !app) {
+    // a platform the catalog lists with no app in it: nothing to install, say so instead of a dead end
+    return (
+      <StepTransition stepKey={stage}>
+        {header}
+        <Hero
+          title={t("connect.unavailableTitle")}
+          hint={t("connect.unavailableHint", { platform: t(`connect.platforms.${platform.id}`) })}
+          art={<HeroArt icon={CloudOff} />}
+        >
+          <Button variant="solid" size="lg" onClick={() => go("device")}>
+            {t("connect.pickOther")}
+          </Button>
+          <Button variant="outline" size="lg" onClick={() => void navigate("/")}>
+            {t("connect.backHome")}
+          </Button>
+        </Hero>
+      </StepTransition>
+    );
+  }
+
+  if (stage === "app" && app && platform) {
+    return (
+      <StepTransition stepKey={stage}>
+        {header}
+        <Hero
+          title={t("connect.stageTitles.app")}
+          hint={t(onThisDevice ? "connect.appHint" : "connect.appHintOther", { app: app.name })}
+          art={<HeroArt icon={CloudUpload} />}
+          above={
+            platform.apps.length > 1 && (
+              <div className="flex flex-wrap justify-center gap-2">
+                {platform.apps.map((candidate) => (
+                  <RippleButton
+                    key={candidate.id}
+                    type="button"
+                    onClick={() => {
+                      setAppIds((prev) => ({ ...prev, [platform.id]: candidate.id }));
+                      writeStorage(appKey(platform.id), candidate.id);
+                    }}
+                    className={`relative ${chipClass(candidate.id === app.id)}`}
+                  >
+                    {candidate.name}
+                    {candidate.featured && (
+                      <span aria-label={t("connect.recommended")} className="size-1.5 rounded-full bg-primary" />
+                    )}
+                  </RippleButton>
+                ))}
+              </div>
+            )
+          }
+        >
+          {download && (
+            <PulseButton onClick={onThisDevice ? () => openExternal(download.url) : () => void copyStore()}>
+              {onThisDevice ? (
+                <CloudUpload className="size-5" />
+              ) : storeCopied ? (
+                <Check className="size-5" />
+              ) : (
+                <Copy className="size-5" />
+              )}
+              {onThisDevice ? t("connect.installApp") : storeCopied ? t("connect.copied") : t("connect.appLink")}
+            </PulseButton>
+          )}
+          <Button variant="outline" size="lg" onClick={() => go("add")}>
+            {t("connect.nextStep")}
+            <ArrowRight className="size-5" />
+          </Button>
+        </Hero>
+      </StepTransition>
+    );
+  }
+
+  if (stage === "add" && app && !onThisDevice) {
+    // the app is on another device: the subscription goes there by QR or a pasted link, not a deep link here
+    return (
+      <StepTransition stepKey={stage}>
+        {header}
+        <Hero
+          title={t("connect.stageTitles.add")}
+          hint={t("connect.addHintOther", { app: app.name })}
+          art={<HeroArt icon={CircleFadingPlus} />}
+        >
+          <PulseButton onClick={onShowLink}>
+            <Plus className="size-5" />
+            {t("connect.addSubscription")}
+          </PulseButton>
+          <Button variant="outline" size="lg" onClick={() => go("done")}>
+            {t("connect.nextStep")}
+            <ArrowRight className="size-5" />
+          </Button>
+        </Hero>
+      </StepTransition>
+    );
+  }
+
+  if (stage === "add" && app) {
+    // the catalog's button that opens the app with the subscription; without one the link is copied by hand
+    const add = steps.add.flatMap((step) => step.buttons).find((b): b is DeepLinkButton => b.kind === "deep_link");
+    const action = add && deepLinkAction(add, subscription);
+    return (
+      <StepTransition stepKey={stage}>
+        {header}
+        <Hero
+          title={t("connect.stageTitles.add")}
+          hint={t(add ? "connect.addHint" : "connect.addManually", { app: app.name })}
+          art={<HeroArt icon={CircleFadingPlus} />}
+          // the catalog's text promises the app; from a Mini App a browser page opens first
+          above={action && "onClick" in action && <p className="text-[12px] text-muted-foreground">{t("connect.hopHint")}</p>}
+        >
+          {action ? (
+            <PulseButton {...action}>
+              <Plus className="size-5" />
+              {t("connect.addSubscription")}
+            </PulseButton>
+          ) : (
+            <PulseButton onClick={() => void copyLink()}>
+              {copied ? <Check className="size-5" /> : <Copy className="size-5" />}
+              {copied ? t("connect.copied") : t("connect.copyLink")}
+            </PulseButton>
+          )}
+          <Button variant="outline" size="lg" onClick={() => go("done")}>
+            {t("connect.nextStep")}
+            <ArrowRight className="size-5" />
+          </Button>
+        </Hero>
+      </StepTransition>
+    );
+  }
+
+  if (stage === "done") {
+    return (
+      <StepTransition stepKey={stage}>
+        {header}
+        <Confetti />
+        <Hero
+          title={t("connect.stageTitles.done")}
+          hint={t("connect.doneHint", { app: app?.name ?? "" })}
+          art={<SuccessArt />}
+        >
+          <Button variant="solid" size="lg" onClick={() => void navigate("/")}>
+            <House className="size-5" />
+            {t("connect.backHome")}
+          </Button>
+          <Button variant="outline" size="lg" onClick={() => go("device")}>
+            {t("connect.otherDevice")}
+          </Button>
+        </Hero>
+      </StepTransition>
+    );
+  }
+
+  // the other platforms open on demand; the four everyone has come first
+  const shown = platforms.filter((p) => showAll || MAIN_PLATFORMS.includes(p.id));
+  const hidden = platforms.length - shown.length;
   return (
-    <div className="flex flex-col gap-4">
-      <Facts subscription={subscription} />
-      <Card className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-bold">{t("connect.install")}</h2>
-          {linkAction}
-        </div>
-
-        {guide.platforms.length > 1 && (
-          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none]">
-            {guide.platforms.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => {
-                  setChosen(p.id);
-                  writeStorage(PLATFORM_KEY, p.id);
-                }}
-                className={chipClass(p.id === platform.id)}
-              >
-                {t(`connect.platforms.${p.id}`)}
-              </button>
-            ))}
+    <StepTransition stepKey={stage}>
+      {header}
+      <Hero
+        title={t("connect.otherTitle")}
+        hint={t("connect.otherHint")}
+        art={
+          <div className="flex w-full flex-1 flex-col justify-center gap-3">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+              {shown.map(({ id, mark }) => (
+                <PlatformTile
+                  key={id}
+                  mark={mark}
+                  title={t(`connect.platforms.${id}`)}
+                  hint={t(`connect.platformHints.${id}`)}
+                  onClick={() => {
+                    setPlatformId(id);
+                    setOnThisDevice(false);
+                    go("app");
+                  }}
+                />
+              ))}
+            </div>
+            {hidden > 0 && (
+              <Button variant="outline" size="lg" onClick={() => setShowAll(true)}>
+                {t("connect.morePlatforms")}
+              </Button>
+            )}
           </div>
-        )}
-
-        {chosen === null && (detected === null || !ids.includes(detected)) && (
-          <p className="text-[12px] text-muted-foreground">{t("connect.noSectionForDevice")}</p>
-        )}
-
-        {platform.apps.length > 1 && (
-          <div className="flex flex-wrap gap-2">
-            {platform.apps.map((candidate) => (
-              <button
-                key={candidate.id}
-                type="button"
-                onClick={() => {
-                  setAppIds((prev) => ({ ...prev, [platform.id]: candidate.id }));
-                  writeStorage(appKey(platform.id), candidate.id);
-                }}
-                className={chipClass(candidate.id === app?.id)}
-              >
-                {candidate.name}
-                {candidate.featured && (
-                  <span aria-label={t("connect.recommended")} className="size-1.5 rounded-full bg-warning" />
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {app && (
-          <ol className="flex flex-col">
-            {app.steps.map((step, index) => {
-              const Icon = STEP_ICON[step.icon];
-              const last = index === app.steps.length - 1;
-              const body = localized(step.body, language);
-              return (
-                <li key={index} className="flex gap-3">
-                  {/* the rail: the icon in a ring, a line down to the next step */}
-                  <div className="flex flex-col items-center">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-primary/45 bg-primary/10 text-primary">
-                      <Icon className="size-4" />
-                    </span>
-                    {!last && <span className="w-px flex-1 bg-border" />}
-                  </div>
-                  <div className={`flex min-w-0 flex-1 flex-col gap-1 pt-1.5 ${last ? "" : "pb-5"}`}>
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      {t("connect.step", { n: index + 1 })}
-                    </span>
-                    <span className="text-sm font-semibold">{localized(step.title, language)}</span>
-                    {body && <p className="text-[13px] text-muted-foreground">{body}</p>}
-                    {step.buttons.length > 0 && (
-                      <div className="mt-1.5 flex flex-wrap gap-2">
-                        {step.buttons.map((button, at) => (
-                          <StepButton key={at} button={button} subscription={subscription} />
-                        ))}
-                      </div>
-                    )}
-                    {/* the catalog's text promises the app; from a Mini App a browser page opens first */}
-                    {isMiniApp() && step.buttons.some((b) => b.kind === "deep_link") && (
-                      <p className="text-[12px] text-muted-foreground">{t("connect.hopHint")}</p>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        )}
-      </Card>
-    </div>
+        }
+      >
+        <CopyLinkField url={subscription.url} />
+      </Hero>
+    </StepTransition>
   );
 }

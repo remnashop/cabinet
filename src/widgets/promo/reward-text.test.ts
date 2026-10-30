@@ -12,13 +12,13 @@ describe("rewardText", () => {
   beforeAll(() => i18n.changeLanguage("ru"));
 
   it.each([
-    [act("DURATION", 2), "+2 дня к подписке"],
-    [act("TRAFFIC", 5), "+5 ГБ трафика"],
-    [act("DEVICES", 3), "+3 устройства"],
-    [act("SUBSCRIPTION", null, 30), "Подписка на 30 дней активирована"],
-    [act("PERSONAL_DISCOUNT", 10), "Постоянная скидка 10%"],
-    [act("PURCHASE_DISCOUNT", 10), "Скидка 10% на следующую покупку"],
-    [act("DURATION", null), "Промокод активирован"],
+    [act("DURATION", 2), "Подписка продлена на 2 дня"],
+    [act("TRAFFIC", 5), "К подписке добавлено 5 ГБ трафика"],
+    [act("DEVICES", 3), "Можно подключить ещё 3 устройства"],
+    [act("SUBSCRIPTION", null, 30), "Вам выдана подписка на 30 дней"],
+    [act("PERSONAL_DISCOUNT", 10), "Ваша постоянная скидка теперь 10%"],
+    [act("PURCHASE_DISCOUNT", 10), "Скидка 10% применится к следующей покупке"],
+    [act("DURATION", null), null],
   ])("%j", (a, text) => {
     expect(rewardText(a)).toBe(text);
   });

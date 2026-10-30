@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { ConnectGuide } from "./api";
-import { buildDeepLink, catalogBuilds, decodeHop, detectPlatform, encodeHop, linkDigest } from "./lib";
+import type { ConnectGuide, ConnectStep } from "./api";
+import { buildDeepLink, catalogBuilds, decodeHop, detectPlatform, encodeHop, linkDigest, splitSteps } from "./lib";
 
 const guide: ConnectGuide = {
   platforms: [
@@ -67,6 +67,30 @@ describe("deep links", () => {
 
   it("digests the link as the backend does: SHA-256, unpadded base64url", async () => {
     expect(await linkDigest("abc")).toBe("ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0");
+  });
+});
+
+describe("splitSteps", () => {
+  const step = (kind: "external" | "deep_link" | null): ConnectStep => ({
+    title: { en: kind ?? "none" },
+    body: null,
+    icon: "info",
+    buttons:
+      kind === "external"
+        ? [{ kind, label: { en: "Get" }, url: "https://apps.example" }]
+        : kind === "deep_link"
+          ? [{ kind, label: { en: "Add" }, template: "app://{{SUBSCRIPTION_LINK}}", encode: "raw" }]
+          : [],
+  });
+
+  it("puts the install before the first adding step and what follows it into done", () => {
+    const [install, add, power] = [step("external"), step("deep_link"), step(null)];
+    expect(splitSteps([install, add, power])).toEqual({ app: [install], add: [add], done: [power] });
+  });
+
+  it("keeps every step in the app stage when none adds the subscription", () => {
+    const steps = [step("external"), step(null)];
+    expect(splitSteps(steps)).toEqual({ app: steps, add: [], done: [] });
   });
 });
 

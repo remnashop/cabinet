@@ -72,7 +72,41 @@ const TEMPLATES = [
   { plan_name: "Базовый", plan_id: 1, url: "https://sub.example.com/basic" },
   { plan_name: "Безлимит", plan_id: 3, url: "https://sub.example.com/unlimited" },
 ];
-let subscriptions: MockSubscription[] = TEMPLATES.slice(0, scenario.subscriptions).map((template, i) => ({
+// the cards' alert demo: one card per look, [days left, % of 100 GB used, status]
+const ALERT_DEMO: [number, number, MockSubscription["status"]][] = [
+  [27, 12, "ACTIVE"], // calm
+  [3, 12, "ACTIVE"], // orange: three days
+  [1, 12, "ACTIVE"], // red: a day
+  [40, 70, "ACTIVE"], // orange: 70% used
+  [40, 95, "ACTIVE"], // red: 95% used
+  [40, 100, "ACTIVE"], // used up: LIMITED
+  [-2, 30, "EXPIRED"], // expired
+];
+let subscriptions: MockSubscription[] = scenario.alertDemo
+  ? ALERT_DEMO.map(([days, used, status], i) =>
+      limitedWhenUsedUp({
+        ...TEMPLATES[i % TEMPLATES.length],
+        id: i + 1,
+        status,
+        is_trial: false,
+        expire_at: daysFromNow(days),
+        effective_traffic_limit: 100,
+        effective_device_limit: scenario.deviceLimit,
+        traffic_limit_strategy: "NO_RESET",
+        used_traffic: used * GB,
+        link_reset_at: null,
+      }),
+    )
+  : TEMPLATES.slice(0, scenario.subscriptions).map((template, i) => mockSubscription(template, i));
+
+// as the panel: a subscription that has used up its traffic is LIMITED, not ACTIVE
+function limitedWhenUsedUp(sub: MockSubscription): MockSubscription {
+  const usedUp = sub.effective_traffic_limit > 0 && (sub.used_traffic ?? 0) >= sub.effective_traffic_limit * GB;
+  return sub.status === "ACTIVE" && usedUp ? { ...sub, status: "LIMITED" } : sub;
+}
+
+function mockSubscription(template: (typeof TEMPLATES)[number], i: number): MockSubscription {
+  return limitedWhenUsedUp({
   ...template,
   id: i + 1,
   status: i === 0 ? scenario.status : "ACTIVE",
@@ -82,9 +116,10 @@ let subscriptions: MockSubscription[] = TEMPLATES.slice(0, scenario.subscription
   effective_traffic_limit: scenario.trafficLimit,
   effective_device_limit: scenario.deviceLimit,
   traffic_limit_strategy: "NO_RESET",
-  used_traffic: scenario.trafficUsed * GB,
+  used_traffic: (i === 0 ? scenario.trafficUsed : 12.4) * GB,
   link_reset_at: null,
-}));
+  });
+}
 
 const device = (hwid: string, platform: string, device_model: string) => ({
   hwid,
@@ -120,11 +155,21 @@ const PRICES: Record<number, number[]> = {
   3: [499, 1299, 2399, 4499],
 };
 const DURATIONS = [30, 90, 180, 365];
+// one plan with both, one with the badge only, one with the description only
+const PLAN_TEXT: Record<number, { description?: string; badge?: "POPULAR" | "BEST_VALUE" }> = {
+  1: { description: "Для одного телефона и ноутбука: соцсети, почта, музыка" },
+  2: { description: "Для всей семьи: видео в 4K, игры и звонки без задержек", badge: "POPULAR" },
+  3: { badge: "BEST_VALUE" },
+};
+// the second plan runs a promotion: its catalog prices and the quote take it off
+const PROMO: Record<number, number> = { 2: 20 };
+const promoPrice = (price: number, currency: string, percent: number | undefined) =>
+  percent ? (currency === "XTR" ? String(Math.round(price * (1 - percent / 100))) : (price * (1 - percent / 100)).toFixed(2)) : null;
 const plan = (id: number, name: string, traffic: number, device_limit: number) => ({
   id,
   name,
-  description: null,
-  tag: id === 2 ? "popular" : null,
+  description: PLAN_TEXT[id]?.description ?? null,
+  badge: PLAN_TEXT[id]?.badge ?? null,
   type: "BOTH",
   traffic_limit: traffic,
   device_limit,
@@ -134,30 +179,57 @@ const plan = (id: number, name: string, traffic: number, device_limit: number) =
     days,
     order_index: i,
     prices: [
-      { currency: "RUB", price: `${PRICES[id][i]}.00` },
-      { currency: "XTR", price: String(Math.round(PRICES[id][i] / 2)) },
+      { currency: "RUB", price: `${PRICES[id][i]}.00`, discounted_price: promoPrice(PRICES[id][i], "RUB", PROMO[id]) },
+      {
+        currency: "XTR",
+        price: String(Math.round(PRICES[id][i] / 2)),
+        discounted_price: promoPrice(Math.round(PRICES[id][i] / 2), "XTR", PROMO[id]),
+      },
     ],
   })),
+  discount_percent: PROMO[id] ?? 0,
+  discount_ends_at: PROMO[id] ? daysFromNow(5) : null,
 });
 const catalog = [plan(1, "Базовый", 50, 2), plan(2, "Премиум", 100, 3), plan(3, "Безлимит", 0, 5)];
+// the trial: out of the catalog, as on the backend; the quote still prices it
+const TRIAL_PLAN = {
+  ...plan(1, "Пробный", 10, 1),
+  id: 9,
+  description: null,
+  badge: null,
+  is_trial: true,
+  durations: [
+    {
+      days: 3,
+      order_index: 0,
+      prices: scenario.trialPaid
+        ? [
+            { currency: "RUB", price: "49.00" },
+            { currency: "XTR", price: "25" },
+          ]
+        : [
+            { currency: "RUB", price: "0" },
+            { currency: "XTR", price: "0" },
+          ],
+    },
+  ],
+};
 
 let referral = {
   referral_code: "IVAN42",
   referrer_id: null as number | null,
   points: scenario.points.toFixed(2),
   bonus_days: scenario.bonusDays,
-  counts_by_level: { "1": 5, "2": 2 },
-  rewards: [
-    { type: "POINTS", amount: "49.00", created_at: "2026-10-14T10:00:00Z" },
-    { type: "EXTRA_DAYS", amount: "3", created_at: "2026-10-02T10:00:00Z" },
-  ],
+  counts_by_level: scenario.referralEmpty ? {} : { "1": 5, "2": 2, "3": 1 },
   program: {
     enabled: scenario.referral,
     reward_type: "POINTS",
     reward_strategy: "PERCENT",
-    reward_amounts: { "1": "10.00", "2": "5.00" },
+    reward_amounts: { "1": "10.00", "2": "5.00", "3": "2.00" },
     invitee_reward_type: "EXTRA_DAYS",
-    invitee_reward_amount: 0,
+    invitee_reward_amount: 3,
+    accrual_strategy: "EVERY_PAYMENT",
+    max_level: 3,
   },
 };
 
@@ -215,6 +287,10 @@ const connectGuide = {
     },
     { id: "windows", apps: [guideApp("happ", "Happ", APPLE, "happ://add/{{SUBSCRIPTION_LINK}}", true)] },
     { id: "macos", apps: [guideApp("happ", "Happ", APPLE, "happ://add/{{SUBSCRIPTION_LINK}}", true)] },
+    // no app: the "not available" screen
+    { id: "linux", apps: [] },
+    { id: "androidtv", apps: [guideApp("happ", "Happ", GOOGLE, "happ://add/{{SUBSCRIPTION_LINK}}", true)] },
+    { id: "appletv", apps: [guideApp("happ", "Happ", APPLE, "happ://add/{{SUBSCRIPTION_LINK}}", true)] },
   ],
 };
 
@@ -227,12 +303,25 @@ const identities = [
 
 const STATUSES = ["PAID", "PAID", "PENDING", "CANCELED", "FAILED", "PAID", "REFUNDED"];
 const GATEWAYS = ["YOOKASSA", "TELEGRAM_STARS", "CRYPTOPAY"];
+// [plan's own %, user %, the user discount's source]: some orders discounted every way, to look at the strike
+const HISTORY_DISCOUNTS: [number, number, string][] = [
+  [0, 10, "LOYALTY"],
+  [0, 0, "NONE"],
+  [20, 0, "NONE"],
+  [10, 5, "PERSONAL"],
+];
 const historyTransactions = Array.from({ length: 25 }, (_, i) => {
   const stars = i % 3 === 1;
+  const base = stars ? 150 : 149 + (i % 4) * 100;
+  const [planPercent, userPercent, source] = stars ? [0, 0, "NONE"] : HISTORY_DISCOUNTS[i % 4];
   return {
     id: 900 - i,
     status: STATUSES[i % STATUSES.length],
-    final_price: stars ? "150" : String(149 + (i % 4) * 100),
+    final_price: String(Math.round(base * (1 - planPercent / 100) * (1 - userPercent / 100))),
+    base_price: String(base),
+    plan_discount_percent: planPercent,
+    discount_percent: userPercent,
+    discount_source: source,
     currency: stars ? "XTR" : "RUB",
     purchase_type: ["NEW", "RENEW", "CHANGE"][i % 3],
     gateway_type: GATEWAYS[i % 3],
@@ -251,6 +340,7 @@ interface MockOrder {
     currency: string;
     purchase_type: string;
     gateway_type: string;
+    target_subscription_id?: number;
   };
 }
 // kept in sessionStorage: a browser payment leaves via a full-page redirect, which restarts the mocks
@@ -260,6 +350,10 @@ const saveOrders = () => sessionStorage.setItem(ORDERS_KEY, JSON.stringify(order
 let nextOrderId = 100 + Object.keys(orders).length;
 
 const MOCK_LINK_TOKEN = "mock_link_token_0123456789";
+
+// the backend's signature is an HMAC; the mock's is the link's digest, which verify compares against. A phone on the
+// LAN over plain http has no crypto.subtle: no signature then, only the Mini App hop (which needs it too) is lost
+const mockSignature = async (url: string) => (crypto.subtle ? linkDigest(url) : "");
 
 // a full-page OAuth round trip restarts the mocks, so only in-page links stay visible in the list
 function linked(kind: string, label: string) {
@@ -284,15 +378,37 @@ const longDoc = (name: string) =>
       `## ${i + 1}. Section\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\n- First point of the section\n- Second point, with a [link](https://example.com)\n- Third point\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.`,
   ).join("\n\n");
 
+// the re-acceptance gate's documents, until accepted on this load
+let legalAccepted = false;
+const pendingLegal = () =>
+  scenario.legalPending && !legalAccepted
+    ? {
+        items: [
+          { kind: "USER_AGREEMENT", title: "Пользовательское соглашение", body: longDoc("Terms"), revision_id: 2, created_at: "2026-10-20T10:00:00Z" },
+          { kind: "PRIVACY_POLICY", title: "Политика конфиденциальности", body: longDoc("Privacy"), revision_id: 2, created_at: "2026-10-20T10:00:00Z" },
+        ],
+        total: 2,
+        is_update: true,
+      }
+    : { items: [], total: 0, is_update: false };
+
 export const handlers = [
+  // first: falls through (returns nothing) unless the scenario breaks requests; sign-in and the documents stay up,
+  // so the cabinet still opens onto its error cards
+  http.all(`${API}/*`, ({ request }) => {
+    const path = new URL(request.url).pathname;
+    if (scenario.failRequests === "none" || /\/(auth|legal)\//.test(path)) return;
+    return scenario.failRequests === "network" ? HttpResponse.error() : apiError(500, "INTERNAL", "Mock failure");
+  }),
   http.get(`${API}/auth/methods`, () =>
     HttpResponse.json({
       telegram_webapp: true,
-      telegram_deeplink: true,
-      email: true,
-      oauth: ["telegram", "google", "yandex"],
+      telegram_deeplink: !scenario.miniAppOnly,
+      email: !scenario.miniAppOnly,
+      oauth: scenario.miniAppOnly ? [] : ["telegram", "google", "yandex"],
       allowed_email_domains: ["gmail.com", "yandex.ru", "mail.ru"],
       captcha: null,
+      bot_username: "mock_bot",
     }),
   ),
 
@@ -356,10 +472,11 @@ export const handlers = [
     return HttpResponse.json({ items, total: items.length });
   }),
 
-  http.get(`${API}/cabinet/legal/pending`, () => HttpResponse.json({ items: [], total: 0, is_update: false })),
-  http.post(`${API}/cabinet/legal/actions/accept`, () =>
-    HttpResponse.json({ items: [], total: 0, is_update: false }),
-  ),
+  http.get(`${API}/cabinet/legal/pending`, () => HttpResponse.json(pendingLegal())),
+  http.post(`${API}/cabinet/legal/actions/accept`, () => {
+    legalAccepted = true;
+    return HttpResponse.json(pendingLegal());
+  }),
 
   http.post(`${API}/unsubscribe`, ({ request }) =>
     new URL(request.url).searchParams.get("token") === "bad"
@@ -400,6 +517,8 @@ export const handlers = [
         device_all_reset_enabled: scenario.deviceReset,
         link_reset_enabled: true,
         bot_username: "mock_bot",
+        support_telegram: "mock_support",
+        support_url: "https://example.com/support",
       }),
   ),
 
@@ -408,11 +527,10 @@ export const handlers = [
     HttpResponse.json(scenario.connectGuide ? connectGuide : { platforms: [] }),
   ),
 
-  // the backend's signature is an HMAC; the mock's is the link's digest, which verify compares against
   http.get(`${API}/subscriptions/me`, async ({ request }) => {
     const denied = unauthorized(request);
     if (denied) return denied;
-    const items = await Promise.all(subscriptions.map(async (sub) => ({ ...sub, connect_signature: await linkDigest(sub.url) })));
+    const items = await Promise.all(subscriptions.map(async (sub) => ({ ...sub, connect_signature: await mockSignature(sub.url) })));
     return HttpResponse.json({ items, total: items.length });
   }),
 
@@ -427,8 +545,13 @@ export const handlers = [
       unauthorized(request) ??
       HttpResponse.json({
         is_available: trialAvailable,
-        plan_name: "Пробный",
+        plan_id: TRIAL_PLAN.id,
+        plan_name: TRIAL_PLAN.name,
         duration_days: 3,
+        is_free: !scenario.trialPaid,
+        price: scenario.trialPaid ? "49.00" : "0",
+        currency: "RUB",
+        prices: TRIAL_PLAN.durations[0].prices,
       }),
   ),
 
@@ -453,7 +576,7 @@ export const handlers = [
     };
     subscriptions = [...subscriptions, created];
     devices[created.id] = [];
-    return HttpResponse.json({ ...created, connect_signature: await linkDigest(created.url) }, { status: 201 });
+    return HttpResponse.json({ ...created, connect_signature: await mockSignature(created.url) }, { status: 201 });
   }),
 
   http.get(`${API}/subscriptions/me/:id/devices`, ({ request, params }) => {
@@ -511,6 +634,7 @@ export const handlers = [
       HttpResponse.json({
         items: [
           { gateway_type: "YOOKASSA", currency: "RUB", requires_email: true },
+          { gateway_type: "ROBOKASSA", currency: "RUB", requires_email: false },
           {
             gateway_type: "TELEGRAM_STARS",
             currency: "XTR",
@@ -528,18 +652,19 @@ export const handlers = [
       duration_days: number;
       currency: string;
     };
-    const price = catalog
+    const price = [...catalog, TRIAL_PLAN]
       .find((p) => p.id === body.plan_id)
       ?.durations.find((d) => d.days === body.duration_days)
       ?.prices.find((p) => p.currency === body.currency)?.price;
     if (!price) return apiError(404, "PLAN_NOT_FOUND", "Plan not found");
     const base = Number(price);
+    const promo = PROMO[body.plan_id] ?? 0;
     return HttpResponse.json({
       base_price: price,
-      plan_discount_percent: 0,
+      plan_discount_percent: promo,
       discount_percent: PERSONAL_DISCOUNT,
       discount_source: "PERSONAL",
-      final_price: (base * (1 - PERSONAL_DISCOUNT / 100)).toFixed(2),
+      final_price: (base * (1 - promo / 100) * (1 - PERSONAL_DISCOUNT / 100)).toFixed(2),
       currency: body.currency,
     });
   }),
@@ -674,14 +799,20 @@ export const handlers = [
         ?.prices.find((p) => p.currency === order.body.currency)?.price ?? "0";
     return HttpResponse.json({
       id,
-      status: order.polls >= 2 ? "PAID" : "PENDING",
+      status: order.polls >= 2 ? scenario.paymentOutcome : "PENDING",
       final_price: (Number(price) * (1 - PERSONAL_DISCOUNT / 100)).toFixed(2),
+      base_price: price,
+      plan_discount_percent: 0,
+      discount_percent: PERSONAL_DISCOUNT,
+      discount_source: PERSONAL_DISCOUNT > 0 ? "PERSONAL" : "NONE",
       currency: order.body.currency,
       purchase_type: order.body.purchase_type,
       gateway_type: order.body.gateway_type,
       plan_name: plan?.name ?? "",
       duration_days: order.body.duration_days,
       created_at: new Date().toISOString(),
+      plan_id: order.body.plan_id,
+      target_subscription_id: order.body.target_subscription_id ?? null,
     });
   }),
 
@@ -691,13 +822,34 @@ export const handlers = [
     return HttpResponse.json(referral);
   }),
 
-  http.post(`${API}/referrals/me/actions/withdraw`, async ({ request }) => {
+  // eight invitees to match the counts: five on level 1, two on level 2, one on level 3, some of them paying
+  http.get(`${API}/referrals/me/invited`, ({ request }) => {
     const denied = unauthorized(request);
     if (denied) return denied;
-    const { amount } = (await request.json()) as { amount: number };
-    if (amount > Number(referral.points)) return apiError(400, "WITHDRAWAL_EXCEEDS_POINTS", "Too much");
-    referral.points = (Number(referral.points) - amount).toFixed(2);
-    return new HttpResponse(null, { status: 204 });
+    if (scenario.referralEmpty) return HttpResponse.json({ items: [], total: 0 });
+    const names = ["Анна", "Максим", "Ольга К.", "Дмитрий", "Sofia", "Игорь", "Катя", "Лев"];
+    const items = names.map((name, i) => ({
+      name,
+      level: i < 5 ? 1 : i < 7 ? 2 : 3,
+      created_at: daysFromNow(-(i * 9 + 2)),
+      reward_amounts: i % 3 === 0 ? { POINTS: String(49 - i * 4) } : i === 4 ? { EXTRA_DAYS: "3" } : {},
+    }));
+    return HttpResponse.json({ items, total: items.length });
+  }),
+
+  // the backend's rule: no trial, disabled or deleted one, nor an inactive one whose traffic never comes back
+  http.get(`${API}/referrals/me/redeem-targets`, ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const spentForGood = (s: MockSubscription) =>
+      s.traffic_limit_strategy === "NO_RESET" &&
+      s.effective_traffic_limit > 0 &&
+      (s.used_traffic ?? 0) >= s.effective_traffic_limit * GB;
+    const ids = subscriptions
+      .filter((s) => !s.is_trial && s.status !== "DISABLED" && s.status !== "DELETED")
+      .filter((s) => s.status === "ACTIVE" || !spentForGood(s))
+      .map((s) => s.id);
+    return HttpResponse.json({ subscription_ids: ids });
   }),
 
   http.post(`${API}/referrals/me/actions/redeem-days`, async ({ request }) => {
@@ -710,6 +862,16 @@ export const handlers = [
     referral.bonus_days -= days;
     sub.expire_at = new Date(new Date(sub.expire_at).getTime() + days * DAY).toISOString();
     return HttpResponse.json({ subscription_id, expire_at: sub.expire_at, bonus_days: referral.bonus_days, pending: false });
+  }),
+
+  // NEEDSUB gives days: the backend's rule keeps a trial out and takes an active one (an expired one with traffic left too)
+  http.get(`${API}/promocodes/targets`, ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const code = (new URL(request.url).searchParams.get("code") ?? "").trim().toUpperCase();
+    if (code !== "NEEDSUB") return HttpResponse.json({ subscription_ids: [] });
+    const ids = subscriptions.filter((s) => !s.is_trial && s.status === "ACTIVE").map((s) => s.id);
+    return HttpResponse.json({ subscription_ids: ids });
   }),
 
   http.post(`${API}/promocodes/activations`, async ({ request }) => {

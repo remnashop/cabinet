@@ -13,7 +13,7 @@ vi.mock("@features/auth/ui/CaptchaWidget", () => ({
     <button type="button" data-captcha onClick={() => onToken(`token-${round}`)} />
   ),
 }));
-vi.mock("@entities/legal/api", () => ({ useShownLegalLocale: () => undefined }));
+vi.mock("@entities/legal/api", () => ({ useShownLegalLocale: () => undefined, legalLocale: () => "en" }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -51,7 +51,7 @@ async function render() {
   await act(async () => {
     root.render(
       <QueryClientProvider client={client}>
-        <EmailLogin allowedDomains={null} flow={flow} captcha={{ provider: "TURNSTILE", site_key: "site" }} />
+        <EmailLogin flow={flow} captcha={{ provider: "TURNSTILE", site_key: "site" }} />
       </QueryClientProvider>,
     );
   });
@@ -92,7 +92,7 @@ it("shows the email error under the field instead of the browser bubble, and cle
   act(() =>
     root.render(
       <QueryClientProvider client={new QueryClient()}>
-        <EmailLogin allowedDomains={null} flow={{ sendCode, verify: async () => {} }} />
+        <EmailLogin flow={{ sendCode, verify: async () => {} }} />
       </QueryClientProvider>,
     ),
   );

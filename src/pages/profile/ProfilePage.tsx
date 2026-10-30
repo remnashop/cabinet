@@ -1,142 +1,103 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Check, CircleCheck, Copy, ExternalLink, Languages, Link2Off, Loader2 } from "lucide-react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { unlinkIdentity, useIdentitiesQuery, type Identity, type IdentityKind } from "@entities/identity/api";
+import { unlinkIdentity, type Identity, type IdentityKind } from "@entities/identity/api";
+import { useHasLegalDocuments } from "@entities/legal/api";
 import { useChangeLanguage, useMeQuery, type Me } from "@entities/session/api";
-import { authApi } from "@features/auth/api";
 import { MergeSheet } from "@features/link-identity/MergeSheet";
 import { startOAuthLink } from "@features/link-identity/api";
 import { LinkEmailSheet } from "@features/link-identity/LinkEmailSheet";
 import { LinkTelegramSheet } from "@features/link-identity/LinkTelegramSheet";
 import { useLinkResult } from "@features/link-identity/useLinkResult";
-import { formatNumber } from "@features/referral/links";
 import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@shared/i18n";
 import { getErrorMessage } from "@shared/api/http";
-import { haptic, isMiniApp } from "@shared/telegram";
+import { openExternal } from "@shared/telegram";
+import { Avatar } from "@shared/ui/Avatar";
 import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
-import { Card } from "@shared/ui/Card";
+import { ICON_BUTTON_CLASS } from "@shared/ui/button-class";
 import { ConfirmSheet } from "@shared/ui/ConfirmSheet";
 import { ErrorCard } from "@shared/ui/ErrorCard";
-import { InfoRow } from "@shared/ui/InfoRow";
+import { OptionRow } from "@shared/ui/OptionRow";
+import { RippleButton } from "@shared/ui/RippleButton";
 import { Skeleton } from "@shared/ui/Skeleton";
-import { useSignOut } from "@widgets/app-shell/sign-out";
+import { SuccessMessage } from "@shared/ui/SuccessCheck";
+import { FormError } from "@shared/ui/FormError";
+import { SignOutSheet } from "@widgets/app-shell/SignOutSheet";
 import { PageHeader } from "@widgets/page-header/PageHeader";
+import { InfoDialog } from "@widgets/info/InfoDialog";
 import { PromoDialog } from "@widgets/promo/PromoDialog";
+import { useSupport } from "@widgets/support/use-support";
+import { RedeemDaysSheet } from "@widgets/redeem-days/RedeemDaysSheet";
+import { useCopyLink } from "@pages/connect/use-copy-link";
 
-import { rowAction, visibleIdentities } from "./identity-rows";
+import { KIND_ICON } from "./identity-icons";
+import { ProfileBlocks } from "./ProfileBlocks";
 
+/**
+ * Who is signed in: a pill with the avatar, the name and an ID, which the button on the right copies: the Telegram
+ * one when linked, the shop's own otherwise (support finds the user by either).
+ */
 function Header({ me }: { me: Me }) {
-  const { t, i18n } = useTranslation();
-  const since =
-    me.created_at &&
-    new Intl.DateTimeFormat(i18n.language, { month: "2-digit", year: "numeric" }).format(new Date(me.created_at));
+  const { t } = useTranslation();
+  const id = me.telegram_id ?? me.id;
+  const [copied, copy] = useCopyLink(String(id));
   return (
-    <div className="flex items-center gap-3 px-1">
-      <div className="flex size-11 shrink-0 items-center justify-center rounded-full border border-glass-border bg-white/[0.05] text-lg font-bold text-foreground">
-        {(me.name.trim()[0] ?? "?").toUpperCase()}
+    <div className="flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.04] py-2 pr-2 pl-2">
+      <Avatar name={me.name} className="size-11 text-lg" />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-base font-semibold">{me.name}</div>
+        <div className="text-[12px] text-muted-foreground">{t("profile.id", { id })}</div>
       </div>
-      <div className="min-w-0">
-        <div className="truncate text-[15px] font-semibold">{me.name}</div>
-        <div className="text-[12px] text-muted-foreground">
-          {t("profile.id", { id: me.id })}
-          {since && ` · ${t("profile.since", { date: since })}`}
-        </div>
-      </div>
+      <RippleButton
+        type="button"
+        aria-label={t("profile.copyId")}
+        onClick={() => void copy()}
+        className={`relative ${ICON_BUTTON_CLASS} ${
+          copied ? "text-success" : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        {copied ? <Check className="size-[17px]" /> : <Copy className="size-[17px]" />}
+      </RippleButton>
     </div>
   );
 }
 
-function BalanceCard({ me }: { me: Me }) {
-  const { t, i18n } = useTranslation();
-  const discounts = [
-    ["personalDiscount", me.personal_discount],
-    ["purchaseDiscount", me.purchase_discount],
-    ["loyaltyDiscount", me.loyalty_discount],
-  ] as const;
-  return (
-    <Card variant="list" title={t("profile.balance")}>
-      <InfoRow label={t("profile.points")} value={formatNumber(me.points, i18n.language)} />
-      <InfoRow label={t("profile.bonusDays")} value={me.bonus_days} />
-      {discounts
-        .filter(([, percent]) => percent > 0)
-        .map(([key, percent]) => (
-          <InfoRow key={key} label={t(`profile.${key}`)} value={<span className="text-success">−{percent}%</span>} />
-        ))}
-    </Card>
-  );
-}
-
-/** Rows for the enabled sign-in methods. Linking (onConnect) and unlinking (onUnlink) are wired by later tasks. */
-function IdentitiesCard({
-  onConnect,
-  onUnlink,
+function LanguageRow({
+  language,
+  current,
+  pending,
+  disabled,
+  onPick,
 }: {
-  onConnect: (kind: IdentityKind) => void;
-  onUnlink: (identity: Identity) => void;
+  language: SupportedLanguage;
+  current: boolean;
+  pending: boolean;
+  disabled: boolean;
+  onPick: () => void;
 }) {
   const { t } = useTranslation();
-  const identities = useIdentitiesQuery();
-  const methods = useQuery({ queryKey: ["auth-methods"], queryFn: authApi.methods });
-
-  if (identities.isError || methods.isError) {
-    return (
-      <ErrorCard
-        onRetry={() => {
-          void identities.refetch();
-          void methods.refetch();
-        }}
-      />
-    );
-  }
-  if (!identities.data || !methods.data) return <Skeleton className="h-40" />;
-
-  const rows = visibleIdentities(identities.data, methods.data).map((identity) => ({
-    identity,
-    action: rowAction(identity, isMiniApp()),
-  }));
+  const localName = t(`profile.languages.${language}`);
   return (
-    <Card variant="list" title={t("profile.signIn")}>
-      {rows.map(({ identity, action }) => (
-        <InfoRow
-          key={identity.kind}
-          label={t(`profile.kinds.${identity.kind}`)}
-          onClick={action === "unlink" ? () => onUnlink(identity) : undefined}
-          value={
-            identity.linked ? (
-              <>
-                <span className="max-w-40 truncate rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">
-                  {identity.label}
-                </span>
-                {/* the row is a button: say so */}
-                {action === "unlink" && <ChevronRight className="size-4 shrink-0 text-muted-foreground" />}
-              </>
-            ) : action === "connectInBrowser" ? (
-              <span className="truncate text-[11px] font-normal text-muted-foreground">
-                {t("profile.connectInBrowser")}
-              </span>
-            ) : action === "connect" ? (
-              <button
-                type="button"
-                onClick={() => {
-                  haptic();
-                  onConnect(identity.kind);
-                }}
-                className="rounded-full bg-accent px-2.5 py-1 text-[10.5px] font-semibold text-primary"
-              >
-                {t("profile.connect")}
-              </button>
-            ) : null
-          }
-        />
-      ))}
-      {rows.some((row) => row.action === "unlinkInBrowser") && (
-        <p className="px-2.5 pb-1.5 pt-0.5 text-[11px] text-muted-foreground">{t("profile.unlinkTelegramInBrowser")}</p>
+    <OptionRow selected={current} disabled={disabled} onClick={onPick}>
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-[12px] font-bold text-primary">
+        {language.toUpperCase()}
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-[13px] font-semibold">{LANGUAGE_NAMES[language]}</span>
+        {localName !== LANGUAGE_NAMES[language] && (
+          <span className="truncate text-[12px] text-muted-foreground">{localName}</span>
+        )}
+      </span>
+      {pending ? (
+        <Loader2 className="size-5 shrink-0 animate-spin text-muted-foreground" />
+      ) : (
+        current && <CircleCheck className="size-5 shrink-0 text-primary" />
       )}
-    </Card>
+    </OptionRow>
   );
 }
 
@@ -144,19 +105,19 @@ function LanguageSheet({ open, onClose }: { open: boolean; onClose: () => void }
   const { t, i18n } = useTranslation();
   const change = useChangeLanguage(onClose);
   return (
-    <BottomSheet open={open} onClose={onClose} title={t("profile.languageTitle")}>
+    <BottomSheet narrow icon={Languages} open={open} onClose={onClose} title={t("profile.languageTitle")}>
       <div className="flex flex-col gap-2">
         {SUPPORTED_LANGUAGES.map((language) => (
-          <Button
+          <LanguageRow
             key={language}
-            variant={i18n.language === language ? "solid" : "outline"}
+            language={language}
+            current={i18n.language === language}
+            pending={change.isPending && change.variables === language}
             disabled={change.isPending}
-            onClick={() => (i18n.language === language ? onClose() : change.mutate(language))}
-          >
-            {LANGUAGE_NAMES[language]}
-          </Button>
+            onPick={() => (i18n.language === language ? onClose() : change.mutate(language))}
+          />
         ))}
-        {change.isError && <p className="text-sm text-error">{getErrorMessage(change.error, t("errors.generic"))}</p>}
+        {change.isError && <FormError>{getErrorMessage(change.error, t("errors.generic"))}</FormError>}
       </div>
     </BottomSheet>
   );
@@ -166,19 +127,25 @@ export function ProfilePage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const signOut = useSignOut();
   const me = useMeQuery();
+  const hasDocuments = useHasLegalDocuments();
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [redeemOpen, setRedeemOpen] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
+  const [documentsOpen, setDocumentsOpen] = useState(false);
+  const support = useSupport();
+  const [inBrowserOpen, setInBrowserOpen] = useState(false);
+  const [signOutOpen, setSignOutOpen] = useState(false);
   const [linkSheet, setLinkSheet] = useState<"email" | "telegram" | null>(null);
-  const link = useLinkResult();
+  // errors that outlive their sheet: an expired merge offer, the last sign-in method
+  const [pageError, setPageError] = useState<string | null>(null);
+  // a merge the backend asked for without its offer: nothing to show in the sheet, the link just failed
+  const link = useLinkResult(useCallback(() => setPageError(t("link.failed")), [t]));
   const oauthLink = useMutation({ mutationFn: startOAuthLink });
   const [unlinking, setUnlinking] = useState<Identity | null>(null);
   // keep the title while the sheet slides out
   const [unlinkTitleKind, setUnlinkTitleKind] = useState<IdentityKind | null>(null);
   if (unlinking && unlinking.kind !== unlinkTitleKind) setUnlinkTitleKind(unlinking.kind);
-  // errors that outlive their sheet: an expired merge offer, the last sign-in method
-  const [pageError, setPageError] = useState<string | null>(null);
   const unlink = useMutation({
     mutationFn: (kind: IdentityKind) => unlinkIdentity(kind),
     onSuccess: () =>
@@ -191,17 +158,19 @@ export function ProfilePage() {
   });
 
   const onConnect = (kind: IdentityKind) => {
+    setPageError(null);
+    oauthLink.reset();
     if (kind === "EMAIL") setLinkSheet("email");
     else if (kind === "TELEGRAM") setLinkSheet("telegram");
     else oauthLink.mutate(kind.toLowerCase());
   };
 
-  const header = <PageHeader title={t("pages.profile")} />;
-  if (me.isError) {
+  const header = <PageHeader title={t("pages.profile")} backTo="/" />;
+  if (me.isError && !me.data) {
     return (
       <>
         {header}
-        <ErrorCard onRetry={() => void me.refetch()} />
+        <ErrorCard round error={me.error} onRetry={() => void me.refetch()} />
       </>
     );
   }
@@ -210,63 +179,52 @@ export function ProfilePage() {
       <>
         {header}
         <div className="flex flex-col gap-4">
-          <Skeleton className="h-12" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-40" />
+          <Skeleton round className="h-12" />
+          <Skeleton round className="h-32" />
+          <Skeleton round className="h-40" />
         </div>
       </>
     );
   }
 
-  const arrow = <ChevronRight className="size-4 text-muted-foreground" />;
   return (
     <>
       {header}
       <div className="flex flex-col gap-4">
         <Header me={me.data} />
-        <BalanceCard me={me.data} />
-        {link.notice && (
-          <p role="status" className="px-1 text-sm text-success">
-            {t(link.notice === "linked" ? "link.linked" : link.notice === "merged" ? "link.merged" : "link.alreadyLinked")}
-          </p>
-        )}
-        {oauthLink.isError && (
-          <p className="px-1 text-sm text-error">{getErrorMessage(oauthLink.error, t("errors.generic"))}</p>
-        )}
-        {pageError && <p className="px-1 text-sm text-error">{pageError}</p>}
-        <IdentitiesCard
-          onConnect={onConnect}
-          onUnlink={(identity) => {
-            setPageError(null);
-            setUnlinking(identity);
+        <ProfileBlocks
+          me={me.data}
+          linkError={pageError ?? (oauthLink.isError ? getErrorMessage(oauthLink.error, t("errors.generic")) : null)}
+          actions={{
+            onConnect,
+            onUnlink: (identity) => {
+              setPageError(null);
+              oauthLink.reset();
+              setUnlinking(identity);
+            },
+            onPayments: () => void navigate("/profile/payments"),
+            onRedeemDays: () => setRedeemOpen(true),
+            onPromo: () => setPromoOpen(true),
+            onDocuments: hasDocuments ? () => setDocumentsOpen(true) : undefined,
+            onWithdraw: support.available ? support.open : undefined,
+            onUnlinkInBrowser: () => setInBrowserOpen(true),
+            onLanguage: () => setLanguageOpen(true),
+            onSignOut: () => setSignOutOpen(true),
+            languageName: LANGUAGE_NAMES[i18n.language as SupportedLanguage] ?? i18n.language,
           }}
         />
-        <Card variant="list" title={t("profile.account")}>
-          <InfoRow label={t("pages.payments")} value={arrow} onClick={() => void navigate("/profile/payments")} />
-          <InfoRow label={t("profile.promo")} value={arrow} onClick={() => setPromoOpen(true)} />
-          <InfoRow
-            label={t("profile.language")}
-            value={
-              <>
-                {LANGUAGE_NAMES[i18n.language as SupportedLanguage] ?? i18n.language}
-                {arrow}
-              </>
-            }
-            onClick={() => setLanguageOpen(true)}
-          />
-        </Card>
-        <Button variant="danger" className="w-full lg:hidden" onClick={signOut}>
-          {t("common.logout")}
-        </Button>
       </div>
       <LanguageSheet open={languageOpen} onClose={() => setLanguageOpen(false)} />
+      <RedeemDaysSheet open={redeemOpen} onClose={() => setRedeemOpen(false)} bonusDays={me.data.bonus_days} />
       <PromoDialog open={promoOpen} onClose={() => setPromoOpen(false)} />
+      <InfoDialog open={documentsOpen} onClose={() => setDocumentsOpen(false)} />
+      {support.dialog}
       <LinkEmailSheet
         open={linkSheet === "email"}
         onClose={() => setLinkSheet(null)}
         onResult={(result) => {
           setPageError(null);
-          link.handleLinkResult(result);
+          link.handleLinkResult(result, "EMAIL");
         }}
       />
       <LinkTelegramSheet open={linkSheet === "telegram"} onClose={() => setLinkSheet(null)} />
@@ -282,12 +240,79 @@ export function ProfilePage() {
           link.closeMerge();
         }}
       />
+      <SignOutSheet open={signOutOpen} onClose={() => setSignOutOpen(false)} />
+      <BottomSheet
+        narrow
+        bare
+        glyph={link.notice && KIND_ICON[link.notice.kind]}
+        open={link.notice !== null}
+        onClose={link.closeNotice}
+        // "Почта" takes the feminine: its own line
+        title={
+          link.notice?.kind === "EMAIL"
+            ? t("link.linkedEmailTitle")
+            : t("link.linkedTitle", { kind: link.notice ? t(`profile.kinds.${link.notice.kind}`) : "" })
+        }
+      >
+        <SuccessMessage
+          hint={
+            link.notice?.status === "merged"
+              ? t("link.mergedHint")
+              : link.notice?.status === "already_linked"
+                ? t("link.alreadyLinkedHint")
+                : t("link.linkedHint")
+          }
+        >
+          {link.notice?.status === "merged"
+            ? t("link.merged")
+            : link.notice?.status === "already_linked"
+              ? t("link.alreadyLinked")
+              : link.notice?.kind === "EMAIL"
+                ? t("link.linkedEmailTitle")
+                : t("link.linkedTitle", { kind: link.notice ? t(`profile.kinds.${link.notice.kind}`) : "" })}
+        </SuccessMessage>
+        <Button variant="outline" size="lg" className="mt-6 w-full" onClick={link.closeNotice}>
+          {t("common.continue")}
+        </Button>
+      </BottomSheet>
+      {/* inside the Mini App its next sign-in would make a fresh account: the browser unlinks Telegram */}
+      <BottomSheet
+        narrow
+        // nothing destructive here, only the way to where it can be done
+        icon={ExternalLink}
+        open={inBrowserOpen}
+        onClose={() => setInBrowserOpen(false)}
+        title={t("profile.unlinkTitle", { kind: t("profile.kinds.TELEGRAM") })}
+      >
+        <p className="text-sm text-muted-foreground">{t("profile.unlinkInBrowserText")}</p>
+        <div className="mt-5 flex gap-2">
+          <Button variant="outline" className="flex-1" onClick={() => setInBrowserOpen(false)}>
+            {t("common.close")}
+          </Button>
+          <Button
+            variant="accent"
+            className="flex-1"
+            onClick={() => {
+              setInBrowserOpen(false);
+              openExternal(`${window.location.origin}/profile`);
+            }}
+          >
+            {t("profile.openInBrowser")}
+          </Button>
+        </div>
+      </BottomSheet>
       <ConfirmSheet
         open={unlinking !== null}
-        title={t("profile.unlinkTitle", { kind: unlinkTitleKind ? t(`profile.kinds.${unlinkTitleKind}`) : "" })}
+        // email reads "почту" in the question, not "Почта": its own line
+        title={
+          unlinkTitleKind === "EMAIL"
+            ? t("profile.unlinkEmailTitle")
+            : t("profile.unlinkTitle", { kind: unlinkTitleKind ? t(`profile.kinds.${unlinkTitleKind}`) : "" })
+        }
         text={t("profile.unlinkText")}
         confirmLabel={t("profile.unlink")}
         danger
+        icon={Link2Off}
         pending={unlink.isPending}
         onConfirm={() => unlinking && unlink.mutate(unlinking.kind)}
         onClose={() => setUnlinking(null)}

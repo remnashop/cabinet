@@ -1,67 +1,118 @@
-import { TriangleAlert } from "lucide-react";
+import { Gift, TriangleAlert, Zap } from "lucide-react";
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useSearchParams } from "react-router";
+import { Link, Navigate, useSearchParams } from "react-router";
 
 import { useCatalogQuery, type Plan } from "@entities/plan/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { canBuyMore } from "@entities/subscription/lib";
-import { minPrice } from "@features/purchase/savings";
-import { parseWizardParams } from "@features/purchase/wizard";
-import { formatGb, formatMoney } from "@shared/lib/format";
-import { Card } from "@shared/ui/Card";
+import { effectivePrice, minPrice } from "@features/purchase/savings";
+import { durationLabel, parseWizardParams } from "@features/purchase/wizard";
+import { bounceTap } from "@shared/lib/bounceState";
+import { formatMoney } from "@shared/lib/format";
+import { buttonClass } from "@shared/ui/button-class";
 import { ErrorCard } from "@shared/ui/ErrorCard";
+import { PageEmpty } from "@shared/ui/PageEmpty";
 import { Skeleton } from "@shared/ui/Skeleton";
+import { useRipple } from "@shared/ui/use-ripple";
 import { PageHeader } from "@widgets/page-header/PageHeader";
+import { SupportButton } from "@widgets/support/SupportButton";
 
-import "@widgets/subscription-cards/card.css";
+import { PlanLimits } from "./PlanLimits";
 
-const TAG = "rounded-full bg-black/25 px-2 py-0.5 text-[10.5px] font-medium";
+const MotionLink = motion.create(Link);
 
-/** A plan in the subscription cards' palettes; index picks the palette so neighbours differ. */
-function PlanCard({ plan, index, currency }: { plan: Plan; index: number; currency: string }) {
+function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: boolean }) {
+  const { plan, currency, to, current } = props;
   const { t, i18n } = useTranslation();
+  const ripple = useRipple();
   const price = minPrice(plan, currency);
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.12] p-3.5 text-white">
-      <div className="sub-card-bg" data-palette={index % 3} />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40" />
-      <div className="relative flex flex-col gap-2">
+  // no room for one more: the card and its badge muted
+  const dimmed = !to && !current;
+  const money = (amount: string) => formatMoney(amount, currency, i18n.language);
+  // one period in this currency: its exact price and the period, not "from"
+  const priced = plan.durations.filter((d) => d.prices.some((p) => p.currency === currency));
+  const single = priced.length === 1 ? priced[0] : null;
+  const body = (
+    <>
+      {plan.badge && !dimmed && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 -left-1/2 hidden w-1/2 bg-linear-to-r from-transparent via-white/[0.06] to-transparent motion-safe:block motion-safe:animate-shine"
+        />
+      )}
+      <div className="relative flex h-full flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-[15px] font-bold">{plan.name}</span>
-            {plan.tag && <span className={`${TAG} uppercase tracking-wide`}>{plan.tag}</span>}
-          </div>
+          <span className="flex min-w-0 items-center gap-1.5">
+            {plan.is_trial ? <Gift className="size-4 shrink-0" /> : <Zap className="size-4 shrink-0" />}
+            <span className="truncate text-base font-bold">{plan.name}</span>
+          </span>
+          {current ? (
+            <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
+              {t("purchase.currentPlan")}
+            </span>
+          ) : (
+            plan.badge && (
+              <span
+                className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+                  dimmed ? "bg-white/10" : "bg-primary text-primary-foreground"
+                }`}
+              >
+                {t(`purchase.badge.${plan.badge}`)}
+              </span>
+            )
+          )}
+        </div>
+        {plan.description && <p className="text-[12px] text-muted-foreground">{plan.description}</p>}
+        <div className="mt-auto flex items-end justify-between gap-3">
+          <PlanLimits plan={plan} />
           {price !== null && (
-            <span className="shrink-0 font-bold">
-              {t("purchase.from", {
-                price: formatMoney(price, currency, i18n.language),
-              })}
+            <span className="flex shrink-0 flex-col items-end gap-1">
+              {price.discounted_price && (
+                <span className="flex items-center gap-1.5 text-[12px]">
+                  <span className="text-muted-foreground line-through">{money(price.price)}</span>
+                  <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
+                    −{plan.discount_percent}%
+                  </span>
+                </span>
+              )}
+              <span className="text-[26px] leading-none font-bold tabular-nums tracking-tight">
+                {single ? money(effectivePrice(price)) : t("purchase.from", { price: money(effectivePrice(price)) })}
+              </span>
+              {single && (
+                <span className="text-[12px] text-muted-foreground">{t("purchase.per", { period: durationLabel(single.days, t) })}</span>
+              )}
             </span>
           )}
         </div>
-        {plan.description && <p className="text-xs opacity-85">{plan.description}</p>}
-        <div className="flex flex-wrap gap-1.5">
-          <span className={TAG}>
-            {plan.traffic_limit === 0 ? t("purchase.trafficUnlimited") : formatGb(plan.traffic_limit, i18n.language)}
-          </span>
-          <span className={TAG}>
-            {plan.device_limit === 0
-              ? t("purchase.devicesUnlimited")
-              : t("purchase.devices", { count: plan.device_limit })}
-          </span>
-        </div>
+        {to && <span className={`${buttonClass("outline", "md")} w-full`}>{t("purchase.choose")}</span>}
       </div>
-    </div>
+    </>
+  );
+  const frame = "relative block overflow-hidden rounded-home border border-white/[0.14] bg-white/[0.06] backdrop-blur-xl backdrop-saturate-150 p-5";
+  if (!to) {
+    return (
+      <div aria-disabled className={`${frame} ${dimmed ? "text-muted-foreground" : "text-foreground"}`}>
+        {body}
+      </div>
+    );
+  }
+  return (
+    <MotionLink to={to} {...bounceTap()} onPointerDown={ripple.onPointerDown} className={`${frame} text-foreground`}>
+      {body}
+      {ripple.ripples}
+    </MotionLink>
   );
 }
 
 export function PurchasePage() {
   const { t } = useTranslation();
   const [search] = useSearchParams();
-  const { type, subId } = parseWizardParams(search);
-  const catalog = useCatalogQuery();
+  const { type, subId, access } = parseWizardParams(search);
+  const code = access.plan_code;
+  const catalog = useCatalogQuery(access);
   const settings = useCabinetSettingsQuery();
   const subscriptions = useSubscriptionsQuery();
 
@@ -69,10 +120,10 @@ export function PurchasePage() {
   // a plan change hides the current plan, so it needs the subscriptions before listing anything
   const change = type === "CHANGE";
   let body: ReactNode;
-  if (catalog.isError) body = <ErrorCard onRetry={() => void catalog.refetch()} />;
-  else if (change && subscriptions.isError) body = <ErrorCard onRetry={() => void subscriptions.refetch()} />;
+  if (catalog.isError && !catalog.data) body = <ErrorCard round error={catalog.error} onRetry={() => void catalog.refetch()} />;
+  else if (change && subscriptions.isError && !subscriptions.data) body = <ErrorCard round error={subscriptions.error} onRetry={() => void subscriptions.refetch()} />;
   else if (!catalog.data || (change && !subscriptions.data)) {
-    body = [0, 1, 2].map((i) => <Skeleton key={i} className="h-[112px]" />);
+    body = [0, 1, 2].map((i) => <Skeleton round key={i} className="h-[212px]" />);
   } else {
     const max = settings.data?.max_active_subscriptions ?? null;
     // unknown until both load: don't flash the banner or block the cards meanwhile
@@ -80,43 +131,54 @@ export function PurchasePage() {
       type === "NEW" &&
       settings.data !== undefined &&
       subscriptions.data !== undefined &&
-      !canBuyMore(max, subscriptions.data.items.length);
-    // a plan change offers every plan but the one the subscription is already on
+      !canBuyMore(max, subscriptions.data.items);
+    // a plan change lists the one the subscription is already on too, first, marked and not to pick
     const currentPlanId =
       change ? subscriptions.data?.items.find((s) => s.id === subId)?.plan_id : undefined;
-    const plans = catalog.data.items.filter((p) => p.id !== currentPlanId);
-    const query = type === "NEW" ? "" : `?type=${type}&sub=${subId}`;
-    body = (
+    const plans = [...catalog.data.items].sort((a, b) => Number(b.id === currentPlanId) - Number(a.id === currentPlanId));
+    const query = type !== "NEW" ? `?type=${type}&sub=${subId}` : code ? `?code=${code}` : "";
+    // a plan link opens its plan's wizard straight away, once it's known there's room for one more
+    const linked = code && catalog.data.items.length === 1 ? catalog.data.items[0] : null;
+    if (linked && settings.data && subscriptions.data && !blocked) {
+      return <Navigate to={`/purchase/${linked.id}${query}`} replace />;
+    }
+    if (plans.every((p) => p.id === currentPlanId)) {
+      body = (
+        <PageEmpty icon={TriangleAlert} text={t(change ? "purchase.emptyChange" : "purchase.empty")}>
+          <SupportButton className="mt-1" />
+        </PageEmpty>
+      );
+    } else body = (
       <>
         {blocked && (
-          <div className="flex gap-2 rounded-2xl border border-warning/25 bg-warning/10 px-3 py-2.5 text-[12.5px] text-warning">
-            <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-            {t("purchase.limit", { count: max ?? 0 })}
+          <div className="flex items-center gap-3 rounded-home border border-warning/30 bg-linear-to-r from-warning/[0.12] to-warning/[0.03] p-5">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
+              <TriangleAlert className="size-5" />
+            </span>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <h2 className="text-base font-bold text-warning">{t("purchase.limitTitle")}</h2>
+              <span className="text-[12px] text-foreground">{t("purchase.limitHint")}</span>
+            </div>
           </div>
         )}
-        {plans.length === 0 && <Card className="text-sm text-muted-foreground">{t("purchase.empty")}</Card>}
-        {plans.map((plan, i) =>
-          blocked ? (
-            <div key={plan.id} aria-disabled className="opacity-60">
-              <PlanCard plan={plan} index={i} currency={catalog.data.anchor_currency} />
-            </div>
-          ) : (
-            <Link
+        <div className="grid auto-rows-fr gap-4">
+          {plans.map((plan) => (
+            <PlanCard
               key={plan.id}
-              to={`/purchase/${plan.id}${query}`}
-              className="block transition-transform active:scale-[0.99]"
-            >
-              <PlanCard plan={plan} index={i} currency={catalog.data.anchor_currency} />
-            </Link>
-          ),
-        )}
+              plan={plan}
+              currency={catalog.data.anchor_currency}
+              current={plan.id === currentPlanId}
+              to={blocked || plan.id === currentPlanId ? undefined : `/purchase/${plan.id}${query}`}
+            />
+          ))}
+        </div>
       </>
     );
   }
 
   return (
     <>
-      <PageHeader title={title} backTo={change ? "/" : undefined} />
+      <PageHeader title={title} backTo="/" />
       <div className="flex flex-col gap-4">{body}</div>
     </>
   );

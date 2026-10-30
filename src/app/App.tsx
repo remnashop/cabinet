@@ -1,3 +1,4 @@
+import { TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RouterProvider } from "react-router";
@@ -7,7 +8,7 @@ import { bootSession, type BootResult } from "@features/auth/boot";
 import { getErrorMessage } from "@shared/api/http";
 import { Button } from "@shared/ui/Button";
 import { Spinner } from "@shared/ui/Spinner";
-import { FullScreen } from "@widgets/full-screen/FullScreen";
+import { FullScreen, FullScreenMessage } from "@widgets/full-screen/FullScreen";
 
 export function App() {
   const { t } = useTranslation();
@@ -35,13 +36,11 @@ export function App() {
   }
   if (boot.kind === "error") {
     return (
-      <FullScreen>
-        <h1 className="text-lg font-bold">{t("auth.bootFailed")}</h1>
-        <p className="text-sm text-muted-foreground">{getErrorMessage(boot.error, t("errors.generic"))}</p>
+      <FullScreenMessage icon={TriangleAlert} title={t("auth.bootFailed")} text={getErrorMessage(boot.error, t("errors.generic"))}>
         <Button variant="solid" onClick={run}>
           {t("common.retry")}
         </Button>
-      </FullScreen>
+      </FullScreenMessage>
     );
   }
   return <RouterProvider router={router} />;

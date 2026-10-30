@@ -1,11 +1,13 @@
+import { TriangleAlert } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import { apiPost, getErrorMessage } from "@shared/api/http";
 import { Button } from "@shared/ui/Button";
-import { FullScreen } from "@widgets/full-screen/FullScreen";
+import { ButtonLink } from "@shared/ui/ButtonLink";
+import { FullScreenMessage } from "@widgets/full-screen/FullScreen";
 
 function unsubscribe(token: string): Promise<null> {
   return apiPost<null, undefined>(`/unsubscribe?token=${encodeURIComponent(token)}`, undefined);
@@ -41,17 +43,15 @@ export function UnsubscribePage() {
   const canSubmit = token !== null && !action.isSuccess;
 
   return (
-    <FullScreen>
-      <h1 className="text-lg font-bold">{title}</h1>
-      {text && <p className="text-sm text-muted-foreground">{text}</p>}
+    <FullScreenMessage icon={!token || action.isError ? TriangleAlert : undefined} title={title} text={text}>
       {canSubmit && (
-        <Button variant="solid" disabled={action.isPending} onClick={() => action.mutate(token)}>
+        <Button variant="solid" className="w-full" disabled={action.isPending} onClick={() => action.mutate(token)}>
           {action.isError ? t("common.retry") : t("unsubscribe.confirm")}
         </Button>
       )}
-      <Link to="/" className="text-sm text-primary">
+      <ButtonLink to="/" variant="outline" className="w-full">
         {t("common.home")}
-      </Link>
-    </FullScreen>
+      </ButtonLink>
+    </FullScreenMessage>
   );
 }

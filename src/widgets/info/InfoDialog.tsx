@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useLegalDocumentsQuery, type LegalDocument } from "@entities/legal/api";
 import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Card } from "@shared/ui/Card";
+import { ErrorCard } from "@shared/ui/ErrorCard";
 import { InfoRow } from "@shared/ui/InfoRow";
 import { LegalDocumentDialog } from "@shared/ui/LegalDocumentDialog";
 import { Skeleton } from "@shared/ui/Skeleton";
@@ -18,11 +19,11 @@ export function InfoDialog({ open, onClose }: { open: boolean; onClose: () => vo
 
   return (
     <>
-      <BottomSheet variant="dialog" narrow fullScreen icon={Info} open={open} onClose={onClose} title={t("help.info")}>
+      <BottomSheet narrow fullScreen icon={Info} open={open} onClose={onClose} title={t("help.info")}>
         {documents.isPending ? (
           <Skeleton className="h-28" />
-        ) : documents.isError ? (
-          <p className="text-[12px] text-error">{t("common.loadFailed")}</p>
+        ) : documents.isError && !documents.data ? (
+          <ErrorCard error={documents.error} onRetry={() => void documents.refetch()} />
         ) : items.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("legal.empty")}</p>
         ) : (
