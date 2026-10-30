@@ -30,6 +30,8 @@
   --radius-dialog: 24px;
   /* the home page's blocks: the corners of its 64px notice pill (NoticeBar), on tiles and cards of any height */
   --radius-home: 32px;
+  /* the subscription cards and the slider's buy slide: --radius-home's 32px at every width, desktop too */
+  --radius-subscription: 32px;
   /* the one action to take (PulseButton): a primary glow round it flares and fades */
   --animate-glow-pulse: glow-pulse 2.4s ease-in-out infinite;
   @keyframes glow-pulse {
@@ -113,6 +115,57 @@
       transform: translate(-50%, -50%) scale(0.9);
     }
   }
+  /* a success mark's sparks (shared/ui/SuccessCheck Sparks): each flies out along its own angle (--a) and fades */
+  --animate-spark: spark 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
+  @keyframes spark {
+    0% {
+      opacity: 0;
+      transform: rotate(var(--a)) translateY(0) scale(1);
+    }
+    10% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(var(--a)) translateY(-58px) scale(0.4);
+    }
+  }
+  /* an alert mark (shared/ui/AlertMark) pops in like the success one, then shakes (error) or wiggles (warning) */
+  --animate-pop-shake:
+    pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    shake 0.45s ease-in-out 0.55s;
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20%,
+    60% {
+      transform: translateX(-6px);
+    }
+    40%,
+    80% {
+      transform: translateX(6px);
+    }
+  }
+  --animate-pop-wiggle:
+    pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    wiggle 0.6s ease-in-out 0.55s;
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(0);
+    }
+    25% {
+      transform: rotate(-10deg);
+    }
+    50% {
+      transform: rotate(8deg);
+    }
+    75% {
+      transform: rotate(-4deg);
+    }
+  }
   --animate-ripple-out: ripple-out 2.4s ease-out infinite;
   @keyframes ripple-out {
     0% {
@@ -123,6 +176,14 @@
       opacity: 0;
       transform: scale(2.3);
     }
+  }
+}
+
+/* Desktop: the panel's card corners (rounded-2xl) on the same blocks; a phone keeps the rounder ones, with no page
+   frame around them to echo */
+@media (width >= 64rem) {
+  :root {
+    --radius-home: var(--radius-2xl);
   }
 }
 

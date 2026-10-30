@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useDevicesQuery, type OwnSubscription } from "@entities/subscription/api";
 import { readStorage, writeStorage } from "@shared/lib/safe-storage";
 import { RippleButton } from "@shared/ui/RippleButton";
-import { NoticeBar, SubscriptionCard } from "@widgets/subscription-cards/SubscriptionCard";
+import { SubscriptionCard } from "@widgets/subscription-cards/SubscriptionCard";
 
 import { CARD_ASPECT_SHORT } from "./card-aspect";
 
@@ -18,8 +18,6 @@ interface CardsSliderProps {
   single?: boolean;
   canBuy: boolean;
   onBuy: () => void;
-  /** where the selected card's alert leads: its renewal */
-  renewTo?: string;
 }
 
 // below lg a slide is the page's full width, the dots say there are more (a gap as wide as the gutter keeps the next
@@ -62,7 +60,6 @@ export function CardsSlider({
   single = false,
   canBuy,
   onBuy,
-  renewTo,
 }: CardsSliderProps) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
@@ -154,8 +151,6 @@ export function CardsSlider({
     };
   }, [reduced, ids]);
 
-  const selected = subscriptions.find((sub) => sub.id === selectedId);
-
   return (
     <div>
       <div className="relative mb-3 lg:mb-0">
@@ -165,7 +160,8 @@ export function CardsSlider({
         >
           {/* the slides stretch to the tallest card, the cards and the buy slide fill them; strips stand apart (NoticeBar) */}
           {subscriptions.map((sub, index) => (
-            <div key={sub.id} data-index={index} className={SLIDE}>
+            // alone, the slide fills the track at every width: on desktop it's the half beside the tiles
+            <div key={sub.id} data-index={index} className={single ? "w-full shrink-0" : SLIDE}>
               <RippleButton
                 type="button"
                 aria-pressed={sub.id === selectedId}
@@ -175,7 +171,7 @@ export function CardsSlider({
                   if (trackRef.current) scrollToSlide(trackRef.current, index, reduced ? "auto" : "smooth");
                 }}
                 // alone, the card takes the "buy" slide's height itself
-                className={`relative block ${single ? CARD_ASPECT_SHORT : "h-full"} w-full rounded-home text-left transition-opacity ${
+                className={`relative block ${single ? CARD_ASPECT_SHORT : "h-full"} w-full rounded-subscription text-left transition-opacity ${
                   sub.id === selectedId ? "" : "opacity-55 hover:opacity-90"
                 }`}
               >
@@ -189,7 +185,7 @@ export function CardsSlider({
                 type="button"
                 disabled={!canBuy}
                 onClick={onBuy}
-                className={`relative flex ${CARD_ASPECT_SHORT} h-full w-full flex-col items-center justify-center gap-1.5 rounded-home border-[1.5px] border-dashed border-white/20 text-sm text-muted-foreground transition-colors hover:bg-white/[0.03] disabled:cursor-not-allowed disabled:opacity-60`}
+                className={`relative flex ${CARD_ASPECT_SHORT} h-full w-full flex-col items-center justify-center gap-1.5 rounded-subscription border-[1.5px] border-dashed border-white/20 text-sm text-muted-foreground transition-colors hover:bg-white/[0.03] disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 {canBuy ? <Plus className="size-8 stroke-[1.5] text-primary" /> : <TriangleAlert className="size-6 stroke-[1.5]" />}
                 {canBuy ? t("home.buy") : t("home.limitReached")}
@@ -227,8 +223,6 @@ export function CardsSlider({
           ))}
         </div>
       </div>
-
-      {selected && <NoticeBar sub={selected} to={renewTo} />}
     </div>
   );
 }

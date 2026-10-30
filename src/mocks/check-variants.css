@@ -1,0 +1,252 @@
+/* Dev-only (VITE_MOCKS=1): the result marks' candidates for CheckVariants. Not part of the app's styles. */
+
+.cv-art {
+  --soft: color-mix(in oklab, var(--tone) 15%, transparent);
+  --edge: color-mix(in oklab, var(--tone) 40%, transparent);
+  position: relative;
+  display: flex;
+  width: 120px;
+  height: 120px;
+  align-items: center;
+  justify-content: center;
+  color: var(--tone);
+}
+.cv-success {
+  --tone: var(--color-success);
+}
+.cv-error {
+  --tone: var(--color-error);
+}
+.cv-warning {
+  --tone: var(--color-warning);
+}
+
+/* the app's size: as tall as the lg button under it */
+.cv-disc {
+  position: relative;
+  display: flex;
+  width: 64px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--edge);
+  background: var(--soft);
+  animation: cv-pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.cv-mark path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: cv-draw 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.25s forwards;
+}
+
+/* after the pop: a shake (error), a wiggle (warning) */
+.cv-shake {
+  animation:
+    cv-pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    cv-shake 0.45s ease-in-out 0.55s;
+}
+.cv-wiggle {
+  animation:
+    cv-pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    cv-wiggle 0.6s ease-in-out 0.55s;
+}
+
+/* glow and waves */
+.cv-glow {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--tone) 30%, transparent);
+  filter: blur(20px);
+  animation: cv-breathe 3s ease-in-out infinite;
+}
+.cv-wave {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklab, var(--tone) 45%, transparent);
+  animation: cv-wave 2.4s ease-out infinite;
+}
+.cv-wave.late {
+  animation-delay: 1.2s;
+}
+/* one wave only, as the mark lands */
+.cv-wave.once {
+  opacity: 0;
+  animation: cv-wave 0.9s ease-out 0.35s;
+}
+
+/* solid */
+.cv-solid {
+  border: 0;
+  background: var(--tone);
+  color: var(--color-canvas);
+  box-shadow: 0 12px 28px -8px color-mix(in oklab, var(--tone) 60%, transparent);
+  animation: cv-bounce 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* the ring draws, then the mark */
+.cv-ring {
+  position: absolute;
+}
+.cv-ring circle {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  animation: cv-draw 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.cv-after-ring path {
+  animation-delay: 0.55s;
+}
+
+/* no disc */
+.cv-bare svg {
+  filter: drop-shadow(0 0 14px color-mix(in oklab, var(--tone) 55%, transparent));
+}
+.cv-bare-icon {
+  animation: cv-pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  filter: drop-shadow(0 0 14px color-mix(in oklab, var(--tone) 55%, transparent));
+}
+
+/* halo rings */
+.cv-halo {
+  position: absolute;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in oklab, var(--tone) 18%, transparent);
+  background: color-mix(in oklab, var(--tone) 6%, transparent);
+  animation: cv-pop 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* brand gradient */
+.cv-brand {
+  border: 0;
+  background: linear-gradient(135deg, var(--color-primary), var(--tone));
+  color: var(--color-canvas);
+  box-shadow:
+    0 0 0 6px color-mix(in oklab, var(--color-primary) 8%, transparent),
+    0 14px 32px -10px color-mix(in oklab, var(--color-primary) 55%, transparent);
+}
+
+/* a spinner resolves into the mark */
+.cv-arc {
+  position: absolute;
+  inset: 28px;
+  border-radius: 9999px;
+  border: 2px solid rgb(255 255 255 / 0.08);
+  border-top-color: var(--color-primary);
+  animation:
+    cv-spin 0.6s linear 2,
+    cv-hide 0.01s linear 1.2s forwards;
+}
+.cv-late {
+  animation-delay: 1.2s;
+}
+.cv-late .cv-mark path {
+  animation-delay: 1.45s;
+}
+
+@keyframes cv-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes cv-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes cv-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+@keyframes cv-wiggle {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+  75% {
+    transform: rotate(-4deg);
+  }
+}
+@keyframes cv-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
+}
+@keyframes cv-wave {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+@keyframes cv-bounce {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+  70% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes cv-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes cv-hide {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-art *,
+  .cv-art *::before {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -90,33 +90,36 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
   const inactive = hint === "back" || notice === "disabled" || notice === "deleted";
   const date = formatDate(sub.expire_at, locale);
 
-  // the edge is drawn round a wrapper: the card itself clips to its corners
+  // the edge is drawn round a wrapper: the card itself clips to its corners. Below lg the card's contents grow with its
+  // width (cqw), from a 358px card (a 390px phone) on, so a wide phone's taller card isn't left half empty; the clamps'
+  // minimums are the sizes it had, and lg puts them back for the three-across desktop row
   return (
-    <div className={`relative h-full w-full rounded-home ${selected && !alert ? SELECTED_EDGE : ""}`}>
+    <div className={`@container/card relative h-full w-full rounded-subscription ${selected && !alert ? SELECTED_EDGE : ""}`}>
       <div
-        className={`relative flex h-full w-full flex-col overflow-hidden rounded-home border border-white/[0.14] bg-white/[0.06] backdrop-blur-xl backdrop-saturate-150 ${
+        className={`relative flex h-full w-full flex-col overflow-hidden rounded-subscription border border-white/[0.14] bg-white/[0.06] backdrop-blur-xl backdrop-saturate-150 ${
           inactive ? "text-muted-foreground" : "text-foreground"
         }`}
       >
         <BrandMark className="pointer-events-none absolute -right-5 -bottom-5 size-36 opacity-[0.04]" />
 
-        <div className="relative flex flex-1 flex-col gap-3 px-[18px] py-4">
+        <div className="relative flex flex-1 flex-col gap-[clamp(12px,3.35cqw,18px)] px-[clamp(18px,5cqw,28px)] py-[clamp(16px,4.5cqw,24px)] lg:gap-3 lg:px-[18px] lg:py-4">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">
-              <Icon className="size-4 shrink-0" />
+            <div className="flex min-w-0 items-center gap-1.5 text-[length:clamp(14px,3.9cqw,19px)] font-semibold lg:text-sm">
+              <Icon className="size-[clamp(16px,4.5cqw,22px)] shrink-0 lg:size-4" />
               <span className="truncate">{sub.plan_name}</span>
             </div>
-            <span className="shrink-0 font-mono text-[12px] tracking-[0.12em] text-muted-foreground">
+            <span className="shrink-0 font-mono text-[length:clamp(12px,3.35cqw,16px)] tracking-[0.12em] text-muted-foreground lg:text-[12px]">
               {subscriptionNumber(sub.id)}
             </span>
           </div>
 
           {/* what's left of the traffic, large; the bar shrinks as it's used. With the pills under it, at the foot: a card
-              stretched to the slider's height gets the room under its header */}
+              stretched to the slider's height gets the room under its header. The lone desktop card (over 400px, beside
+              the tiles) has much more of it: the traffic rises 24px off the pills */}
           {!compact && (
-            <div className="mt-auto flex flex-col gap-1.5">
+            <div className="mt-auto flex flex-col lg:@min-[400px]/card:mb-6 gap-[clamp(6px,1.7cqw,9px)] lg:gap-1.5">
               <div className="flex items-baseline justify-between gap-2">
-                <span className={`text-[26px] font-bold leading-[1.1] tracking-tight ${TEXT_TONE[trafficTone]}`}>
+                <span className={`text-[length:clamp(26px,7.3cqw,40px)] font-bold leading-[1.1] tracking-tight lg:text-[26px] ${TEXT_TONE[trafficTone]}`}>
                   {sub.effective_traffic_limit === 0
                     ? "∞"
                     : sub.used_traffic === null
@@ -124,21 +127,21 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
                       : formatBytes(Math.max(0, sub.effective_traffic_limit * GB - sub.used_traffic), locale)}
                 </span>
                 {ratio !== null && sub.used_traffic !== null && (
-                  <span className="min-w-0 truncate text-[13px] font-bold">
+                  <span className="min-w-0 truncate text-[length:clamp(13px,3.65cqw,18px)] font-bold lg:text-[13px]">
                     {t("home.trafficUsed", { value: formatBytes(sub.used_traffic, locale) })}
                   </span>
                 )}
               </div>
               {ratio !== null && (
-                <div className="h-2.5 overflow-hidden rounded-full bg-black/[0.28]">
+                <div className="h-[clamp(10px,2.8cqw,14px)] overflow-hidden rounded-full bg-black/[0.28] lg:h-2.5">
                   <div className={`h-full rounded-full ${BAR_TONE[trafficTone]}`} style={{ width: `${(1 - ratio) * 100}%` }} />
                 </div>
               )}
               {/* used up: nothing "left of" it to speak of, the strip says why; the empty line keeps the traffic where
                   it stands on the other cards */}
-              <div className="text-[12px] text-muted-foreground">
+              <div className="text-[length:clamp(12px,3.35cqw,16px)] text-muted-foreground lg:text-[12px]">
                 {trafficOut(sub)
-                  ? "\u00a0"
+                  ? " "
                   : sub.effective_traffic_limit === 0
                     ? t("home.trafficUnlimited")
                     : ratio === null
@@ -148,7 +151,11 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
             </div>
           )}
 
-          <div className={`@container/row flex gap-2 ${compact ? "" : "mt-1"}`}>
+          {/* on a card wider than 358px the gap grows faster than the rest (15% of the extra width), lifting the traffic
+              into the room a taller card leaves under its header */}
+          <div
+            className={`@container/row flex gap-2 ${compact ? "" : "mt-[clamp(4px,calc(4px_+_(100cqw_-_358px)_*_0.15),40px)] lg:mt-1"}`}
+          >
             <Pill
               icon={Clock}
               label={t("home.left")}
@@ -230,7 +237,10 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
   );
 }
 
-/** short: the value abbreviated ("23 ч"), shown instead while the full one would overflow or cut the word off. */
+/**
+ * short: the value abbreviated ("23 ч"), shown instead while the full one would overflow or cut the word off. Its cqw
+ * are the pill row's (@container/row: 322px on a 358px card), not the card's.
+ */
 function Pill({
   icon: Icon,
   label,
@@ -264,9 +274,9 @@ function Pill({
   return (
     <span
       ref={ref}
-      className="flex min-w-0 flex-1 items-center justify-between gap-1.5 rounded-full bg-black/[0.22] px-3 py-1.5 text-[12px]"
+      className="flex min-w-0 flex-1 items-center justify-between gap-1.5 rounded-full bg-black/[0.22] px-[clamp(12px,3.7cqw,18px)] py-[clamp(6px,1.9cqw,9px)] text-[length:clamp(12px,3.7cqw,16px)] lg:px-3 lg:py-1.5 lg:text-[12px]"
     >
-      <Icon className="size-3.5 shrink-0 text-muted-foreground @min-[290px]/row:hidden" aria-hidden />
+      <Icon className="size-[clamp(14px,4.35cqw,19px)] shrink-0 text-muted-foreground lg:size-3.5 @min-[290px]/row:hidden" aria-hidden />
       {/* not-sr-only would undo truncate, so the word and its screen-reader copy are two spans */}
       <span className="sr-only @min-[290px]/row:hidden">{label}</span>
       <span className="hidden truncate text-muted-foreground @min-[290px]/row:block">{label}</span>

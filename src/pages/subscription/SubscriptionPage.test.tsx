@@ -48,6 +48,7 @@ vi.mock("@widgets/redeem-days/RedeemDaysSheet", () => ({ RedeemDaysSheet: () => 
 vi.mock("@widgets/subscription-cards/CardsSlider", () => ({
   CardsSlider: ({ selectedId }: { selectedId: number }) => <div data-testid="selected">{selectedId}</div>,
 }));
+vi.mock("@widgets/subscription-cards/SubscriptionCard", () => ({ NoticeBar: () => null }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

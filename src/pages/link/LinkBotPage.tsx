@@ -1,4 +1,3 @@
-import { TriangleAlert } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -48,7 +47,7 @@ export function LinkBotPage() {
   }
   return (
     <FullScreenMessage
-      icon={TriangleAlert}
+      tone={exchange.isError ? "error" : "warning"}
       title={t(exchange.isError ? "link.failed" : "link.botLinkExpired")}
       text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : t("link.botLinkElsewhere")}
     >

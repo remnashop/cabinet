@@ -1,5 +1,6 @@
-import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+
+import { AlertMark } from "@shared/ui/AlertMark";
 
 /** Centered column for screens outside the shell: splash, sign-in, errors. */
 export function FullScreen({ children }: { children: ReactNode }) {
@@ -10,22 +11,22 @@ export function FullScreen({ children }: { children: ReactNode }) {
   );
 }
 
-/** A screen that only says something: its title, a line under it, the way on below. icon: an error's mark over the
- *  title, muted as PageEmpty's (TriangleAlert). */
+/** A screen that only says something: its title, a line under it, the way on below. tone: an error's or a warning's
+ *  mark over the title (AlertMark). */
 export function FullScreenMessage({
-  icon: Icon,
+  tone,
   title,
   text,
   children,
 }: {
-  icon?: LucideIcon;
+  tone?: "error" | "warning";
   title: string;
   text?: string | null;
   children?: ReactNode;
 }) {
   return (
     <FullScreen>
-      {Icon && <Icon className="size-8 text-muted-foreground" aria-hidden />}
+      {tone && <AlertMark tone={tone} />}
       <h1 className="text-lg font-bold">{title}</h1>
       {text && <p className="text-sm text-muted-foreground">{text}</p>}
       {children}

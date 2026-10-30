@@ -1,4 +1,4 @@
-import { CloudOff, QrCode, TriangleAlert } from "lucide-react";
+import { CloudOff, QrCode } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -50,7 +50,7 @@ export function ConnectPage() {
     return (
       <>
         {header}
-        <PageEmpty icon={TriangleAlert} text={t("connect.notFound")}>
+        <PageEmpty warning text={t("connect.notFound")}>
           <ButtonLink to="/" variant="outline" className="mt-1">
             {t("common.home")}
           </ButtonLink>

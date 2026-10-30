@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { CheckVariants } from "./CheckVariants";
 import {
   loadScenario,
   saveScenario,
@@ -70,6 +71,7 @@ function useHeaderSlot() {
 export function DebugPanel() {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(loadScenario);
+  const [checks, setChecks] = useState(false);
   const slot = useHeaderSlot();
 
   const headerButton =
@@ -91,6 +93,7 @@ export function DebugPanel() {
   return (
     <>
       {headerButton}
+      {checks && <CheckVariants onDone={() => setChecks(false)} />}
       <div
         className={`fixed z-[100] ${
           slot ? "top-[calc(var(--safe-top)+64px)] right-4" : "bottom-[calc(max(var(--safe-bottom),16px)+80px)] left-4 lg:bottom-4"
@@ -145,6 +148,16 @@ export function DebugPanel() {
                   Применить
                 </button>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setChecks(true);
+                }}
+                className="h-8 rounded-full border border-border text-[12.5px] font-semibold"
+              >
+                Варианты значков
+              </button>
             </motion.div>
           )}
         </AnimatePresence>

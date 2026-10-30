@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Percent, TriangleAlert } from "lucide-react";
+import { Percent } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +7,7 @@ import { activatePromocode, usePromocodeTargetsQuery, type PromocodeActivation }
 import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { ApiError, getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
+import { AlertMark } from "@shared/ui/AlertMark";
 import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { ButtonLink } from "@shared/ui/ButtonLink";
@@ -86,7 +87,7 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
     body = (
       <>
         <div className="flex flex-col items-center gap-3 pt-4 text-center">
-          <TriangleAlert className="size-8 text-muted-foreground" />
+          <AlertMark tone="warning" />
           <p className="text-sm text-muted-foreground">{t("promo.noTargetTitle")}</p>
         </div>
         <div className="mt-5 flex gap-2">

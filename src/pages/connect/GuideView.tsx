@@ -16,7 +16,7 @@ import {
   Unplug,
   type LucideIcon,
 } from "lucide-react";
-import { useCallback, useState, type ComponentType, type SVGProps } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
@@ -26,7 +26,7 @@ import type { OwnSubscription } from "@entities/subscription/api";
 import { readStorage, writeStorage } from "@shared/lib/safe-storage";
 import { haptic, isMiniApp, openExternal } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
-import { AndroidIcon, AppleIcon, LinuxIcon, TvIcon, WindowsIcon } from "@shared/ui/PlatformIcons";
+import { AndroidIcon, AppleIcon, DevicesIcon, LinuxIcon, TvIcon, WindowsIcon } from "@shared/ui/PlatformIcons";
 import { StepTransition } from "@shared/ui/StepTransition";
 import { PulseButton } from "@shared/ui/PulseButton";
 import { RippleButton } from "@shared/ui/RippleButton";
@@ -77,6 +77,36 @@ const PLATFORM_MARKS: { id: PlatformId; mark: ComponentType<SVGProps<SVGSVGEleme
   { id: "linux", mark: LinuxIcon },
 ];
 const MAIN_PLATFORMS: PlatformId[] = ["ios", "android", "macos", "windows"];
+
+/** The full label while it fits on one line, the short one once it would wrap (a phone, beside the button's icon). */
+function FitLabel({ full, short }: { full: string; short: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [shortened, setShortened] = useState(false);
+  // the button's resize tries the full one again (not the label's: its width follows the text); the check below,
+  // before paint, falls back if it's cut
+  useEffect(() => {
+    const el = ref.current?.parentElement;
+    if (!el) return;
+    const observer = new ResizeObserver(() => setShortened(false));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!shortened && el && el.scrollWidth > el.clientWidth) setShortened(true);
+  }, [shortened, full]);
+  // the short one may still wrap on the narrowest phones: no truncate on it
+  return (
+    <span ref={ref} className={shortened ? "min-w-0" : "min-w-0 truncate"}>
+      {shortened ? short : full}
+    </span>
+  );
+}
+
+function PlatformMark({ platform }: { platform: PlatformId }) {
+  const Mark = PLATFORM_MARKS.find((p) => p.id === platform)?.mark;
+  return Mark ? <Mark className="size-5" /> : null;
+}
 
 // what a person picks; iPhone and iPad share the catalog's one iOS section
 type DeviceKey = "iphone" | "ipad" | "android" | "windows" | "mac" | "androidtv" | "appletv" | "linux";
@@ -198,9 +228,12 @@ export function GuideView({
               go("app");
             }}
           >
-            {t("connect.startHere")}
+            {/* this device's platform logo, as the "other device" list shows it: Apple's for an iPhone or a Mac */}
+            <PlatformMark platform={here.platform} />
+            <FitLabel full={t("connect.startHere")} short={t("connect.startHereShort")} />
           </PulseButton>
           <Button variant="outline" size="lg" onClick={() => go("device")}>
+            <DevicesIcon className="size-5" />
             {t("connect.otherDevice")}
           </Button>
         </Hero>

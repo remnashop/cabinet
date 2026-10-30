@@ -1,4 +1,3 @@
-import { TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 
@@ -14,7 +13,7 @@ export function PaymentResultPage() {
   const payment = usePaymentStatus(orderId);
   if (orderId === null) {
     return (
-      <FullScreenMessage icon={TriangleAlert} title={t("payment.noOrderTitle")} text={t("payment.noOrderText")}>
+      <FullScreenMessage tone="warning" title={t("payment.noOrderTitle")} text={t("payment.noOrderText")}>
         <div className="flex w-full flex-col gap-2">
           <ButtonLink to="/profile/payments" replace variant="solid" className="w-full">
             {t("pages.payments")}

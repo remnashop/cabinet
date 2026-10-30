@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 
 import { useMarkNotificationsRead, useNotificationsQuery } from "@entities/notification/api";
 import { useChangeLanguage, useMeQuery } from "@entities/session/api";
@@ -18,6 +17,7 @@ import { Avatar } from "@shared/ui/Avatar";
 import { GLASS } from "@shared/ui/BottomSheet";
 import { BounceIcon } from "@shared/ui/BounceIcon";
 import { ICON_BUTTON_CLASS } from "@shared/ui/button-class";
+import { MotionLink } from "@shared/ui/MotionLink";
 import { useRipple } from "@shared/ui/use-ripple";
 import { FormError } from "@shared/ui/FormError";
 import { SignOutSheet } from "@widgets/app-shell/SignOutSheet";
@@ -27,7 +27,6 @@ import { NotificationsList } from "./NotificationsList";
 
 const MAX_BADGE = 9;
 
-const MotionLink = motion.create(Link);
 
 // the panel's header popover: glass, grows out of its top-right corner toward the trigger
 const POPOVER = `fixed z-[60] origin-top-right rounded-popover p-1.5 ${GLASS}`;
@@ -163,7 +162,8 @@ export function HeaderActions() {
         >
           {languageRipple.ripples}
           <Languages className="size-4 shrink-0" />
-          {current.toUpperCase()}
+          {/* the language's own name, as the menu lists it */}
+          {LANGUAGE_NAMES[current]}
         </motion.button>
         {/* the border lives on a static sibling, as in the panel: a rounded border scaled via transform thickens
             at the curved ends in Chrome */}

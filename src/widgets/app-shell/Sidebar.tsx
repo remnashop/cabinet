@@ -3,17 +3,18 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { Link, NavLink, useLocation } from "react-router";
+import { Link, useLocation, useMatch, useResolvedPath } from "react-router";
 
 import { useBrandName } from "@entities/appearance/api";
 import { useHasLegalDocuments } from "@entities/legal/api";
 import { BrandMark } from "@entities/appearance/BrandMark";
 import { useReferralQuery } from "@entities/referral/api";
 import { rewardTerms } from "@features/referral/links";
-import { bounceTap } from "@shared/lib/bounceState";
+import { bounceTap, NAV_ICON_HOVER_SIZE, NAV_ICON_SIZE } from "@shared/lib/bounceState";
 import { PILL_SPRING } from "@shared/lib/motion";
 import { toggleSidebarCollapsed, useSidebarCollapsed } from "@shared/lib/sidebar-collapse";
 import { BounceIcon } from "@shared/ui/BounceIcon";
+import { MotionLink } from "@shared/ui/MotionLink";
 import { useNavItems } from "@widgets/app-shell/nav-items";
 import { InfoDialog } from "@widgets/info/InfoDialog";
 import { useSupport } from "@widgets/support/use-support";
@@ -44,12 +45,10 @@ function InviteCard() {
   );
 }
 
-const MotionNavLink = motion.create(NavLink);
-
 // The panel's sidebar pill (nav-pill.ts). Icon rail: a 40px circle, icon dead centre. Expanded: a full-width row
-// whose 17px icon keeps the same 11.5px inset on every side.
+// whose 16px icon keeps the same 12px inset on every side.
 const PILL_SHAPE =
-  "flex size-10 shrink-0 items-center justify-center gap-2.5 self-center rounded-full text-[13px] xl:group-data-expanded/sidebar:w-auto xl:group-data-expanded/sidebar:self-stretch xl:group-data-expanded/sidebar:justify-start xl:group-data-expanded/sidebar:pl-[11.5px] xl:group-data-expanded/sidebar:pr-2.5";
+  "flex size-10 shrink-0 items-center justify-center gap-2.5 self-center rounded-full text-[13px] xl:group-data-expanded/sidebar:w-auto xl:group-data-expanded/sidebar:self-stretch xl:group-data-expanded/sidebar:justify-start xl:group-data-expanded/sidebar:pl-3 xl:group-data-expanded/sidebar:pr-2.5";
 const PILL = `${PILL_SHAPE} font-medium text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground`;
 // labels show from xl, and only while the sidebar is expanded
 const LABEL = "hidden whitespace-nowrap xl:group-data-expanded/sidebar:inline";
@@ -95,9 +94,46 @@ function FooterButton({
       aria-label={label}
       className={PILL}
     >
-      <BounceIcon icon={icon} size={17} hoverSize={23.5} />
+      <BounceIcon icon={icon} size={NAV_ICON_SIZE} hoverSize={NAV_ICON_HOVER_SIZE} />
       <span className={LABEL}>{label}</span>
     </motion.button>
+  );
+}
+
+function NavItemLink({
+  item: { to, end, icon },
+  label,
+  onHint,
+}: {
+  item: { to: string; end: boolean; icon: LucideIcon };
+  label: string;
+  onHint: (hint: Hint | null) => void;
+}) {
+  // NavLink's rule: the path itself, or below it unless `end`
+  const isActive = useMatch({ path: useResolvedPath(to).pathname, end }) !== null;
+  return (
+    <MotionLink
+      to={to}
+      initial="rest"
+      whileHover="hover"
+      {...bounceTap()}
+      {...hintProps(label, onHint)}
+      // the rail hides the label (display: none), so the link names itself
+      aria-label={label}
+      aria-current={isActive ? "page" : undefined}
+      className={isActive ? `relative isolate ${PILL_SHAPE} font-semibold text-primary` : PILL}
+    >
+      {/* one layoutId, so the highlight glides between rows instead of jumping */}
+      {isActive && (
+        <motion.span
+          layoutId="sidebar-active-pill"
+          className="absolute inset-0 -z-10 rounded-full bg-accent"
+          transition={PILL_SPRING}
+        />
+      )}
+      <BounceIcon icon={icon} size={NAV_ICON_SIZE} hoverSize={NAV_ICON_HOVER_SIZE} />
+      <span className={LABEL}>{label}</span>
+    </MotionLink>
   );
 }
 
@@ -143,38 +179,13 @@ export function Sidebar() {
             whileHover="hover"
             className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
           >
-            <BounceIcon icon={collapsed ? ChevronsRight : ChevronsLeft} size={17} hoverSize={21.25} />
+            <BounceIcon icon={collapsed ? ChevronsRight : ChevronsLeft} size={NAV_ICON_SIZE} hoverSize={NAV_ICON_HOVER_SIZE} />
           </motion.button>
         </div>
       </div>
       <nav className="flex flex-col gap-0.5">
-        {navItems.map(({ key, to, end, icon: Icon }) => (
-          <MotionNavLink
-            key={key}
-            to={to}
-            end={end}
-            initial="rest"
-            whileHover="hover"
-            {...bounceTap()}
-            {...hintProps(t(`nav.${key}`), onHint)}
-            // the rail hides the label (display: none), so the link names itself
-            aria-label={t(`nav.${key}`)}
-            className={({ isActive }) => (isActive ? `relative isolate ${PILL_SHAPE} font-semibold text-primary` : PILL)}
-          >
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <motion.span
-                    layoutId="sidebar-active-pill"
-                    className="absolute inset-0 -z-10 rounded-full bg-accent"
-                    transition={PILL_SPRING}
-                  />
-                )}
-                <BounceIcon icon={Icon} size={17} hoverSize={23.5} />
-                <span className={LABEL}>{t(`nav.${key}`)}</span>
-              </>
-            )}
-          </MotionNavLink>
+        {navItems.map((item) => (
+          <NavItemLink key={item.key} item={item} label={t(`nav.${item.key}`)} onHint={onHint} />
         ))}
       </nav>
 

@@ -1,4 +1,4 @@
-import { Check, Copy, TriangleAlert } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -28,11 +28,11 @@ export function OpenInAppPage() {
   const [copied, copy] = useCopyLink(hop?.sub ?? "");
 
   if (hop === null || (guide.data !== undefined && !built)) {
-    return <Message icon={TriangleAlert} title={t("connect.openInvalid")} text={t("connect.openInvalidHint")} />;
+    return <Message tone="warning" title={t("connect.openInvalid")} text={t("connect.openInvalidHint")} />;
   }
   if (guide.isError || verify.isError) {
     return (
-      <Message icon={TriangleAlert} title={t("connect.openFailed")} text={t("connect.openFailedHint")}>
+      <Message tone="error" title={t("connect.openFailed")} text={t("connect.openFailedHint")}>
         <Button variant="outline" onClick={() => void (guide.isError ? guide.refetch() : verify.refetch())}>
           {t("common.retry")}
         </Button>
@@ -47,7 +47,7 @@ export function OpenInAppPage() {
     );
   }
   if (!verify.data.valid) {
-    return <Message icon={TriangleAlert} title={t("connect.openUnverified")} text={t("connect.openUnverifiedHint")} />;
+    return <Message tone="warning" title={t("connect.openUnverified")} text={t("connect.openUnverifiedHint")} />;
   }
   return (
     <Message title={t("connect.openTitle")} text={t("connect.openHint")}>

@@ -4,11 +4,12 @@ import { useTranslation } from "react-i18next";
 import type { Plan } from "@entities/plan/api";
 import { planLimits } from "@features/purchase/wizard";
 
-export function PlanLimits({ plan }: { plan: Plan }) {
+/** className: layout only (grid placement, a row on wide screens). */
+export function PlanLimits({ plan, className = "" }: { plan: Plan; className?: string }) {
   const { t, i18n } = useTranslation();
   const [traffic, devices] = planLimits(plan, t, i18n.language);
   return (
-    <ul className="flex flex-col gap-1.5 text-[13px]">
+    <ul className={`flex flex-col gap-1.5 text-[13px] ${className}`}>
       {[
         { icon: Gauge, text: traffic },
         { icon: Smartphone, text: devices },

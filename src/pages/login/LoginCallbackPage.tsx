@@ -1,4 +1,3 @@
-import { TriangleAlert } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -58,7 +57,7 @@ export function LoginCallbackPage() {
   }
   return (
     <FullScreenMessage
-      icon={TriangleAlert}
+      tone="error"
       title={t(linking ? "link.failed" : "auth.callbackFailed")}
       text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : null}
     >

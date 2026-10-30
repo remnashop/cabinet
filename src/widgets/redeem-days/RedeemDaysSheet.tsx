@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, CalendarPlus, CircleCheck, Minus, Plus, TriangleAlert, Zap } from "lucide-react";
+import { CalendarClock, CalendarPlus, CircleCheck, Minus, Plus, Zap } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +9,7 @@ import { subscriptionNumber } from "@entities/subscription/lib";
 import { getErrorMessage } from "@shared/api/http";
 import { formatDate } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
+import { AlertMark } from "@shared/ui/AlertMark";
 import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { NotePill } from "@shared/ui/NotePill";
@@ -127,7 +128,7 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
         // nothing the days can extend: no question to answer
         <>
           <div className="flex flex-col items-center gap-3 pt-4 text-center">
-            <TriangleAlert className="size-8 text-muted-foreground" />
+            <AlertMark tone="warning" />
             <p className="text-sm text-muted-foreground">{t("referral.noTargetTitle")}</p>
           </div>
           <Button variant="outline" className="mt-5 w-full" onClick={close}>

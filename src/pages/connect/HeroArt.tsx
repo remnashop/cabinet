@@ -9,7 +9,7 @@ export function HeroArt({ icon: Icon }: { icon: LucideIcon }) {
   // the disc is the first ring: it breathes with them and the wave runs out from it
   const ring = (i: number) => ({ transform: "translate(-50%, -50%)", animationDelay: `${i * 0.06}s` });
   return (
-    <div className="flex flex-1 items-center justify-center py-6">
+    <div className="flex flex-1 items-center justify-center py-6 lg:flex-none">
       <div className="relative flex size-60 items-center justify-center">
         {/* as wide as the outer ring, so the mask fades the rings without cutting them; fits a 358px phone column */}
         <div className="pointer-events-none absolute top-1/2 left-1/2 size-[352px] -translate-1/2 mask-[linear-gradient(to_bottom,white,transparent)] select-none">
@@ -36,7 +36,7 @@ export function HeroArt({ icon: Icon }: { icon: LucideIcon }) {
 
 export function SuccessArt() {
   return (
-    <div className="flex flex-1 items-center justify-center py-6">
+    <div className="flex flex-1 items-center justify-center py-6 lg:flex-none">
       <div className="relative flex size-60 items-center justify-center">
         <span className="absolute size-28 rounded-full bg-success/25 blur-2xl motion-safe:animate-breathe" />
         {[0, -1.2].map((delay) => (
@@ -67,7 +67,9 @@ export function SuccessArt() {
 /**
  * A full-screen step, as UltimaVPN's: the title and hint on top, the art in the middle, the actions at the bottom.
  * On a phone it fills the screen between the header (72px) and main's bottom padding (96px), and its pb-4 adds to
- * main's 16px gap: the buttons stand 32px over the nav.
+ * main's 16px gap: the buttons stand 32px over the nav. On desktop the art keeps its own height and the whole step sits
+ * in the middle of the frame (150px: its margin and border, the header, main's padding), as the other full-screen
+ * messages; the home's empty state still fills it, its art growing.
  */
 export function Hero({
   title,
@@ -87,7 +89,7 @@ export function Hero({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-[calc(var(--tg-viewport-stable-height,100dvh)-168px-var(--safe-top)-var(--safe-bottom))] flex-col items-center gap-6 pb-4 text-center lg:min-h-0 lg:flex-1 lg:pb-0">
+    <div className="flex min-h-[calc(var(--tg-viewport-stable-height,100dvh)-168px-var(--safe-top)-var(--safe-bottom))] flex-col items-center gap-6 pb-4 text-center lg:min-h-[calc(100dvh-150px)] lg:flex-1 lg:justify-center lg:pb-0">
       <div className={`flex flex-col gap-2 ${lower ? "pt-10" : "pt-6"}`}>
         <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
         <p className="mx-auto max-w-64 text-sm text-muted-foreground">{hint}</p>

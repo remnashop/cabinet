@@ -7,6 +7,7 @@ import { retryPath } from "@features/purchase/wizard";
 import { getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
+import { Sparks } from "@shared/ui/SuccessCheck";
 
 import type { usePaymentStatus } from "./usePaymentStatus";
 
@@ -31,7 +32,7 @@ function StatusArt({
   const [disc, glow, ring] = TONE[tone];
   // waiting: room for the rings it sends out (scale 2.3), so they don't run over the title
   return (
-    <div className={`relative flex size-24 items-center justify-center ${waiting ? "my-10" : "mb-2"}`} aria-hidden>
+    <div className={`relative flex size-20 items-center justify-center ${waiting ? "my-10" : "mb-2"}`} aria-hidden>
       <span className={`absolute inset-0 rounded-full blur-2xl motion-safe:animate-breathe ${glow}`} />
       {waiting && (
         <>
@@ -42,9 +43,10 @@ function StatusArt({
           <span className="absolute -inset-1.5 rounded-full border-2 border-transparent border-t-primary motion-safe:animate-spin" />
         </>
       )}
-      <span className={`relative flex size-20 items-center justify-center rounded-full border ${disc} ${path ? "motion-safe:animate-pop" : ""}`}>
+      {tone === "success" && <Sparks />}
+      <span className={`relative flex size-16 items-center justify-center rounded-full border ${disc} ${path ? (tone === "error" ? "motion-safe:animate-pop-shake" : "motion-safe:animate-pop") : ""}`}>
         {path ? (
-          <svg viewBox="0 0 24 24" className="size-9" fill="none" stroke="currentColor" strokeWidth={2.25}>
+          <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth={2.25}>
             {/* pathLength 1: the dash animation draws it whatever the path's real length */}
             <path
               d={path}
@@ -85,7 +87,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
     return (
       <>
         <StatusArt tone="primary" waiting>
-          <CreditCard className="size-8" />
+          <CreditCard className="size-7" />
         </StatusArt>
         {heading(t("payment.waitingTitle"), t("payment.waiting"))}
       </>
@@ -144,7 +146,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
   return (
     <>
       <StatusArt tone="muted">
-        <Clock className="size-8" />
+        <Clock className="size-7" />
       </StatusArt>
       {heading(t("payment.timeoutTitle"), t("payment.timeout"))}
       <div className="flex w-full flex-col gap-2">

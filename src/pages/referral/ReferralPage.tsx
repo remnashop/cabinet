@@ -27,7 +27,7 @@ export function ReferralPage() {
   const support = useSupport();
   const close = () => setSheet(null);
 
-  const header = <PageHeader title={t("pages.referral")} backTo="/" />;
+  const header = <PageHeader title={t("pages.referral")} backTo="/" navItem />;
 
   if (referral.isError && !referral.data) {
     return (

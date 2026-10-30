@@ -224,6 +224,7 @@
     "setupOn": "Set up on {{device}}",
     "setupHint": "Connecting takes 3 steps and a couple of minutes",
     "startHere": "Set up this device",
+    "startHereShort": "Set up this device",
     "otherDevice": "Set up another device",
     "appHint": "Install the {{app}} app and come back to this screen",
     "appHintOther": "Follow the link on the device you want to connect and install {{app}}. Once it is installed, come back to this screen",
@@ -310,7 +311,6 @@
     "changePlan": "Change",
     "devicesTitle": "My devices · {{used}} of {{limit}}",
     "devicesTitleUnlimited": "My devices · {{used}}",
-    "redeem": "Apply",
     "discount": "Your discount",
     "freeSlot_one": "You can connect {{count}} more device",
     "freeSlot_other": "You can connect {{count}} more devices",
@@ -348,6 +348,11 @@
       "RENEW": "Renewal",
       "CHANGE": "Change"
     },
+    "titlesFull": {
+      "NEW": "Subscription purchase",
+      "RENEW": "Subscription renewal",
+      "CHANGE": "Change"
+    },
     "trafficUnlimited": "Unlimited traffic",
     "trafficAmount": "{{amount}} of traffic",
     "devices_one": "{{count}} device",
@@ -381,6 +386,7 @@
     "chooseMethod": "Choose a payment method",
     "stepMethod": "Payment method",
     "stepSummary": "Confirmation",
+    "stepNumber": "Step {{number}}",
     "years_one": "{{count}} year",
     "years_other": "{{count}} years",
     "months_one": "{{count}} month",
@@ -510,14 +516,12 @@
     "apply": "Apply",
     "redeemedTitle": "Bonus days applied",
     "redeemedUntil": "Subscription extended until {{date}}",
-    "redeemPending": "The days will be added once the panel responds"
+    "redeemPending": "The days will show up in your subscription shortly"
   },
   "profile": {
     "id": "ID {{id}}",
     "copyId": "Copy the ID",
     "balance": "Balance",
-    "points": "Points balance",
-    "bonusDays": "Bonus days",
     "bonusDaysCount_one": "Bonus day",
     "bonusDaysCount_other": "Bonus days",
     "pointsCount_one": "Point",

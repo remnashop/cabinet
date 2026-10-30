@@ -1,4 +1,3 @@
-import { TriangleAlert } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,7 +42,7 @@ export function UnsubscribePage() {
   const canSubmit = token !== null && !action.isSuccess;
 
   return (
-    <FullScreenMessage icon={!token || action.isError ? TriangleAlert : undefined} title={title} text={text}>
+    <FullScreenMessage tone={!token ? "warning" : action.isError ? "error" : undefined} title={title} text={text}>
       {canSubmit && (
         <Button variant="solid" className="w-full" disabled={action.isPending} onClick={() => action.mutate(token)}>
           {action.isError ? t("common.retry") : t("unsubscribe.confirm")}

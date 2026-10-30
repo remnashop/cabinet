@@ -1,4 +1,3 @@
-import { TriangleAlert } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router";
@@ -76,7 +75,8 @@ export function PlanWizardPage() {
 
   // every step says what's going on (a purchase, a renewal, a change); the plan's name is on the card under it
   const title = plan ? t(`purchase.titles.${type}`) : t("pages.purchase");
-  const header = <PageHeader title={title} onBack={onBack} />;
+  const desktopTitle = plan ? t(`purchase.titlesFull.${type}`) : undefined;
+  const header = <PageHeader title={title} desktopTitle={desktopTitle} onBack={onBack} />;
 
   if (catalog.isError && !catalog.data) {
     return (
@@ -99,7 +99,7 @@ export function PlanWizardPage() {
     return (
       <>
         {header}
-        <PageEmpty icon={TriangleAlert} text={t("purchase.planNotFound")}>
+        <PageEmpty warning text={t("purchase.planNotFound")}>
           <ButtonLink to={exitTo} variant="outline" className="mt-1">
             {type === "RENEW" ? t("common.home") : t("purchase.toCatalog")}
           </ButtonLink>

@@ -1,4 +1,3 @@
-import { TriangleAlert } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouteError } from "react-router";
@@ -26,7 +25,7 @@ export function RouteErrorPage() {
 
   if (reloading) return null;
   return (
-    <FullScreenMessage icon={TriangleAlert} title={t("errors.pageTitle")} text={stale ? t("errors.newVersion") : t("errors.generic")}>
+    <FullScreenMessage tone="error" title={t("errors.pageTitle")} text={stale ? t("errors.newVersion") : t("errors.generic")}>
       <Button variant="solid" className="w-full" onClick={() => window.location.reload()}>
         {t("common.reload")}
       </Button>

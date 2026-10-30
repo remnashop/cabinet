@@ -169,7 +169,7 @@ export function ProfilePage() {
     else oauthLink.mutate(kind.toLowerCase());
   };
 
-  const header = <PageHeader title={t("pages.profile")} backTo="/" />;
+  const header = <PageHeader title={t("pages.profile")} backTo="/" navItem />;
   if (me.isError && !me.data) {
     return (
       <>

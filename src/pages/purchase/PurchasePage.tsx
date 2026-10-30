@@ -24,6 +24,12 @@ import { PlanLimits } from "./PlanLimits";
 
 const MotionLink = motion.create(Link);
 
+// the card's grid with its button, and without it (an inert card): no empty track, so no gap where the button would be
+const WITH_BUTTON =
+  "grid-rows-[auto_auto_1fr_auto] [grid-template-areas:'head_head'_'desc_desc'_'feat_price'_'btn_btn'] lg:grid-cols-[1fr_auto_9rem] lg:[grid-template-areas:'head_price_btn'_'desc_price_btn'_'feat_price_btn']";
+const NO_BUTTON =
+  "grid-rows-[auto_auto_1fr] [grid-template-areas:'head_head'_'desc_desc'_'feat_price'] lg:[grid-template-areas:'head_price'_'desc_price'_'feat_price']";
+
 function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: boolean }) {
   const { plan, currency, to, current } = props;
   const { t, i18n } = useTranslation();
@@ -43,8 +49,11 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
           className="pointer-events-none absolute inset-y-0 -left-1/2 hidden w-1/2 bg-linear-to-r from-transparent via-white/[0.06] to-transparent motion-safe:block motion-safe:animate-shine"
         />
       )}
-      <div className="relative flex h-full flex-col gap-3">
-        <div className="flex items-center justify-between gap-2">
+      {/* phone: the name, the description, what's inside with the price beside it, the button under them; desktop: one
+          row, the text on the left, the price and a compact button on the right. What's inside sits at the bottom
+          on both, so a card without a description keeps its taller neighbours' edges */}
+      <div className={`relative grid h-full grid-cols-[1fr_auto] gap-3 lg:grid-rows-[auto_auto_1fr] lg:gap-x-6 lg:gap-y-2 ${to ? WITH_BUTTON : NO_BUTTON}`}>
+        <div className="flex items-center justify-between gap-2 [grid-area:head] lg:justify-start">
           <span className="flex min-w-0 items-center gap-1.5">
             {plan.is_trial ? <Gift className="size-4 shrink-0" /> : <Zap className="size-4 shrink-0" />}
             <span className="truncate text-base font-bold">{plan.name}</span>
@@ -65,29 +74,27 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
             )
           )}
         </div>
-        {plan.description && <p className="text-[12px] text-muted-foreground">{plan.description}</p>}
-        <div className="mt-auto flex items-end justify-between gap-3">
-          <PlanLimits plan={plan} />
-          {price !== null && (
-            <span className="flex shrink-0 flex-col items-end gap-1">
-              {price.discounted_price && (
-                <span className="flex items-center gap-1.5 text-[12px]">
-                  <span className="text-muted-foreground line-through">{money(price.price)}</span>
-                  <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
-                    −{plan.discount_percent}%
-                  </span>
+        {plan.description && <p className="text-[12px] text-muted-foreground [grid-area:desc]">{plan.description}</p>}
+        <PlanLimits plan={plan} className="self-end [grid-area:feat] lg:flex-row lg:gap-4" />
+        {price !== null && (
+          <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
+            {price.discounted_price && (
+              <span className="flex items-center gap-1.5 text-[12px]">
+                <span className="text-muted-foreground line-through">{money(price.price)}</span>
+                <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
+                  −{plan.discount_percent}%
                 </span>
-              )}
-              <span className="text-[26px] leading-none font-bold tabular-nums tracking-tight">
-                {single ? money(effectivePrice(price)) : t("purchase.from", { price: money(effectivePrice(price)) })}
               </span>
-              {single && (
-                <span className="text-[12px] text-muted-foreground">{t("purchase.per", { period: durationLabel(single.days, t) })}</span>
-              )}
+            )}
+            <span className="text-[26px] leading-none font-bold tabular-nums tracking-tight">
+              {single ? money(effectivePrice(price)) : t("purchase.from", { price: money(effectivePrice(price)) })}
             </span>
-          )}
-        </div>
-        {to && <span className={`${buttonClass("outline", "md")} w-full`}>{t("purchase.choose")}</span>}
+            {single && (
+              <span className="text-[12px] text-muted-foreground">{t("purchase.per", { period: durationLabel(single.days, t) })}</span>
+            )}
+          </span>
+        )}
+        {to && <span className={`${buttonClass("outline", "md")} [grid-area:btn] lg:self-center`}>{t("purchase.choose")}</span>}
       </div>
     </>
   );
@@ -144,7 +151,7 @@ export function PurchasePage() {
     }
     if (plans.every((p) => p.id === currentPlanId)) {
       body = (
-        <PageEmpty icon={TriangleAlert} text={t(change ? "purchase.emptyChange" : "purchase.empty")}>
+        <PageEmpty warning text={t(change ? "purchase.emptyChange" : "purchase.empty")}>
           <SupportButton className="mt-1" />
         </PageEmpty>
       );
@@ -178,7 +185,8 @@ export function PurchasePage() {
 
   return (
     <>
-      <PageHeader title={title} backTo="/" />
+      {/* the catalog is the sidebar's "Buy"; a renewal or a plan change came from the home page and keeps its arrow */}
+      <PageHeader title={title} backTo="/" navItem={type === "NEW"} />
       <div className="flex flex-col gap-4">{body}</div>
     </>
   );

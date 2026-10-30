@@ -224,6 +224,7 @@
     "setupOn": "Настройка на {{device}}",
     "setupHint": "Подключение происходит в 3 шага и занимает пару минут",
     "startHere": "Начать настройку на этом устройстве",
+    "startHereShort": "Настроить на этом устройстве",
     "otherDevice": "Настроить на другом устройстве",
     "appHint": "Установите приложение {{app}} и вернитесь к этому экрану",
     "appHintOther": "Перейдите по ссылке с устройства, которое хотите подключить, и установите {{app}}. После установки вернитесь к этому экрану",
@@ -322,7 +323,6 @@
     "changePlan": "Изменить",
     "devicesTitle": "Мои устройства · {{used}} из {{limit}}",
     "devicesTitleUnlimited": "Мои устройства · {{used}}",
-    "redeem": "Применить",
     "discount": "Ваша скидка",
     "freeSlot_one": "Можно подключить ещё {{count}} устройство",
     "freeSlot_few": "Можно подключить ещё {{count}} устройства",
@@ -368,6 +368,11 @@
       "RENEW": "Продление",
       "CHANGE": "Изменение"
     },
+    "titlesFull": {
+      "NEW": "Покупка подписки",
+      "RENEW": "Продление подписки",
+      "CHANGE": "Изменение"
+    },
     "trafficUnlimited": "Безлимитный трафик",
     "trafficAmount": "{{amount}} трафика",
     "devices_one": "{{count}} устройство",
@@ -403,6 +408,7 @@
     "chooseMethod": "Выберите способ оплаты",
     "stepMethod": "Способ оплаты",
     "stepSummary": "Подтверждение",
+    "stepNumber": "Шаг {{number}}",
     "years_one": "{{count}} год",
     "years_few": "{{count}} года",
     "years_many": "{{count}} лет",
@@ -558,14 +564,12 @@
     "apply": "Применить",
     "redeemedTitle": "Бонусные дни применены",
     "redeemedUntil": "Подписка продлена до {{date}}",
-    "redeemPending": "Дни добавятся, когда панель ответит"
+    "redeemPending": "Дни скоро появятся в подписке"
   },
   "profile": {
     "id": "ID {{id}}",
     "copyId": "Скопировать ID",
     "balance": "Баланс",
-    "points": "Баланс баллов",
-    "bonusDays": "Бонусные дни",
     "bonusDaysCount_one": "Бонусный день",
     "bonusDaysCount_few": "Бонусных дня",
     "bonusDaysCount_many": "Бонусных дней",

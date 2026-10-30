@@ -1,5 +1,6 @@
 import { Check, Gift, Zap } from "lucide-react";
 import { motion } from "motion/react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useQuoteQuery, type PaymentMethod, type Plan, type PlanAccess, type Quote } from "@entities/plan/api";
@@ -100,14 +101,35 @@ function Receipt({ quote }: { quote: Quote }) {
   );
 }
 
+/** The steps in one capsule across the whole width, as the bottom nav's but in the duration tiles' fill: the current one in a highlight that glides
+ *  between them; a done one adds a tick and leads back to it; the ones ahead have their names muted. When the names
+ *  don't fit (a phone, the ticks of the last step), only the current one keeps its name: the others shrink to
+ *  "Step 2", with the tick once done. */
 function DotStepper({ step, skipMethod, onStep }: HeadProps) {
   const { t } = useTranslation();
+  const ref = useRef<HTMLDivElement>(null);
+  // the step the names were found cut on: another step (fewer ticks) or a resize tries them again; the check below,
+  // before paint, falls back if one is cut
+  const [compactAt, setCompactAt] = useState<number | null>(null);
+  const compact = compactAt === step;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => setCompactAt(null));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  useLayoutEffect(() => {
+    if (compact || !ref.current) return;
+    if ([...ref.current.querySelectorAll(".truncate")].some((el) => el.scrollWidth > el.clientWidth)) setCompactAt(step);
+  }, [compact, step, t]);
+  const steps = STEPS.map((key, i) => ({ key, i })).filter(({ i }) => !(i === 1 && skipMethod));
   return (
-    <div className="flex w-full rounded-full border border-white/[0.08] bg-white/[0.03] p-1">
-      {STEPS.map((key, i) => {
-        if (i === 1 && skipMethod) return null;
+    <div ref={ref} className="flex w-full rounded-full border border-white/[0.08] bg-white/[0.03] p-1">
+      {steps.map(({ key, i }, position) => {
         const done = i < step;
         const current = i === step;
+        const named = !compact || current;
         return (
           <RippleButton
             key={key}
@@ -116,7 +138,7 @@ function DotStepper({ step, skipMethod, onStep }: HeadProps) {
             aria-label={t(key)}
             aria-current={current ? "step" : undefined}
             onClick={() => onStep(i as 0 | 1)}
-            className={`relative isolate flex h-8 min-w-0 flex-auto items-center justify-center rounded-full transition-colors ${
+            className={`relative isolate flex h-8 min-w-0 ${named ? "flex-auto" : "flex-none"} items-center justify-center rounded-full transition-colors ${
               current ? "text-primary" : done ? "text-foreground hover:bg-white/[0.06]" : "text-muted-foreground"
             }`}
           >
@@ -129,7 +151,7 @@ function DotStepper({ step, skipMethod, onStep }: HeadProps) {
             )}
             <span aria-hidden className="flex min-w-0 items-center gap-1 px-2 text-[12px] font-semibold">
               {done && <Check className="size-3 shrink-0" strokeWidth={3} />}
-              <span className="truncate">{t(key)}</span>
+              <span className="truncate">{named ? t(key) : t("purchase.stepNumber", { number: position + 1 })}</span>
             </span>
           </RippleButton>
         );

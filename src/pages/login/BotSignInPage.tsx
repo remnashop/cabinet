@@ -1,4 +1,3 @@
-import { TriangleAlert } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -54,7 +53,7 @@ export function BotSignInPage() {
     // a failed exchange has its own reason (blocked, rate-limited, expired...); only a
     // missing token is plainly an expired link
     <FullScreenMessage
-      icon={TriangleAlert}
+      tone={exchange.isError ? "error" : "warning"}
       title={t(exchange.isError ? "auth.bootFailed" : "auth.botLinkExpired")}
       text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : null}
     >

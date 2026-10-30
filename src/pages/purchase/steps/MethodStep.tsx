@@ -1,4 +1,4 @@
-import { CreditCard, Star, TriangleAlert } from "lucide-react";
+import { CreditCard, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -11,6 +11,7 @@ import {
 } from "@entities/plan/api";
 import { gatewayLabel } from "@features/purchase/wizard";
 import { formatMoney } from "@shared/lib/format";
+import { AlertMark } from "@shared/ui/AlertMark";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { OptionRow } from "@shared/ui/OptionRow";
 import { Skeleton } from "@shared/ui/Skeleton";
@@ -20,7 +21,7 @@ function NoMethods() {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center gap-3 py-16 text-center">
-      <TriangleAlert className="size-8 text-muted-foreground" />
+      <AlertMark tone="warning" />
       <p className="text-sm text-muted-foreground">{t("purchase.noMethods")}</p>
       <SupportButton className="mt-1" />
     </div>

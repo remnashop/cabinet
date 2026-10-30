@@ -6,19 +6,17 @@ import { Navigate, useNavigate, useSearchParams } from "react-router";
 import { useBrandName } from "@entities/appearance/api";
 import { BrandMark } from "@entities/appearance/BrandMark";
 import { useCatalogQuery } from "@entities/plan/api";
-import { invitedCount, useRedeemTargetsQuery, useReferralQuery } from "@entities/referral/api";
-import { maxDiscount, useMeQuery } from "@entities/session/api";
+import { useMeQuery } from "@entities/session/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useActivateTrial, useSubscriptionsQuery, useTrialQuery } from "@entities/subscription/api";
 import { canBuyMore, canRenew, cardNotice } from "@entities/subscription/lib";
 import { getErrorMessage } from "@shared/api/http";
-import { formatDate, formatMoney, formatNumber } from "@shared/lib/format";
+import { formatDate, formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
 import { ActionTile } from "@shared/ui/ActionTile";
 import { BottomSheet } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { ErrorCard } from "@shared/ui/ErrorCard";
-import { KpiTile } from "@shared/ui/KpiTile";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { PulseButton } from "@shared/ui/PulseButton";
 import { FormError } from "@shared/ui/FormError";
@@ -27,8 +25,8 @@ import { CARD_ASPECT } from "@widgets/subscription-cards/card-aspect";
 import { DevicesCard } from "@widgets/devices/DevicesCard";
 import { HeaderSlot } from "@widgets/page-header/HeaderSlot";
 import { PromoDialog } from "@widgets/promo/PromoDialog";
-import { RedeemDaysSheet } from "@widgets/redeem-days/RedeemDaysSheet";
 import { CardsSlider } from "@widgets/subscription-cards/CardsSlider";
+import { NoticeBar } from "@widgets/subscription-cards/SubscriptionCard";
 import { pickSelected } from "@widgets/subscription-cards/select";
 import { Hero } from "@pages/connect/HeroArt";
 
@@ -55,52 +53,10 @@ function Header() {
   );
 }
 
-// balances at a glance, desktop only; zero points, a zero discount and a switched-off referral program stay out
-function StatsRow({ className }: { className: string }) {
-  const { t, i18n } = useTranslation();
-  const me = useMeQuery();
-  const referral = useReferralQuery();
-  const [redeemOpen, setRedeemOpen] = useState(false);
-  const redeemTargets = useRedeemTargetsQuery((me.data?.bonus_days ?? 0) > 0);
-  if (!me.data) return null;
-  const bonusDays = me.data.bonus_days;
-  // days to spend and a subscription that takes them
-  const canRedeem = bonusDays > 0 && (redeemTargets.data?.subscription_ids.length ?? 0) > 0;
-  // [label, value, the tile that takes the "apply" button]
-  const stats: [string, string, boolean?][] = [];
-  // the biggest of the three; the profile's balance card lists each one
-  const discount = maxDiscount(me.data);
-  if (discount > 0) stats.push([t("home.discount"), `−${discount}%`]);
-  stats.push([t("profile.bonusDays"), String(bonusDays), canRedeem]);
-  if (Number(me.data.points) > 0) stats.push([t("profile.points"), formatNumber(me.data.points, i18n.language)]);
-  if (referral.data?.program.enabled) {
-    stats.push([t("referral.invited"), String(invitedCount(referral.data.counts_by_level))]);
-  }
-  return (
-    <div
-      className={`${className} grid grid-cols-2 gap-3 max-lg:hidden lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none`}
-    >
-      {stats.map(([label, value, redeem]) => (
-        <KpiTile
-          round
-          key={label}
-          label={label}
-          value={value}
-          tone={value.startsWith("−") ? "primary" : undefined}
-          action={
-            redeem && (
-              // -my-2: the 32px button overhangs the eyebrow's line, so the tile keeps its neighbours' height
-              <Button variant="secondary" size="sm" className="-my-2 shrink-0" onClick={() => setRedeemOpen(true)}>
-                {t("home.redeem")}
-              </Button>
-            )
-          }
-        />
-      ))}
-      <RedeemDaysSheet open={redeemOpen} onClose={() => setRedeemOpen(false)} bonusDays={bonusDays} />
-    </div>
-  );
-}
+// alone on desktop: the card on the left half, the tiles 2×2 on the right, the notice strip (if any) under both.
+// dense: the strip spans both columns, so it starts the second row and the tiles (after it in the DOM, for a phone)
+// fill the gap beside the card
+const SINGLE_ROW = "lg:grid lg:grid-flow-dense lg:grid-cols-2 lg:gap-x-3 lg:gap-y-4";
 
 // the desktop row by its tile count (2–4): the classes spelled out for Tailwind
 const ROW_GRID: Record<number, string> = { 2: "lg:grid-cols-2", 3: "lg:grid-cols-3", 4: "lg:grid-cols-4" };
@@ -251,14 +207,20 @@ export function SubscriptionPage() {
     (renewable
       ? `/purchase/${selected.plan_id}?type=RENEW&sub=${selected.id}`
       : `/purchase?type=CHANGE&sub=${selected.id}`);
-  // no days or no traffic left: a new device would get no connection, so "connect" is gone until a renewal
+  // no days or no traffic left, or switched off by the admin: a new device would get no connection, so "connect" is
+  // gone until a renewal (or the admin turns it back on)
   const notice = selected && cardNotice(selected, now);
-  const cutOff = notice === "expired" || notice === "trafficOut" || notice === "expiredTraffic";
-  // the tiles side by side (connect among them): one row across the frame
-  const tileCount = (cutOff ? 0 : 1) + (renewable ? 1 : 0) + 2;
-
+  const cutOff =
+    notice === "expired" ||
+    notice === "trafficOut" ||
+    notice === "expiredTraffic" ||
+    notice === "disabled" ||
+    notice === "deleted";
   // a user can only ever have this one subscription (an admin lowering the cap leaves extra ones in the slider)
   const single = settings.data.max_active_subscriptions === 1 && items.length === 1;
+  // the tiles side by side (connect among them): one row across the frame. Alone, the card takes the left half on
+  // desktop and the tiles go 2×2 beside it: "connect" stays there dimmed while it's cut off, so the grid holds
+  const tileCount = (cutOff && !single ? 0 : 1) + (renewable ? 1 : 0) + 2;
   // a phone gets "connect" as the connect guide's pulsing button, a row of its own above the rest; from lg up, where
   // the tiles go side by side, it is a tile among them
   const tiles = selected && (
@@ -280,6 +242,7 @@ export function SubscriptionPage() {
           />
         </>
       )}
+      {cutOff && single && <ActionTile round icon={Unplug} label={t("home.connect")} disabled className="max-lg:hidden" />}
       {renewable && (
         <ActionTile
           round
@@ -294,7 +257,14 @@ export function SubscriptionPage() {
         icon={Settings2}
         label={t("home.changePlan")}
       />
-      <ActionTile round icon={Percent} label={t("home.promo")} onClick={() => setPromoOpen(true)} />
+      {/* 2×2 with one short (nothing to renew into): the last one takes the row */}
+      <ActionTile
+        round
+        icon={Percent}
+        label={t("home.promo")}
+        onClick={() => setPromoOpen(true)}
+        className={single && tileCount % 2 ? "lg:col-span-2" : ""}
+      />
     </>
   );
 
@@ -320,27 +290,35 @@ export function SubscriptionPage() {
         </Button>
       </BottomSheet>
       {!selected ? (
-        <>
-          <EmptyState onActivated={() => setTrialActivated(true)} />
-          <StatsRow className="mt-4" />
-        </>
+        <EmptyState onActivated={() => setTrialActivated(true)} />
       ) : (
         <div className="flex flex-col lg:flex-1">
-          <div>
-            <CardsSlider
-              subscriptions={items}
-              selectedId={selectedId}
-              onSelect={setChosenId}
-              single={single}
-              canBuy={canBuyMore(settings.data.max_active_subscriptions, items)}
-              onBuy={() => void navigate("/purchase")}
-              renewTo={renewTo}
-            />
-            <div className={`grid gap-3 ${renewable ? "grid-cols-3" : "grid-cols-2"} ${ROW_GRID[tileCount]}`}>
+          {/* alone on desktop: the card and the tiles side by side, its strip under both */}
+          <div className={single ? SINGLE_ROW : undefined}>
+            {/* -mb-4: the track's 16px under the card stays out of the row, so the tiles end with the card */}
+            <div className={single ? "lg:-mb-4" : undefined}>
+              <CardsSlider
+                subscriptions={items}
+                selectedId={selectedId}
+                onSelect={setChosenId}
+                single={single}
+                canBuy={canBuyMore(settings.data.max_active_subscriptions, items)}
+                onBuy={() => void navigate("/purchase")}
+              />
+            </div>
+            {/* the strip decides for itself, on its own clock (the page's is the one it mounted with); none: no row */}
+            <div className={single ? "empty:hidden lg:col-span-2" : undefined}>
+              <NoticeBar sub={selected} to={renewTo} />
+            </div>
+            <div
+              className={`grid gap-3 ${renewable ? "grid-cols-3" : "grid-cols-2"} ${
+                single ? "lg:auto-rows-fr lg:grid-cols-2" : ROW_GRID[tileCount]
+              }`}
+            >
               {tiles}
             </div>
           </div>
-          <StatsRow className="mt-4" />
+
           <div className="mt-4 lg:flex lg:flex-1 lg:flex-col lg:*:flex-1">
             <DevicesCard key={selected.id} subscription={selected} />
           </div>
