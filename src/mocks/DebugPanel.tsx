@@ -7,6 +7,7 @@ import {
   loadScenario,
   saveScenario,
   type MockFailure,
+  type MockFeed,
   type MockPaymentOutcome,
   type MockStatus,
   type Scenario,
@@ -49,6 +50,8 @@ const FIELDS: [Key, string, Option[]][] = [
   ["failRequests", "Ломать запросы", (["none", "server", "network"] as MockFailure[]).map((s) => [s, s])],
   ["legalPending", "Принять документы заново", yesNo],
   ["miniAppOnly", "Только Mini App", yesNo],
+  ["feed", "Лента уведомлений", (["normal", "empty", "error"] as MockFeed[]).map((s) => [s, s])],
+  ["pushConfigured", "Пуш настроен", yesNo],
 ];
 
 /** The header's slot for the button (HeaderActions), while the page has a header: login and payment pages don't. */

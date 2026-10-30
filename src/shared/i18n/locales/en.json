@@ -55,6 +55,10 @@
     "reload": "Reload"
   },
   "signOut": {
+    "others": "Sign out on all other devices",
+    "othersTitle": "Sign out on all other devices?",
+    "othersText": "You will have to sign in again on each of them. This session stays",
+    "othersDone": "All other sessions were signed out",
     "title": "Sign out?",
     "text": "To come back, sign in again with any connected method"
   },
@@ -544,6 +548,18 @@
     "unlinkTitle": "Unlink {{kind}}?",
     "unlinkEmailTitle": "Unlink the email?",
     "unlinkText": "You will no longer be able to sign in this way."
+  },
+  "push": {
+    "title": "Push notifications",
+    "on": "On for this device",
+    "off": "Off on this device",
+    "enable": "Enable",
+    "disable": "Disable",
+    "unsupported": "Not supported in this browser",
+    "iosInstall": "Add the site to your Home Screen to turn notifications on",
+    "denied": "Notifications are blocked: allow them in your browser settings",
+    "notConfigured": "Push is not configured by the administrator",
+    "failed": "Couldn't turn notifications on"
   },
   "gateways": {
     "TELEGRAM_STARS": "Telegram Stars",

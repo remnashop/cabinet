@@ -1,20 +1,24 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
-import { Suspense, useState } from "react";
-import { useLocation, useOutlet } from "react-router";
+import { Suspense, useEffect, useState } from "react";
+import { useLocation, useNavigate, useOutlet } from "react-router";
 
-import { revokeSession } from "@features/auth/logout";
+import { pushApi } from "@entities/notification/api";
+import { endSession } from "@features/auth/logout";
 import { LegalReacceptanceGate } from "@features/legal-reacceptance/LegalReacceptanceGate";
 import { clearAccessToken } from "@shared/api/tokens";
 import type { INTRO_STATE } from "@shared/lib/intro";
 import { EASE_SOFT, FADE_IN, FADE_OUT } from "@shared/lib/motion";
+import { healPushSubscription, onServiceWorkerMessage, registerServiceWorker } from "@shared/lib/push";
 import { useSidebarCollapsed } from "@shared/lib/sidebar-collapse";
+import { isMiniApp } from "@shared/telegram";
 import { Spinner } from "@shared/ui/Spinner";
 import { BottomNav } from "@widgets/app-shell/BottomNav";
 import { Sidebar } from "@widgets/app-shell/Sidebar";
 import { SignOutContext } from "@widgets/app-shell/sign-out";
 import { HeaderActions } from "@widgets/header-actions/HeaderActions";
 import { HeaderSlotContext } from "@widgets/page-header/header-slot";
+import { useSupportFromLink } from "@widgets/support/use-support";
 
 // The panel's AnimatedOutlet: a fade keyed by the first path segment, so /profile → /profile/payments doesn't
 // fade the section; useOutlet() keeps the exiting page rendering its own route while it fades out.
@@ -45,8 +49,26 @@ export function AppShell() {
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   const [leaving, setLeaving] = useState(false);
   const sidebarCollapsed = useSidebarCollapsed();
+  // once after sign-in: the worker, then a quiet re-subscribe of an allowed device; best-effort
+  useEffect(() => {
+    if (isMiniApp()) return;
+    registerServiceWorker();
+    healPushSubscription(pushApi).catch(() => undefined);
+  }, []);
+  const navigate = useNavigate();
+  const supportFromLink = useSupportFromLink();
+  // a push notification clicked while the cabinet is already open (the panel's DashboardLayout)
+  useEffect(
+    () =>
+      onServiceWorkerMessage((message) => {
+        if (message.type !== "navigate") return;
+        const url = new URL(message.url, window.location.origin);
+        if (url.origin === window.location.origin) navigate(url.pathname + url.search);
+      }),
+    [navigate],
+  );
   const signOut = () => {
-    if (!leaving) void revokeSession().then(() => setLeaving(true));
+    if (!leaving) void endSession().then(() => setLeaving(true));
   };
   // the token goes only once the fade-out ends: RequireAuth would cut it short, and nothing mid-fade hits a 401
   const onLeft = () => {
@@ -93,6 +115,7 @@ export function AppShell() {
       </motion.div>
       <BottomNav />
       <LegalReacceptanceGate />
+      {supportFromLink}
     </motion.div>
     </SignOutContext.Provider>
   );

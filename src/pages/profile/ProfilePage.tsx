@@ -7,6 +7,8 @@ import { useNavigate } from "react-router";
 import { unlinkIdentity, type Identity, type IdentityKind } from "@entities/identity/api";
 import { useHasLegalDocuments } from "@entities/legal/api";
 import { useChangeLanguage, useMeQuery, type Me } from "@entities/session/api";
+import { SignOutOthersSheet } from "@features/auth/ui/SignOutOthersSheet";
+import { useSignOutOthersLink } from "@features/auth/ui/use-sign-out-others-link";
 import { MergeSheet } from "@features/link-identity/MergeSheet";
 import { startOAuthLink } from "@features/link-identity/api";
 import { LinkEmailSheet } from "@features/link-identity/LinkEmailSheet";
@@ -136,6 +138,8 @@ export function ProfilePage() {
   const support = useSupport();
   const [inBrowserOpen, setInBrowserOpen] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const [othersOpen, setOthersOpen] = useState(false);
+  useSignOutOthersLink(() => setOthersOpen(true));
   const [linkSheet, setLinkSheet] = useState<"email" | "telegram" | null>(null);
   // errors that outlive their sheet: an expired merge offer, the last sign-in method
   const [pageError, setPageError] = useState<string | null>(null);
@@ -210,6 +214,7 @@ export function ProfilePage() {
             onUnlinkInBrowser: () => setInBrowserOpen(true),
             onLanguage: () => setLanguageOpen(true),
             onSignOut: () => setSignOutOpen(true),
+            onSignOutOthers: () => setOthersOpen(true),
             languageName: LANGUAGE_NAMES[i18n.language as SupportedLanguage] ?? i18n.language,
           }}
         />
@@ -241,6 +246,7 @@ export function ProfilePage() {
         }}
       />
       <SignOutSheet open={signOutOpen} onClose={() => setSignOutOpen(false)} />
+      <SignOutOthersSheet open={othersOpen} onClose={() => setOthersOpen(false)} />
       <BottomSheet
         narrow
         bare

@@ -1,7 +1,11 @@
 import { afterEach, expect, it, vi } from "vitest";
 
-import { logout } from "@features/auth/logout";
+import { endSession, logout } from "@features/auth/logout";
+import { pushApi } from "@entities/notification/api";
 import { getAccessToken, setAccessToken } from "@shared/api/tokens";
+
+const { disablePush } = vi.hoisted(() => ({ disablePush: vi.fn(async () => {}) }));
+vi.mock("@shared/lib/push", () => ({ disablePush }));
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -27,4 +31,29 @@ it("still signs out locally when the server can't be reached", async () => {
   vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
   await logout();
   expect(getAccessToken()).toBeNull();
+});
+
+it("switches this device's push off before revoking the session, and a failure doesn't block sign-out", async () => {
+  setAccessToken({ access_token: "a1", expires_in: 900 });
+  const order: string[] = [];
+  disablePush.mockImplementationOnce(async () => {
+    order.push("push");
+    throw new Error("offline");
+  });
+  vi.stubGlobal("fetch", vi.fn(async () => (order.push("revoke"), new Response(null, { status: 204 }))));
+  await logout();
+  expect(disablePush).toHaveBeenCalledWith(pushApi, { optOut: false });
+  expect(order).toEqual(["push", "revoke"]);
+  expect(getAccessToken()).toBeNull();
+});
+
+it("endSession switches push off, then revokes, even when the push step fails", async () => {
+  const order: string[] = [];
+  disablePush.mockImplementationOnce(async () => {
+    order.push("push");
+    throw new Error("offline");
+  });
+  vi.stubGlobal("fetch", vi.fn(async () => (order.push("revoke"), new Response(null, { status: 204 }))));
+  await endSession();
+  expect(order).toEqual(["push", "revoke"]);
 });

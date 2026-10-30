@@ -1,7 +1,7 @@
 import { Gift, Percent, RefreshCw, Settings2, ShoppingCart, Unplug } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate, useSearchParams } from "react-router";
 
 import { useBrandName } from "@entities/appearance/api";
 import { BrandMark } from "@entities/appearance/BrandMark";
@@ -191,7 +191,9 @@ export function SubscriptionPage() {
   const subscriptions = useSubscriptionsQuery();
   const settings = useCabinetSettingsQuery();
   // the user's last pick; what's shown goes through pickSelected so a refetch can't strand it
-  const [chosenId, setChosenId] = useState<number | null>(null);
+  // a notification link opens on its subscription (`?sub=`), and `renew=1` goes straight on to renewing it
+  const [params, setParams] = useSearchParams();
+  const [chosenId, setChosenId] = useState<number | null>(() => Number(params.get("sub")) || null);
   const [trialActivated, setTrialActivated] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
   // fixed per mount, as on the cards
@@ -203,6 +205,24 @@ export function SubscriptionPage() {
   );
   // the plan the selected subscription renews into, as the backend decides (a link plan, one closed to new buyers)
   const catalog = useCatalogQuery({ plan_code: null, renew_subscription_id: selectedId });
+  const linkedId = Number(params.get("sub")) || null;
+  const renewLink = params.get("renew") === "1";
+  const subsLoaded = subscriptions.isSuccess;
+  const linkedFound = linkedId !== null && items.some((s) => s.id === linkedId);
+  // a link followed while home is already open doesn't remount the page: adopt it when the param changes
+  const [seenLinkedId, setSeenLinkedId] = useState(linkedId);
+  if (linkedId !== seenLinkedId) {
+    setSeenLinkedId(linkedId);
+    if (linkedFound) setChosenId(linkedId);
+  }
+  // the param is consumed once the list is in; a renewal link stays until the redirect below leaves the page
+  useEffect(() => {
+    if (!subsLoaded || (renewLink && linkedFound)) return;
+    const next = new URLSearchParams(params);
+    next.delete("sub");
+    next.delete("renew");
+    if (next.size !== params.size) setParams(next, { replace: true });
+  }, [subsLoaded, renewLink, linkedFound, params, setParams]);
 
   if (subscriptions.isPending || settings.isPending) return <HomeSkeleton />;
   if ((subscriptions.isError && !subscriptions.data) || (settings.isError && !settings.data)) {
@@ -280,6 +300,9 @@ export function SubscriptionPage() {
 
   return (
     <>
+      {renewLink && selected && selected.id === linkedId && !catalog.isPending && renewTo && (
+        <Navigate replace to={renewTo} />
+      )}
       <Header />
       <BottomSheet
         bare

@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Bell, Check, ChevronDown, Languages, LogOut, User } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
@@ -5,20 +6,26 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
+import { useMarkNotificationsRead, useNotificationsQuery } from "@entities/notification/api";
 import { useChangeLanguage, useMeQuery } from "@entities/session/api";
 import { getErrorMessage } from "@shared/api/http";
 import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@shared/i18n";
 import { bounceTap } from "@shared/lib/bounceState";
 import { FADE_IN, FADE_OUT } from "@shared/lib/motion";
+import { onServiceWorkerMessage } from "@shared/lib/push";
 import { isMiniApp } from "@shared/telegram";
 import { Avatar } from "@shared/ui/Avatar";
 import { GLASS } from "@shared/ui/BottomSheet";
 import { BounceIcon } from "@shared/ui/BounceIcon";
 import { ICON_BUTTON_CLASS } from "@shared/ui/button-class";
-import { EventListEmpty } from "@shared/ui/EventList";
 import { useRipple } from "@shared/ui/use-ripple";
 import { FormError } from "@shared/ui/FormError";
 import { SignOutSheet } from "@widgets/app-shell/SignOutSheet";
+import { useSupport } from "@widgets/support/use-support";
+
+import { NotificationsList } from "./NotificationsList";
+
+const MAX_BADGE = 9;
 
 const MotionLink = motion.create(Link);
 
@@ -73,6 +80,7 @@ function HeaderPopover({
 export function HeaderActions() {
   const { t, i18n } = useTranslation();
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const support = useSupport();
   const me = useMeQuery();
   const [open, setOpen] = useState<Popover | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -83,7 +91,29 @@ export function HeaderActions() {
   const changeLanguage = useChangeLanguage(() => setOpen(null));
   const languageRipple = useRipple();
   const bellRipple = useRipple();
+  const client = useQueryClient();
+  const feed = useNotificationsQuery();
+  const markRead = useMarkNotificationsRead();
+  const unread = feed.data?.unread_count ?? 0;
   const current = (i18n.resolvedLanguage ?? "en") as SupportedLanguage;
+
+  // a push arrived: the feed is stale before the next poll
+  useEffect(
+    () => onServiceWorkerMessage((message) => message.type === "notification" && void client.invalidateQueries({ queryKey: ["notifications"] })),
+    [client],
+  );
+
+  // opening the bell reads the feed; the items keep their dots until it closes, then the feed reloads without them
+  const bellOpen = open === "bell";
+  useEffect(() => {
+    if (bellOpen && unread > 0 && !markRead.isPending) markRead.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mutate on open or on news, not on every mutation state
+  }, [bellOpen, unread]);
+  const wasBellOpen = useRef(false);
+  useEffect(() => {
+    if (wasBellOpen.current && !bellOpen) void client.invalidateQueries({ queryKey: ["notifications"] });
+    wasBellOpen.current = bellOpen;
+  }, [bellOpen, client]);
 
   useEffect(() => {
     if (!open) return;
@@ -178,6 +208,11 @@ export function HeaderActions() {
         >
           {bellRipple.ripples}
           <Bell className="size-[17px]" />
+          {unread > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none tabular-nums text-primary-foreground">
+              {unread > MAX_BADGE ? `${MAX_BADGE}+` : unread}
+            </span>
+          )}
         </motion.button>
         <HeaderPopover
           open={open === "bell"}
@@ -185,7 +220,7 @@ export function HeaderActions() {
           popoverRef={popoverRef}
           className="w-[calc(100vw-2rem)] max-w-[400px]"
         >
-          <EventListEmpty icon={Bell} text={t("header.notificationsEmpty")} />
+          <NotificationsList feed={feed} onClose={() => setOpen(null)} onSupport={support.available ? support.open : undefined} />
         </HeaderPopover>
       </div>
 
@@ -236,6 +271,7 @@ export function HeaderActions() {
         </HeaderPopover>
       </div>
       <SignOutSheet open={signOutOpen} onClose={() => setSignOutOpen(false)} />
+      {support.dialog}
     </div>
   );
 }

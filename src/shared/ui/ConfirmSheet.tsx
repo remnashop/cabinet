@@ -15,6 +15,8 @@ interface ConfirmSheetProps {
   onConfirm: () => void;
   onClose: () => void;
   pending?: boolean;
+  /** why the action failed, said under the text while the sheet stays open */
+  error?: string | null;
 }
 
 /** A yes/no question in the panel's centred dialog: the mark in the header, what it means, cancel and the action. */
@@ -28,6 +30,7 @@ export function ConfirmSheet({
   onConfirm,
   onClose,
   pending,
+  error,
 }: ConfirmSheetProps) {
   const { t } = useTranslation();
   return (
@@ -40,6 +43,7 @@ export function ConfirmSheet({
       title={title}
     >
       <p className="text-sm text-muted-foreground">{text}</p>
+      {error && <p className="mt-3 text-[12px] text-error">{error}</p>}
       <div className="mt-5 flex gap-2">
         <Button variant="outline" className="flex-1" onClick={onClose}>
           {t("common.cancel")}

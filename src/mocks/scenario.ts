@@ -4,6 +4,7 @@
 export type MockStatus = "ACTIVE" | "LIMITED" | "EXPIRED" | "DISABLED";
 export type MockPaymentOutcome = "PAID" | "CANCELED" | "FAILED" | "PENDING";
 export type MockFailure = "none" | "server" | "network";
+export type MockFeed = "normal" | "empty" | "error";
 
 export interface Scenario {
   subscriptions: number;
@@ -29,6 +30,8 @@ export interface Scenario {
   failRequests: MockFailure; // every call but sign-in and the documents fails: a 500 or no answer, for the error cards
   legalPending: boolean; // the admin asked to accept the documents again: the re-acceptance gate
   miniAppOnly: boolean; // every browser sign-in off: the login page sends to the bot
+  feed: MockFeed; // the bell's notifications
+  pushConfigured: boolean; // the backend has a VAPID key
 }
 
 export const DEFAULT_SCENARIO: Scenario = {
@@ -55,6 +58,8 @@ export const DEFAULT_SCENARIO: Scenario = {
   failRequests: "none",
   legalPending: false,
   miniAppOnly: false,
+  feed: "normal",
+  pushConfigured: true,
 };
 
 // bumped when the defaults change, so a saved scenario doesn't hide them

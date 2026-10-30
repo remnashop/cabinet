@@ -1,8 +1,9 @@
 import { ReceiptText } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router";
 
-import { useTransactionsInfinite, type Transaction } from "@entities/transaction/api";
+import { getTransaction, useTransactionsInfinite, type Transaction } from "@entities/transaction/api";
 import { durationLabel, gatewayLabel } from "@features/purchase/wizard";
 import { currencySymbol, formatDate, formatMoney } from "@shared/lib/format";
 import { Card } from "@shared/ui/Card";
@@ -21,6 +22,21 @@ export function PaymentsPage() {
   const { t, i18n } = useTranslation();
   const query = useTransactionsInfinite();
   const [selected, setSelected] = useState<Transaction | null>(null);
+  // a notification link (`?id=`) opens that payment; a missing one leaves just the list
+  const [params, setParams] = useSearchParams();
+  const linkedId = params.get("id");
+  useEffect(() => {
+    if (!linkedId) return;
+    getTransaction(linkedId).then(setSelected, () => {});
+    setParams(
+      (p) => {
+        const next = new URLSearchParams(p);
+        next.delete("id");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [linkedId, setParams]);
 
   const header = <PageHeader title={t("pages.payments")} backTo="/profile" />;
   if (query.isError && !query.data) {

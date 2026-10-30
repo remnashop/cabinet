@@ -11,6 +11,8 @@ const scenario = loadScenario();
 const API = API_BASE;
 const MOCK_CODE = "000000";
 const MOCK_CSRF = "mock-csrf";
+// any well-formed VAPID public key (65 bytes, base64url)
+const MOCK_VAPID_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U";
 
 // the real refresh token is an httponly cookie MSW can't set; a sessionStorage flag stands in
 // for it so a reload keeps the mock session the way the cookie keeps a real one
@@ -369,6 +371,18 @@ function unauthorized(request: Request) {
     : apiError(401, "NOT_AUTHENTICATED", "Not authenticated");
 }
 
+const minutesAgo = (n: number) => new Date(Date.now() - n * 60_000).toISOString();
+let notificationsRead = false;
+const notificationItems = () =>
+  [
+    { id: 4, event_type: "PAYMENT_SUCCEEDED", title: "Оплата прошла", body: "Подписка продлена на 30 дней", url: "/profile/payments", created_at: minutesAgo(5), read: false },
+    { id: 3, event_type: "SUBSCRIPTION_EXPIRING", title: "Подписка скоро закончится", body: "Осталось 3 дня", url: "/", created_at: minutesAgo(120), read: false },
+    { id: 2, event_type: "REFERRAL_REWARD", title: "Награда за друга", body: "Начислено 3 бонусных дня", url: "/", created_at: minutesAgo(60 * 26), read: true },
+    { id: 1, event_type: "WELCOME", title: "Добро пожаловать", body: "Спасибо, что вы с нами", url: "/", created_at: minutesAgo(60 * 24 * 5), read: true },
+  ].map((item) => ({ ...item, read: item.read || notificationsRead }));
+const pushSubscriptions: { id: number; endpoint: string; user_agent: string | null; created_at: string; last_seen_at: string | null }[] = [];
+let pushIssued = 0;
+
 // long enough to scroll the document dialog
 const longDoc = (name: string) =>
   `# ${name}\n\n` +
@@ -483,6 +497,8 @@ export const handlers = [
       ? apiError(400, "UNSUBSCRIBE_TOKEN_INVALID", "Invalid unsubscribe token")
       : new HttpResponse(null, { status: 204 }),
   ),
+
+  http.post(`${API}/auth/sessions/actions/revoke-others`, () => new HttpResponse(null, { status: 204 })),
 
   http.post(`${API}/auth/logout`, () => {
     setSession(false);
@@ -850,6 +866,55 @@ export const handlers = [
       .filter((s) => s.status === "ACTIVE" || !spentForGood(s))
       .map((s) => s.id);
     return HttpResponse.json({ subscription_ids: ids });
+  }),
+
+  http.get(`${API}/notifications/me`, ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    if (scenario.feed === "error") return apiError(500, "INTERNAL", "Mock failure");
+    // the unread count follows what mark-read did; the items keep their flags only until the next load
+    const items = scenario.feed === "empty" ? [] : notificationItems();
+    return HttpResponse.json({ items, unread_count: items.filter((i) => !i.read).length });
+  }),
+
+  http.post(`${API}/notifications/me/actions/mark-read`, ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    notificationsRead = true;
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get(`${API}/notifications/me/push/public-key`, ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    return HttpResponse.json({ public_key: scenario.pushConfigured ? MOCK_VAPID_KEY : null });
+  }),
+
+  http.get(`${API}/notifications/me/push-subscriptions`, ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    return HttpResponse.json({ items: pushSubscriptions, total: pushSubscriptions.length });
+  }),
+
+  http.post(`${API}/notifications/me/push-subscriptions`, async ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const { endpoint } = (await request.json()) as { endpoint: string };
+    const known = pushSubscriptions.find((s) => s.endpoint === endpoint);
+    if (known) return HttpResponse.json(known);
+    pushIssued += 1;
+    const created = { id: pushIssued, endpoint, user_agent: navigator.userAgent, created_at: new Date().toISOString(), last_seen_at: null };
+    pushSubscriptions.push(created);
+    return HttpResponse.json(created, { status: 201 });
+  }),
+
+  http.delete(`${API}/notifications/me/push-subscriptions/:id`, ({ request, params }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const index = pushSubscriptions.findIndex((s) => s.id === Number(params.id));
+    if (index < 0) return apiError(404, "NOT_FOUND", "Not found");
+    pushSubscriptions.splice(index, 1);
+    return new HttpResponse(null, { status: 204 });
   }),
 
   http.post(`${API}/referrals/me/actions/redeem-days`, async ({ request }) => {

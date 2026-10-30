@@ -16,6 +16,8 @@ Checks: `npx tsc -b && npm run lint && npm test && npm run build`, and `sh scrip
 
 ## Deployment
 
+The cabinet and the admin panel must live on different origins: the service worker (`/sw.js`) takes scope `/`.
+
 The image serves the SPA and proxies `/api/*` to the backend's `/api/v1/*`, so the browser talks to one origin: the refresh token stays in an httponly cookie and the backend's address never reaches the client.
 
 | Variable | Value |

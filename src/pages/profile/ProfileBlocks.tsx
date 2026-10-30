@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useIdentitiesQuery, type Identity, type IdentityKind } from "@entities/identity/api";
 import { maxDiscount, type Me } from "@entities/session/api";
 import { useAuthMethodsQuery } from "@features/auth/api";
+import { PushToggle } from "@features/push-toggle/PushToggle";
 import { formatNumber } from "@shared/lib/format";
 import { isMiniApp } from "@shared/telegram";
 import { ActionTile } from "@shared/ui/ActionTile";
@@ -38,6 +39,8 @@ export interface ProfileActions {
   onWithdraw?: () => void;
   onLanguage: () => void;
   onSignOut: () => void;
+  /** ends every session but this one */
+  onSignOutOthers: () => void;
   languageName: string;
 }
 
@@ -155,9 +158,15 @@ export function ProfileBlocks({ me, actions, linkError }: { me: Me; actions: Pro
           <EventList>
             <IdentityRows actions={actions} />
           </EventList>
+          <div className="px-[13px] pb-3">
+            <Button variant="secondary" size="sm" onClick={actions.onSignOutOthers}>
+              {t("signOut.others")}
+            </Button>
+          </div>
         </Card>
         {linkError && <FormError className="px-[13px]">{linkError}</FormError>}
       </div>
+      <PushToggle />
       {/* the Mini App signs back in with Telegram's data at once: no sign-out there */}
       {!isMiniApp() && (
         <Button variant="danger" size="lg" className="lg:hidden" onClick={actions.onSignOut}>

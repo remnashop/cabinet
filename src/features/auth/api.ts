@@ -32,6 +32,9 @@ const provider = (name: string) => `/auth/oauth/${encodeURIComponent(name)}`;
 // legal_locale goes only with a sign-in that showed the notice (the backend records the acceptance)
 const withLegal = (legal?: string) => (legal ? { legal_locale: legal } : {});
 
+/** Ends every session but this one. */
+export const revokeOtherSessions = () => apiPost<null, object>("/auth/sessions/actions/revoke-others", {});
+
 // the first step of every flow that may create a user carries the first-touch ref/ad;
 // the Mini App's codes travel inside the signed initData instead
 export const authApi = {

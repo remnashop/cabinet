@@ -47,3 +47,44 @@ it("the account menu signs out, once confirmed", async () => {
   act(() => root.unmount());
   container.remove();
 });
+
+it("opening the bell marks the feed read once and the counter goes", async () => {
+  const feed = {
+    unread_count: 2,
+    items: [{ id: 1, event_type: "X", title: "Paid", body: "b", url: "/", created_at: "2026-10-30T10:00:00Z", read: false }],
+  };
+  const fetchMock = vi.fn((_url: string, init?: RequestInit) =>
+    Promise.resolve(
+      init?.method === "POST"
+        ? new Response(null, { status: 204 })
+        : new Response(JSON.stringify(feed), { status: 200, headers: { "content-type": "application/json" } }),
+    ),
+  );
+  vi.stubGlobal("fetch", fetchMock);
+  vi.stubGlobal("matchMedia", () => ({ matches: true }));
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  await act(async () =>
+    root.render(
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter>
+          <HeaderActions />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    ),
+  );
+  const bell = () => document.body.querySelector(`[aria-label="${i18n.t("header.notifications")}"]`) as HTMLButtonElement;
+  await vi.waitFor(() => expect(bell().textContent).toBe("2"));
+
+  await act(async () => bell().click());
+  await vi.waitFor(() => expect(bell().textContent).toBe(""));
+  const posts = () => fetchMock.mock.calls.filter(([, init]) => init?.method === "POST");
+  expect(posts()).toHaveLength(1);
+  // the dot of what was new stays while the popover is open
+  expect(document.body.querySelector("[data-unread]")).not.toBeNull();
+
+  act(() => root.unmount());
+  container.remove();
+  vi.unstubAllGlobals();
+});
