@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import i18n from "@shared/i18n";
+import { tick, until } from "@shared/testing/until";
 
 import { LoginPage } from "./LoginPage";
 
@@ -45,7 +46,9 @@ async function render(documents: object[], documentsFail = false, methods: objec
       </QueryClientProvider>,
     );
   });
-  await act(async () => new Promise((resolve) => setTimeout(resolve, 30)));
+  // the sign-in methods and the legal documents load in parallel; a slow run takes longer than any fixed pause
+  await until(() => expect(client.isFetching()).toBe(0));
+  await tick();
 }
 
 beforeEach(() => {
@@ -65,7 +68,7 @@ describe("LoginPage legal notice", () => {
     await render([doc("USER_AGREEMENT", "Terms"), doc("OFFER", "Offer")]);
     const links = [...container.querySelectorAll("button")].map((b) => b.textContent);
     expect(links.length).toBeGreaterThan(0);
-    expect(container.textContent).toMatch(/User agreement/i);
+    await until(() => expect(container.textContent).toMatch(/User agreement/i));
     expect(container.textContent).not.toMatch(/Privacy policy/i);
     expect(container.textContent).not.toMatch(/Offer/);
   });
@@ -88,11 +91,11 @@ describe("LoginPage legal notice", () => {
     await type("a@b.co");
     await act(async () => container.querySelector("form")!.requestSubmit());
     // the email step fades out (StepTransition) before the code step mounts
-    await act(async () => new Promise((resolve) => setTimeout(resolve, 300)));
+    await until(() => expect(container.querySelector('input[autocomplete="one-time-code"]')).not.toBeNull());
     await type("123456");
-    await act(async () => new Promise((resolve) => setTimeout(resolve, 30)));
-    const call = vi.mocked(fetch).mock.calls.find(([url]) => String(url).includes("/auth/email/verify"))!;
-    return JSON.parse((call[1] as RequestInit).body as string);
+    const verifyCall = () => vi.mocked(fetch).mock.calls.find(([url]) => String(url).includes("/auth/email/verify"));
+    await until(() => expect(verifyCall()).toBeDefined());
+    return JSON.parse((verifyCall()![1] as RequestInit).body as string);
   }
 
   it("sends legal_locale with the email sign-in once the notice could be shown", async () => {

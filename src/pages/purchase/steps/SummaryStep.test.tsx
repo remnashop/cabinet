@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createCheckout, type PaymentMethod, type Plan, type PlanAccess } from "@entities/plan/api";
 import type { PurchaseType } from "@features/purchase/wizard";
 import "@shared/i18n";
+import { tick, until } from "@shared/testing/until";
 
 import { StarsInvoiceError } from "@features/payment/start-payment";
 
@@ -77,21 +78,6 @@ async function render(
 
 const payButton = () => [...container.querySelectorAll("button")].at(-1)!;
 const checkoutBody = () => vi.mocked(createCheckout).mock.calls[0][0];
-const tick = () => act(() => new Promise<void>((resolve) => setTimeout(resolve, 10)));
-
-// the checkout chain (mutate → createCheckout → onSuccess → onError → re-render) spans several
-// macrotasks (TanStack notifies via setTimeout), more than one act() flush
-async function until(check: () => void, timeout = 2000) {
-  const end = Date.now() + timeout;
-  for (;;) {
-    try {
-      return check();
-    } catch (err) {
-      if (Date.now() > end) throw err;
-    }
-    await tick();
-  }
-}
 
 beforeEach(() => {
   vi.mocked(createCheckout).mockClear();

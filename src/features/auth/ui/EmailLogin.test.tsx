@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import i18n from "@shared/i18n";
+import { until } from "@shared/testing/until";
 
 import { EmailLogin, type EmailCodeFlow } from "./EmailLogin";
 
@@ -21,18 +22,6 @@ let root: ReturnType<typeof createRoot>;
 let container: HTMLElement;
 const flow: EmailCodeFlow = { sendCode: vi.fn(async () => null), verify: vi.fn(async () => {}) };
 
-const tick = () => act(() => new Promise<void>((resolve) => setTimeout(resolve, 10)));
-async function until(check: () => void, timeout = 2000) {
-  const end = Date.now() + timeout;
-  for (;;) {
-    try {
-      return check();
-    } catch (err) {
-      if (Date.now() > end) throw err;
-    }
-    await tick();
-  }
-}
 
 beforeEach(() => {
   vi.mocked(flow.sendCode).mockClear();

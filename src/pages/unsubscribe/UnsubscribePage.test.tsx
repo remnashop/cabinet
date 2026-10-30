@@ -5,6 +5,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import "@shared/i18n";
+import { until } from "@shared/testing/until";
 
 import { UnsubscribePage } from "./UnsubscribePage";
 
@@ -35,7 +36,6 @@ const unsubscribeCalls = () => fetchMock.mock.calls.filter(([url]) => String(url
 
 async function click() {
   await act(async () => button()?.click());
-  await act(async () => {});
 }
 
 beforeEach(() => {
@@ -62,6 +62,7 @@ describe("UnsubscribePage", () => {
   it("unsubscribes on click with the token from the link", async () => {
     await render("?token=42.sig");
     await click();
+    await until(() => expect(container.textContent).toContain("unsubscribed"));
     const [[url, init]] = unsubscribeCalls();
     expect(String(url)).toBe("/api/unsubscribe?token=42.sig");
     expect((init as RequestInit).method).toBe("POST");
@@ -75,7 +76,7 @@ describe("UnsubscribePage", () => {
     );
     await render("?token=bad");
     await click();
-    expect(container.textContent).toContain("The unsubscribe link is invalid");
+    await until(() => expect(container.textContent).toContain("The unsubscribe link is invalid"));
     expect(button()).not.toBeNull();
   });
 
