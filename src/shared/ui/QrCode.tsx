@@ -25,7 +25,7 @@ export function QrCode({ value, size = 200 }: { value: string; size?: number | "
   }, [value]);
 
   const style = size === "full" ? { width: "100%", aspectRatio: "1" } : { width: size, height: size };
-  if (svg?.value !== value) return <div style={style}><Skeleton className="size-full rounded-xl" /></div>;
+  if (svg?.value !== value) return <div style={style}><Skeleton corners="rounded-xl" className="size-full" /></div>;
   if (svg.markup === null) {
     return (
       <div style={style} className="flex items-center justify-center rounded-xl bg-white/[0.04] p-4 text-center text-sm text-muted-foreground">

@@ -41,7 +41,7 @@ export function ReferralPage() {
     return (
       <>
         {header}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           <Skeleton round className="h-44" />
           <Skeleton round className="h-40" />
         </div>
@@ -66,7 +66,7 @@ export function ReferralPage() {
   return (
     <>
       {header}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <InviteBlocks
           data={{
             program,

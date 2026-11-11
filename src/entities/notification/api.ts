@@ -39,6 +39,16 @@ export function useMarkNotificationsRead() {
   });
 }
 
+/** As the panel's: the list empties at once; a failure brings the server's back. */
+export function useClearNotifications() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiPost<void, Record<string, never>>("/notifications/me/actions/clear", {}),
+    onMutate: () => client.setQueryData<NotificationFeed>(KEY, { items: [], unread_count: 0 }),
+    onError: () => void client.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
 export const pushApi: PushApi = {
   getPublicKey: async () =>
     (await apiGet<{ public_key: string | null }>("/notifications/me/push/public-key")).public_key,
@@ -49,3 +59,14 @@ export const pushApi: PushApi = {
     ),
   remove: (id) => apiDelete(`/notifications/me/push-subscriptions/${id}`),
 };
+
+/** Whether the backend has a VAPID key: without one there is no web push to offer at all. */
+export function usePushConfiguredQuery(enabled = true) {
+  return useQuery({
+    queryKey: ["push", "public-key"],
+    enabled,
+    queryFn: pushApi.getPublicKey,
+    select: (key) => key !== null,
+    staleTime: Infinity,
+  });
+}

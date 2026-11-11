@@ -9,14 +9,11 @@ import { useMarkNotificationsRead, useNotificationsQuery } from "@entities/notif
 import { useChangeLanguage, useMeQuery } from "@entities/session/api";
 import { getErrorMessage } from "@shared/api/http";
 import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@shared/i18n";
-import { bounceTap } from "@shared/lib/bounceState";
 import { FADE_IN, FADE_OUT } from "@shared/lib/motion";
 import { onServiceWorkerMessage } from "@shared/lib/push";
 import { isMiniApp } from "@shared/telegram";
 import { Avatar } from "@shared/ui/Avatar";
 import { GLASS } from "@shared/ui/BottomSheet";
-import { BounceIcon } from "@shared/ui/BounceIcon";
-import { ICON_BUTTON_CLASS } from "@shared/ui/button-class";
 import { MotionLink } from "@shared/ui/MotionLink";
 import { useRipple } from "@shared/ui/use-ripple";
 import { FormError } from "@shared/ui/FormError";
@@ -24,6 +21,7 @@ import { SignOutSheet } from "@widgets/app-shell/SignOutSheet";
 import { useSupport } from "@widgets/support/use-support";
 
 import { NotificationsList } from "./NotificationsList";
+import { Ripple } from "@shared/ui/Ripple";
 
 const MAX_BADGE = 9;
 
@@ -36,7 +34,7 @@ const POPOVER_MOTION = {
   exit: { opacity: 0, scale: 0.85, transition: FADE_OUT },
 } as const;
 const ITEM =
-  "flex h-9 w-full items-center gap-2.5 rounded-popover-item px-2.5 text-left text-[13px] font-medium transition-colors hover:bg-white/[0.06]";
+  "flex h-9 w-full items-center gap-2.5 rounded-popover-item px-2.5 text-left text-sm font-medium transition-colors hover:bg-white/[0.06]";
 
 type Popover = "language" | "bell" | "user";
 
@@ -117,22 +115,20 @@ export function HeaderActions() {
   useEffect(() => {
     if (!open) return;
     const close = () => setOpen(null);
-    const onPointer = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (!ref.current?.contains(target) && !popoverRef.current?.contains(target)) close();
-    };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") close();
     };
-    document.addEventListener("mousedown", onPointer);
+    // the page moving under the trigger, not the popover's own list (the bell's feed scrolls inside it)
+    const onScroll = (event: Event) => {
+      if (!popoverRef.current?.contains(event.target as Node)) close();
+    };
     document.addEventListener("keydown", onKey);
     // capture: the desktop frame scrolls inside, not the window
-    document.addEventListener("scroll", close, true);
+    document.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", close);
     return () => {
-      document.removeEventListener("mousedown", onPointer);
       document.removeEventListener("keydown", onKey);
-      document.removeEventListener("scroll", close, true);
+      document.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", close);
     };
   }, [open]);
@@ -147,7 +143,14 @@ export function HeaderActions() {
   // lines up with the whole group instead
   const bellAnchor = () => (window.matchMedia("(min-width: 640px)").matches ? bellRef.current : ref.current);
   return (
-    <div ref={ref} className="ml-auto flex shrink-0 items-center gap-3.5">
+    <div ref={ref} className="ml-auto flex shrink-0 items-center gap-3.5 lg:gap-1">
+      {/* under an open popover, over everything else: a press anywhere outside it only closes it, it can't land on a
+          button beneath by accident (its trigger included: a second press on the bell closes it the same way) */}
+      {open &&
+        createPortal(
+          <div aria-hidden className="fixed inset-0 z-[59]" onClick={() => setOpen(null)} />,
+          document.body,
+        )}
       {/* a phone changes the language in the profile */}
       <div ref={languageRef} className="relative hidden lg:block">
         <motion.button
@@ -156,18 +159,13 @@ export function HeaderActions() {
           aria-expanded={open === "language"}
           onClick={() => toggle("language")}
           onPointerDown={languageRipple.onPointerDown}
-          {...bounceTap()}
-          style={{ willChange: "transform" }}
-          className="relative flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-white/[0.05] px-3 text-[12.5px] font-semibold text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+          className="relative flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
         >
           {languageRipple.ripples}
           <Languages className="size-4 shrink-0" />
           {/* the language's own name, as the menu lists it */}
           {LANGUAGE_NAMES[current]}
         </motion.button>
-        {/* the border lives on a static sibling, as in the panel: a rounded border scaled via transform thickens
-            at the curved ends in Chrome */}
-        <span className="pointer-events-none absolute inset-0 rounded-full border border-glass-border" />
         <HeaderPopover
           open={open === "language"}
           anchor={() => languageRef.current}
@@ -204,12 +202,13 @@ export function HeaderActions() {
           aria-expanded={open === "bell"}
           onClick={() => toggle("bell")}
           onPointerDown={bellRipple.onPointerDown}
-          className={`relative ${ICON_BUTTON_CLASS} text-muted-foreground hover:text-foreground`}
+          // a phone: its own glass-panel circle (the panel's IconButton tone="panel"); desktop: a plain item of the capsule
+          className="relative flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground max-lg:glass-panel"
         >
           {bellRipple.ripples}
-          <Bell className="size-[17px]" />
+          <Bell className="size-4" />
           {unread > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none tabular-nums text-primary-foreground">
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold leading-none tabular-nums text-primary-foreground">
               {unread > MAX_BADGE ? `${MAX_BADGE}+` : unread}
             </span>
           )}
@@ -225,17 +224,18 @@ export function HeaderActions() {
       </div>
 
       {/* a phone reaches the profile and sign-out from the bottom nav */}
-      <div ref={userRef} className="hidden border-l border-border pl-3.5 lg:block">
+      <span className="mx-1 hidden h-5 w-px shrink-0 bg-white/[0.08] lg:block" />
+      <div ref={userRef} className="hidden lg:block">
         <motion.button
           type="button"
           aria-label={t("header.account")}
           aria-expanded={open === "user"}
           onClick={() => toggle("user")}
-          {...bounceTap(0.05)}
-          className="group relative isolate flex h-9 items-center gap-2.5 rounded-full pr-1"
+          className="group relative isolate flex h-9 items-center gap-2.5 rounded-full pl-0.5 pr-2.5"
         >
           <span className="absolute inset-0 -z-10 rounded-full transition-colors group-hover:bg-white/[0.06]" />
-          <Avatar name={name} className="size-9 text-[12px]" />
+          <Ripple />
+          <Avatar name={name} className="size-8 text-xs" />
           {name && <span className="hidden max-w-40 truncate text-[13px] font-semibold sm:block">{name}</span>}
           <ChevronDown
             className={`size-3.5 text-muted-foreground transition-transform ${open === "user" ? "rotate-180" : ""}`}
@@ -246,10 +246,8 @@ export function HeaderActions() {
             to="/profile"
             onClick={() => setOpen(null)}
             className={`${ITEM} text-foreground`}
-            initial="rest"
-            whileHover="hover"
           >
-            <BounceIcon icon={User} size={15} hoverSize={18.75} />
+            <User className="size-4 shrink-0" />
             {t("nav.profile")}
           </MotionLink>
           {/* the Mini App signs back in with Telegram's data at once: no sign-out there */}
@@ -261,10 +259,8 @@ export function HeaderActions() {
                 setSignOutOpen(true);
               }}
               className={`${ITEM} text-error`}
-              initial="rest"
-              whileHover="hover"
             >
-              <BounceIcon icon={LogOut} size={15} hoverSize={18.75} />
+              <LogOut className="size-4 shrink-0" />
               {t("common.logout")}
             </motion.button>
           )}

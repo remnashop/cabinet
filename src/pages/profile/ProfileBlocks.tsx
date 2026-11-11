@@ -2,7 +2,7 @@ import {
   ChevronRight,
   FileText,
   Languages,
-  LogOut,
+  MonitorX,
   ReceiptText,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -38,7 +38,6 @@ export interface ProfileActions {
   /** the support dialog, points are exchanged there; undefined without a support contact */
   onWithdraw?: () => void;
   onLanguage: () => void;
-  onSignOut: () => void;
   /** ends every session but this one */
   onSignOutOthers: () => void;
   languageName: string;
@@ -83,7 +82,7 @@ function IdentityAction({
     );
   }
   if (action === "connectInBrowser") {
-    return <span className="text-right text-[12px] text-muted-foreground">{t("profile.connectInBrowser")}</span>;
+    return <span className="text-right text-xs text-muted-foreground">{t("profile.connectInBrowser")}</span>;
   }
   return null;
 }
@@ -122,7 +121,7 @@ export function ProfileBlocks({ me, actions, linkError }: { me: Me; actions: Pro
   const discount = maxDiscount(me);
   return (
     <>
-      <div className={`grid gap-3 ${Number(me.points) > 0 ? "grid-cols-3" : "grid-cols-2"}`}>
+      <div className={`grid gap-5 ${Number(me.points) > 0 ? "grid-cols-3" : "grid-cols-2"}`}>
         {Number(me.points) > 0 && (
           <ActionTile
             round
@@ -146,7 +145,7 @@ export function ProfileBlocks({ me, actions, linkError }: { me: Me; actions: Pro
           onClick={actions.onPromo}
         />
       </div>
-      <div className={`grid gap-3 ${actions.onDocuments ? "grid-cols-3" : "grid-cols-2"}`}>
+      <div className={`grid gap-5 ${actions.onDocuments ? "grid-cols-3" : "grid-cols-2"}`}>
         <ActionTile round icon={ReceiptText} label={t("profile.paymentsShort")} onClick={actions.onPayments} />
         {actions.onDocuments && (
           <ActionTile round icon={FileText} label={t("help.documents")} onClick={actions.onDocuments} />
@@ -158,22 +157,23 @@ export function ProfileBlocks({ me, actions, linkError }: { me: Me; actions: Pro
           <EventList>
             <IdentityRows actions={actions} />
           </EventList>
-          <div className="px-[13px] pb-3">
-            <Button variant="secondary" size="sm" onClick={actions.onSignOutOthers}>
-              {t("signOut.others")}
-            </Button>
-          </div>
+          {/* the panel's Sessions, set off from the accounts by a line, as its SectionRows divided */}
+          <EventList className="mt-2 border-t border-white/[0.08] pt-2">
+            <EventRow
+              icon={<EventIcon icon={MonitorX} />}
+              title={t("signOut.sessionsTitle")}
+              caption={t("signOut.sessionsCaption")}
+              aside={
+                <Button variant="danger" size="sm" onClick={actions.onSignOutOthers}>
+                  {t("common.logout")}
+                </Button>
+              }
+            />
+          </EventList>
         </Card>
         {linkError && <FormError className="px-[13px]">{linkError}</FormError>}
       </div>
       <PushToggle />
-      {/* the Mini App signs back in with Telegram's data at once: no sign-out there */}
-      {!isMiniApp() && (
-        <Button variant="danger" size="lg" className="lg:hidden" onClick={actions.onSignOut}>
-          <LogOut className="size-5" />
-          {t("common.logout")}
-        </Button>
-      )}
     </>
   );
 }

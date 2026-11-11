@@ -50,6 +50,17 @@ export function formatDate(iso: string, locale: string): string {
   }).format(new Date(iso));
 }
 
+/** The panel's: "5 minutes ago", "2 hours ago", "3 days ago"; under a minute in words, Intl's "this minute" reads oddly. */
+export function formatRelative(iso: string, locale: string): string {
+  const minutes = Math.round((new Date(iso).getTime() - Date.now()) / 60_000);
+  if (minutes === 0) return i18n.t("common.lessThanMinuteAgo", { lng: locale });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  if (Math.abs(minutes) < 60) return rtf.format(minutes, "minute");
+  const hours = Math.round(minutes / 60);
+  if (Math.abs(hours) < 48) return rtf.format(hours, "hour");
+  return rtf.format(Math.round(hours / 24), "day");
+}
+
 /** The panel's: "26.10.2026 14:30", the date and the time without the comma between them. */
 export function formatDateTime(iso: string, locale: string): string {
   return new Date(iso)

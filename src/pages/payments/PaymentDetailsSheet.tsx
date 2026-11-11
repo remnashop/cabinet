@@ -20,6 +20,7 @@ export function PaymentDetailsSheet({ transaction, onClose }: { transaction: Tra
   return (
     <BottomSheet
       narrow
+      cards
       icon={Receipt}
       open={!!tx}
       onClose={onClose}

@@ -15,7 +15,7 @@ export function SupportDialog({ open, onClose }: { open: boolean; onClose: () =>
     links.web && { icon: Globe, label: t("help.supportWeb"), url: links.web },
   ].filter((option) => !!option);
   return (
-    <BottomSheet narrow icon={Headset} open={open} onClose={onClose} title={t("help.support")}>
+    <BottomSheet narrow cards icon={Headset} open={open} onClose={onClose} title={t("help.support")}>
       <div className="grid grid-cols-2 gap-3">
         {options.map(({ icon, label, url }) => (
           <ActionTile

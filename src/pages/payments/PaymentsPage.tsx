@@ -1,7 +1,7 @@
 import { ReceiptText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router";
+import { useMatch, useSearchParams } from "react-router";
 
 import { getTransaction, useTransactionsInfinite, type Transaction } from "@entities/transaction/api";
 import { durationLabel, gatewayLabel } from "@features/purchase/wizard";
@@ -24,7 +24,9 @@ export function PaymentsPage() {
   const [selected, setSelected] = useState<Transaction | null>(null);
   // a notification link (`?id=`) opens that payment; a missing one leaves just the list
   const [params, setParams] = useSearchParams();
-  const linkedId = params.get("id");
+  // the page keeps rendering while it fades out, on the next page's address: only its own `?id=` is its to strip
+  const isOwn = useMatch("/profile/payments") !== null;
+  const linkedId = isOwn ? params.get("id") : null;
   useEffect(() => {
     if (!linkedId) return;
     getTransaction(linkedId).then(setSelected, () => {});
@@ -87,7 +89,7 @@ export function PaymentsPage() {
               aside={
                 <>
                   {hasDiscount(tx) && (
-                    <s className="text-[12px] font-normal text-muted-foreground">
+                    <s className="text-xs font-normal text-muted-foreground">
                       {formatMoney(tx.base_price, tx.currency, i18n.language)}
                     </s>
                   )}

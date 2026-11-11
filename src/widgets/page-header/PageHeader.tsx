@@ -1,12 +1,25 @@
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, type LucideIcon } from "lucide-react";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router";
+import { Link, matchPath, useLocation, useNavigate } from "react-router";
 
 import { isMiniApp, useTelegramBackButton } from "@shared/telegram";
+import { NAV_ITEMS } from "@widgets/app-shell/nav-items";
 import { HeaderSlot } from "@widgets/page-header/HeaderSlot";
+import { Ripple } from "@shared/ui/Ripple";
 
-const BACK_CLASS = "flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06]";
+// desktop: the capsule's 36px bordered circle, as the panel header's page icon
+const BACK_CLASS =
+  "relative flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] lg:border lg:border-glass-border lg:bg-white/[0.05] lg:text-foreground lg:hover:bg-white/[0.08]";
+
+/** The page's icon at the start of the desktop header capsule (the panel Header's IconCircle); a phone has none. */
+export function HeaderIcon({ icon: Icon }: { icon: LucideIcon }) {
+  return (
+    <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-glass-border bg-white/[0.05] text-foreground max-lg:hidden">
+      <Icon className="size-4" />
+    </span>
+  );
+}
 
 interface PageHeaderProps {
   title: string;
@@ -30,6 +43,9 @@ export function PageHeader({ title, desktopTitle, backTo, onBack, navItem }: Pag
   const handler = onBack ?? (backTo ? goBack : null);
   useTelegramBackButton(handler);
   const backClass = navItem ? `${BACK_CLASS} lg:hidden` : BACK_CLASS;
+  // a sidebar destination has no back on desktop: its nav icon starts the capsule instead
+  const { pathname } = useLocation();
+  const navIcon = navItem ? NAV_ITEMS.find((item) => matchPath({ path: item.to, end: item.end }, pathname))?.icon : undefined;
 
   return (
     <HeaderSlot>
@@ -37,14 +53,17 @@ export function PageHeader({ title, desktopTitle, backTo, onBack, navItem }: Pag
         !isMiniApp() &&
         (onBack ? (
           <button type="button" onClick={onBack} aria-label={t("common.back")} className={backClass}>
-            <ChevronLeft className="size-5" />
+            <Ripple />
+            <ChevronLeft className="size-5 lg:size-4" />
           </button>
         ) : (
           <Link to={backTo!} aria-label={t("common.back")} className={backClass}>
-            <ChevronLeft className="size-5" />
+            <Ripple />
+            <ChevronLeft className="size-5 lg:size-4" />
           </Link>
         ))}
-      <h1 className="min-w-0 truncate text-[21px] font-bold tracking-tight">
+      {navIcon && <HeaderIcon icon={navIcon} />}
+      <h1 className="min-w-0 truncate text-xl font-bold tracking-tight lg:text-lg lg:font-semibold">
         {desktopTitle ? (
           <>
             <span className="lg:hidden">{title}</span>

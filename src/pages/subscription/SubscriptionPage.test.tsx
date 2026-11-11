@@ -41,6 +41,7 @@ vi.mock("@entities/subscription/lib", () => ({
   canRenew: (s: { plan_id: number }, items: { id: number }[]) => items.some((p) => p.id === s.plan_id),
   cardNotice: () => null,
 }));
+vi.mock("@features/push-prompt/PushPromptCard", () => ({ PushPromptCard: () => null }));
 vi.mock("@widgets/devices/DevicesCard", () => ({ DevicesCard: () => null }));
 vi.mock("@widgets/page-header/HeaderSlot", () => ({ HeaderSlot: () => null }));
 vi.mock("@widgets/promo/PromoDialog", () => ({ PromoDialog: () => null }));
@@ -108,6 +109,23 @@ describe("SubscriptionPage notification links", () => {
     const { text, unmount } = await render("/?sub=99&renew=1");
     expect(text("where")).toBe("/");
     await unmount();
+  });
+
+  it("keeps a renewal's sub while it fades out on the wizard's address", async () => {
+    // AnimatedOutlet keeps the old page rendered for its exit, under the new location
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    await act(async () =>
+      root.render(
+        <MemoryRouter initialEntries={["/purchase/3?type=RENEW&sub=7"]}>
+          <SubscriptionPage />
+          <Where />
+        </MemoryRouter>,
+      ),
+    );
+    expect(container.querySelector("[data-testid=where]")?.textContent).toBe("/purchase/3?type=RENEW&sub=7");
+    await act(async () => root.unmount());
   });
 
   it("leaves unknown params alone", async () => {

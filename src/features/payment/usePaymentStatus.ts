@@ -5,6 +5,7 @@ import { getTransaction, type Transaction } from "@entities/transaction/api";
 import { ApiError } from "@shared/api/http";
 
 import { nextPollDelay, POLL_TIMEOUT_MS } from "./poll";
+import { markPushPromptEligible } from "@features/push-prompt/push-prompt";
 
 export type PaymentStatus = "loading" | "pending" | "paid" | "failed" | "timeout" | "error";
 
@@ -41,6 +42,8 @@ export function usePaymentStatus(orderId: number | null): PaymentState & { retry
         if (transaction.status === "PAID") {
           stop();
           setState({ status: "paid", transaction });
+          // something was bought: the home page may offer push now
+          markPushPromptEligible();
           void client.invalidateQueries({ queryKey: ["subscriptions"] });
           void client.invalidateQueries({ queryKey: ["me"] });
           return;

@@ -13,7 +13,7 @@ export function Avatar({ name, className }: { name: string | undefined; classNam
   const letter = name?.trim()[0]?.toUpperCase();
   return (
     <span
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-glass-border bg-white/[0.05] font-bold text-foreground ${className}`}
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full glass-control font-semibold text-foreground ${className}`}
     >
       {photo && !failed ? (
         <img src={photo} alt="" referrerPolicy="no-referrer" className="size-full object-cover" onError={() => setFailed(true)} />

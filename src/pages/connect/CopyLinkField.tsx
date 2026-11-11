@@ -25,8 +25,8 @@ export function CopyLinkField({
     >
       {ripples}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate font-mono text-[12px]">{url}</span>
-        <span className="text-[12px] text-muted-foreground">{copied ? t("connect.copied") : (caption ?? t("connect.yourLink"))}</span>
+        <span className="truncate font-mono text-xs">{url}</span>
+        <span className="text-xs text-muted-foreground">{copied ? t("connect.copied") : (caption ?? t("connect.yourLink"))}</span>
       </span>
       <span
         className={`flex size-10 shrink-0 items-center justify-center rounded-full transition-colors ${

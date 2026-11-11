@@ -78,6 +78,7 @@ export function AppShell() {
   return (
     <SignOutContext.Provider value={signOut}>
     <motion.div
+      data-app-shell
       // a collapsed sidebar gives its 176px (w-62 - 72px) back by narrowing the shell, not widening the frame, on
       // the sidebar's own timing (the panel's DashboardShell)
       className={`min-h-[var(--tg-viewport-stable-height,100dvh)] transition-[max-width] duration-200 ease-out lg:mx-auto lg:flex lg:h-dvh lg:max-w-[min(1280px,100%)] ${
@@ -91,19 +92,23 @@ export function AppShell() {
       <Sidebar />
       {/* desktop: a screen-tall glass frame that scrolls inside, as the panel's DashboardLayout; a phone scrolls the page */}
       <motion.div
+        data-app-frame
         initial={isIntro ? { opacity: 0, y: 14 } : false}
         animate={leaving ? { opacity: 0, y: 14 } : { opacity: 1, y: 0 }}
         transition={leaving ? { duration: 0.25, ease: "easeIn" } : { delay: 0.1, duration: 0.4, ease: EASE_SOFT }}
-        className="min-w-0 lg:my-3 lg:mr-3 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden lg:rounded-3xl lg:border lg:border-glass-border lg:bg-surface/50 lg:shadow-2xl lg:backdrop-blur-[28px] lg:backdrop-saturate-150">
+        className="min-w-0 lg:my-3 lg:mr-3 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden lg:rounded-[32px] lg:border lg:border-glass-border lg:transition-[border-color] lg:duration-150 lg:has-[[data-dialog]]:border-white/[0.04] lg:bg-surface/50 lg:shadow-2xl lg:backdrop-blur-[28px] lg:backdrop-saturate-150">
         {/* the panel's Header: across the frame and outside its scroller on desktop; pages put their title in the
             slot (HeaderSlot), the actions stay; a phone scrolls it away with the page */}
-        <header className="mx-auto flex min-h-9 w-full max-w-[960px] min-w-0 items-center gap-3 px-4 pb-5 pt-[calc(var(--safe-top)+16px)] lg:max-w-none lg:shrink-0 lg:px-8 lg:py-5">
-          <div ref={setHeaderSlot} className="flex min-w-0 flex-1 items-center gap-2" />
-          <HeaderActions />
+        <header className="mx-auto flex min-h-9 w-full max-w-[960px] min-w-0 items-center gap-3 px-4 pb-5 pt-[calc(var(--safe-top)+16px)] lg:max-w-none lg:shrink-0 lg:p-5">
+          {/* desktop: one 48px glass capsule across the frame, 36px items 6px in, as the panel's Header */}
+          <div className="flex min-w-0 flex-1 items-center gap-3 lg:glass-panel lg:h-12 lg:rounded-full lg:p-1.5">
+            <div ref={setHeaderSlot} className="flex min-w-0 flex-1 items-center gap-2 lg:gap-2.5" />
+            <HeaderActions />
+          </div>
         </header>
         {/* the stable gutter's 10px (the scrollbar, app/styles.css) comes out of the right padding */}
         <main
-          className={`mx-auto w-full max-w-[960px] min-w-0 px-4 pb-[calc(max(var(--safe-bottom),16px)+80px)] lg:max-w-none lg:flex-1 lg:overflow-y-auto lg:pl-8 lg:pr-[calc(2rem-10px)] lg:pt-4 lg:pb-8 lg:[scrollbar-gutter:stable] ${wide ? "lg:flex lg:flex-col" : ""}`}
+          className={`mx-auto w-full max-w-[960px] min-w-0 px-4 pb-[calc(max(var(--safe-bottom),16px)+80px)] lg:max-w-none lg:flex-1 lg:overflow-y-auto lg:pl-5 lg:pr-[calc(1.25rem-10px)] lg:pt-0 lg:pb-5 lg:[scrollbar-gutter:stable] ${wide ? "lg:flex lg:flex-col" : ""}`}
         >
           <HeaderSlotContext.Provider value={headerSlot}>
             <AnimatedOutlet className={wide ? "lg:flex lg:flex-1 lg:flex-col" : undefined} />

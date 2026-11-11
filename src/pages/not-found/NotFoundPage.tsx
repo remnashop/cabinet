@@ -40,7 +40,7 @@ export function NotFoundPage() {
     <FullScreen>
       <NotFoundArt />
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-lg font-bold">{t("pages.notFound")}</h1>
+        <h1 className="text-xl font-bold tracking-tight">{t("pages.notFound")}</h1>
         <p className="text-sm text-muted-foreground">{t("pages.notFoundHint")}</p>
       </div>
       <ButtonLink to="/" replace variant="solid" className="mt-2 w-full">

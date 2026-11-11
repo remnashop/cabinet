@@ -91,7 +91,7 @@ export function Hero({
   return (
     <div className="flex min-h-[calc(var(--tg-viewport-stable-height,100dvh)-168px-var(--safe-top)-var(--safe-bottom))] flex-col items-center gap-6 pb-4 text-center lg:min-h-[calc(100dvh-150px)] lg:flex-1 lg:justify-center lg:pb-0">
       <div className={`flex flex-col gap-2 ${lower ? "pt-10" : "pt-6"}`}>
-        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+        <h2 className="text-xl font-bold tracking-tight">{title}</h2>
         <p className="mx-auto max-w-64 text-sm text-muted-foreground">{hint}</p>
       </div>
       {art}

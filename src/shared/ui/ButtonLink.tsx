@@ -2,7 +2,6 @@ import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
-import { bounceTap } from "@shared/lib/bounceState";
 
 import { buttonClass, type ButtonSize, type ButtonVariant } from "./button-class";
 import { useRipple } from "./use-ripple";
@@ -10,7 +9,7 @@ import { useRipple } from "./use-ripple";
 const MotionLink = motion.create(Link);
 
 /**
- * A link that looks and answers a tap as Button does (bounce, ripple). to: a route in the cabinet; href: an anchor,
+ * A link that looks and answers a tap as Button does (ripple). to: a route in the cabinet; href: an anchor,
  * which an app scheme or another site needs.
  */
 export function ButtonLink({
@@ -38,7 +37,6 @@ export function ButtonLink({
 }) {
   const ripple = useRipple();
   const props = {
-    ...bounceTap(),
     onClick,
     onPointerDown: ripple.onPointerDown,
     className: `${buttonClass(variant, size)} ${className}`,

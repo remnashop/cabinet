@@ -115,11 +115,20 @@ describe("PaymentsPage link", () => {
     await unmount();
   });
 
+  it("leaves another page's ?id= alone while it fades out on that page's address", async () => {
+    query.current = { ...base, isFetchNextPageError: false };
+    getTransaction.mockClear();
+    const { where, unmount } = await render("/purchase/2?id=7");
+    expect(getTransaction).not.toHaveBeenCalled();
+    expect(where()).toBe("/purchase/2?id=7");
+    await unmount();
+  });
+
   it("shows just the list when the payment is gone", async () => {
     query.current = { ...base, isFetchNextPageError: false };
     getTransaction.mockRejectedValue(new Error("404"));
-    const { where, unmount } = await render("/?id=43");
-    expect(where()).toBe("/");
+    const { where, unmount } = await render("/profile/payments?id=43");
+    expect(where()).toBe("/profile/payments");
     await unmount();
   });
 });

@@ -373,12 +373,29 @@ function unauthorized(request: Request) {
 
 const minutesAgo = (n: number) => new Date(Date.now() - n * 60_000).toISOString();
 let notificationsRead = false;
+let notificationsCleared = false;
 const notificationItems = () =>
   [
-    { id: 4, event_type: "PAYMENT_SUCCEEDED", title: "Оплата прошла", body: "Подписка продлена на 30 дней", url: "/profile/payments", created_at: minutesAgo(5), read: false },
-    { id: 3, event_type: "SUBSCRIPTION_EXPIRING", title: "Подписка скоро закончится", body: "Осталось 3 дня", url: "/", created_at: minutesAgo(120), read: false },
-    { id: 2, event_type: "REFERRAL_REWARD", title: "Награда за друга", body: "Начислено 3 бонусных дня", url: "/", created_at: minutesAgo(60 * 26), read: true },
-    { id: 1, event_type: "WELCOME", title: "Добро пожаловать", body: "Спасибо, что вы с нами", url: "/", created_at: minutesAgo(60 * 24 * 5), read: true },
+    { id: 20, event_type: "PaymentsRestored", title: "Оплата снова доступна", body: "Теперь можно оформить или продлить подписку.", url: "/purchase", created_at: minutesAgo(1), read: false },
+    { id: 19, event_type: "SubscriptionPurchasedEvent", title: "Подписка активирована", body: "Осталось подключить устройство — это займёт пару минут.", url: "/?sub=1", created_at: minutesAgo(5), read: false },
+    { id: 18, event_type: "SubscriptionRenewedEvent", title: "Подписка продлена", body: "Срок подписки увеличен на 30 дней.", url: "/?sub=1", created_at: minutesAgo(30), read: false },
+    { id: 17, event_type: "SubscriptionChangedEvent", title: "Тариф изменён", body: "Подключение остаётся прежним, ничего настраивать не нужно.", url: "/?sub=1", created_at: minutesAgo(60), read: false },
+    { id: 16, event_type: "SubscriptionAddOnGrantedEvent", title: "Дополнение активировано", body: "К подписке добавлено 50 ГБ трафика.", url: "/?sub=1", created_at: minutesAgo(90), read: true },
+    { id: 15, event_type: "SubscriptionGrantedEvent", title: "Подписка выдана", body: "Доступ открыт на 30 дней. Подключите устройство, чтобы начать пользоваться.", url: "/?sub=1", created_at: minutesAgo(120), read: true },
+    { id: 14, event_type: "TransactionRefundedEvent", title: "Платёж возвращён", body: "299 ₽ вернутся тем же способом, которым вы платили.", url: "/profile/payments", created_at: minutesAgo(150), read: true },
+    { id: 13, event_type: "TransactionPartiallyRefundedEvent", title: "Частичный возврат", body: "Часть платежа, 100 ₽, вернётся тем же способом, которым вы платили.", url: "/profile/payments", created_at: minutesAgo(180), read: true },
+    { id: 12, event_type: "PaidOrderNotFulfilledEvent", title: "Выдача задерживается", body: "Оплата 299 ₽ получена, но подписка выдаётся дольше обычного. Мы уже разбираемся; если она скоро не появится, напишите в поддержку.", url: "/profile/payments", created_at: minutesAgo(210), read: true },
+    { id: 11, event_type: "SubscriptionExpiringEvent", title: "Подписка скоро закончится", body: "Доступ сохранится ещё 3 дня. Продлите подписку, чтобы не потерять его.", url: "/?sub=1&renew=1", created_at: minutesAgo(240), read: true },
+    { id: 10, event_type: "SubscriptionExpiredEvent", title: "Подписка закончилась", body: "Продлите подписку, чтобы вернуть доступ.", url: "/?sub=1&renew=1", created_at: minutesAgo(270), read: true },
+    { id: 9, event_type: "SubscriptionTrafficThresholdEvent", title: "Трафик на исходе", body: "Продлите подписку, чтобы не потерять доступ.", url: "/?sub=1&renew=1", created_at: minutesAgo(300), read: true },
+    { id: 8, event_type: "SubscriptionTrafficLimitedEvent", title: "Трафик закончился", body: "Продлите подписку, чтобы вернуть доступ.", url: "/?sub=1&renew=1", created_at: minutesAgo(330), read: true },
+    { id: 7, event_type: "SubscriptionNotConnectedEvent", title: "Пора подключиться", body: "Вы оформили подписку 5 ч назад, но ещё ни разу ею не воспользовались. Настройка займёт пару минут.", url: "/subscription/1/connect", created_at: minutesAgo(360), read: true },
+    { id: 6, event_type: "TorrentBlockerReportEvent", title: "Торренты запрещены", body: "Торрент-трафик через VPN заблокирован. При повторных нарушениях доступ может быть ограничен.", url: "/?sub=1", created_at: minutesAgo(390), read: true },
+    { id: 5, event_type: "CabinetNewDeviceSignInEvent", title: "Новый вход", body: "В кабинет вошли с 1.2.3.4 (Firefox). Если это были не вы — выйдите на всех других устройствах и напишите в поддержку.", url: "/profile?signout=others", created_at: minutesAgo(420), read: true },
+    { id: 4, event_type: "AccountsMergedEvent", title: "Аккаунты объединены", body: "Подписки, платежи и способы входа другого аккаунта теперь здесь. Если это были не вы — напишите в поддержку.", url: "/profile?support=1", created_at: minutesAgo(450), read: true },
+    { id: 3, event_type: "ReferralRewardIssuedEvent", title: "Награда за друга", body: "Вам начислено 3 бонусных дня — спасибо, что пригласили!", url: "/invite/friends", created_at: minutesAgo(480), read: true },
+    { id: 2, event_type: "InviteeRewardIssuedEvent", title: "Приветственный бонус", body: "Вам начислено 3 бонусных дня за регистрацию по приглашению.", url: "/profile", created_at: minutesAgo(510), read: true },
+    { id: 1, event_type: "PromocodeDiscountExpiringEvent", title: "Скидка скоро сгорит", body: "10% по промокоду SALE действуют ещё 1 ч. Успейте оформить покупку.", url: "/purchase", created_at: minutesAgo(540), read: true },
   ].map((item) => ({ ...item, read: item.read || notificationsRead }));
 const pushSubscriptions: { id: number; endpoint: string; user_agent: string | null; created_at: string; last_seen_at: string | null }[] = [];
 let pushIssued = 0;
@@ -411,6 +428,9 @@ export const handlers = [
   // so the cabinet still opens onto its error cards
   http.all(`${API}/*`, ({ request }) => {
     const path = new URL(request.url).pathname;
+    if (scenario.restricted && !/\/(auth|legal|appearance)\//.test(path)) {
+      return apiError(403, "ACCESS_RESTRICTED", "The service is temporarily closed");
+    }
     if (scenario.failRequests === "none" || /\/(auth|legal)\//.test(path)) return;
     return scenario.failRequests === "network" ? HttpResponse.error() : apiError(500, "INTERNAL", "Mock failure");
   }),
@@ -535,6 +555,7 @@ export const handlers = [
         bot_username: "mock_bot",
         support_telegram: "mock_support",
         support_url: "https://example.com/support",
+        payments_enabled: scenario.paymentsEnabled,
       }),
   ),
 
@@ -685,7 +706,10 @@ export const handlers = [
     });
   }),
 
+  http.post(`${API}/checkout/waitlist`, ({ request }) => unauthorized(request) ?? new HttpResponse(null, { status: 204 })),
+
   http.post(`${API}/checkout`, async ({ request }) => {
+    if (!scenario.paymentsEnabled) return apiError(403, "PAYMENTS_DISABLED", "Payments are disabled");
     const denied = unauthorized(request);
     if (denied) return denied;
     const body = (await request.json()) as MockOrder["body"];
@@ -873,8 +897,15 @@ export const handlers = [
     if (denied) return denied;
     if (scenario.feed === "error") return apiError(500, "INTERNAL", "Mock failure");
     // the unread count follows what mark-read did; the items keep their flags only until the next load
-    const items = scenario.feed === "empty" ? [] : notificationItems();
+    const items = scenario.feed === "empty" || notificationsCleared ? [] : notificationItems();
     return HttpResponse.json({ items, unread_count: items.filter((i) => !i.read).length });
+  }),
+
+  http.post(`${API}/notifications/me/actions/clear`, ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    notificationsCleared = true;
+    return new HttpResponse(null, { status: 204 });
   }),
 
   http.post(`${API}/notifications/me/actions/mark-read`, ({ request }) => {

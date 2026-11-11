@@ -1,11 +1,13 @@
 import { X, type LucideIcon } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useCallback, useEffect, useId, useRef, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
 import { EASE_SOFT, FADE_IN, FADE_OUT } from "@shared/lib/motion";
 import { useTelegramBackButton } from "@shared/telegram";
+import { DialogContext } from "@shared/ui/surface";
+import { Ripple } from "@shared/ui/Ripple";
 
 interface BottomSheetProps {
   open: boolean;
@@ -25,6 +27,12 @@ interface BottomSheetProps {
   fullScreen?: boolean;
   /** no panel: the content stands on the blurred backdrop, as a success screen; the title only names it for readers */
   bare?: boolean;
+  /** the body is plates only (Card, KpiTile, OptionRow...): 12px in, concentric with their 12px corners and the 24px
+   *  of the dialog; text and forms keep 16px */
+  cards?: boolean;
+  /** one view of a sheet that has several (a list, then one of its documents): a new view swaps the panel, out and
+   *  then in, under the same backdrop, instead of one sheet closing as another opens */
+  view?: string;
 }
 
 const ICON_TONE = {
@@ -32,9 +40,52 @@ const ICON_TONE = {
   danger: "border-error/30 bg-error/10 text-error",
 } as const;
 
-/** The panel's glass surface: a dialog, a popover. Shape and padding are the caller's. */
-export const GLASS =
-  "border border-white/[0.14] bg-popover/60 shadow-[0_24px_48px_-20px_rgba(4,8,20,0.6),inset_0_1px_0_rgba(232,236,251,0.16)] backdrop-blur-2xl backdrop-saturate-150";
+/** The panel's glass dialog material: a dialog, a popover. Shape and padding are the caller's. */
+export const GLASS = "glass-dialog";
+
+// undefined: not in a sheet; null: in one whose strip hasn't mounted yet
+const FooterContext = createContext<HTMLElement | null | undefined>(undefined);
+
+/** The panel's dialog footer: a strip under a line, its buttons on the right (Button glass, then glassAccent or
+ *  glassDanger). Rendered by the body, so the buttons keep its state; they land outside its DOM, so a form's submit
+ *  button names its form (`form` attribute) for Enter to keep working. */
+export function SheetFooter({ children }: { children: ReactNode }) {
+  const el = useContext(FooterContext);
+  // outside a sheet (a body rendered on its own) the buttons stay in place
+  if (el === undefined) return children;
+  return el && createPortal(children, el);
+}
+
+// The frame's backdrop-blur makes it the box of a dialog's fixed backdrop, so on desktop the backdrop covers the frame
+// only: the sidebar and the margins round the frame stay live. A press there closes the top dialog, as one on the
+// backdrop would, and goes no further (a sidebar link doesn't fire). Popovers and hints portal outside the shell, so
+// a pick in them is left alone; a phone's backdrop already covers the screen.
+const outsideCloses: (() => void)[] = [];
+const OUTSIDE_EVENTS = ["pointerdown", "mousedown", "click"] as const;
+
+function onPressOutsideFrame(event: Event) {
+  const close = outsideCloses[outsideCloses.length - 1];
+  const target = event.target as Element | null;
+  // the shell, or the page past its 1280px on a wide screen
+  const outside = target?.closest?.("[data-app-shell]") || target?.matches?.("html, body, #root");
+  if (!close || !outside || target!.closest("[data-app-frame]")) return;
+  if (!window.matchMedia("(width >= 64rem)").matches) return;
+  event.preventDefault();
+  event.stopPropagation();
+  if (event.type === "click") close();
+}
+
+function useOutsideFrameDismiss(close: (() => void) | null) {
+  useEffect(() => {
+    if (!close) return;
+    outsideCloses.push(close);
+    if (outsideCloses.length === 1) OUTSIDE_EVENTS.forEach((type) => document.addEventListener(type, onPressOutsideFrame, true));
+    return () => {
+      outsideCloses.splice(outsideCloses.lastIndexOf(close), 1);
+      if (outsideCloses.length === 0) OUTSIDE_EVENTS.forEach((type) => document.removeEventListener(type, onPressOutsideFrame, true));
+    };
+  }, [close]);
+}
 
 const FOCUSABLE =
   "a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled])";
@@ -51,23 +102,29 @@ export function BottomSheet({
   iconTone = "glass",
   fullScreen,
   bare,
+  cards,
+  view = "panel",
 }: BottomSheetProps) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const [footerEl, setFooterEl] = useState<HTMLDivElement | null>(null);
   // a stable identity: an inline onClose would re-subscribe the back button (show/hide flicker) every render
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
   });
   const stableClose = useCallback(() => onCloseRef.current?.(), []);
-  // focused as it mounts: the panel turning bare is a new element, Esc must keep reaching it
+  // focused as it mounts: the panel turning bare is a new element, Esc must keep reaching it. Not over a field's
+  // autoFocus: it lands first (the ref attaches after the children mount), and the panel would take it away
   const setPanel = useCallback((el: HTMLDivElement | null) => {
     panelRef.current = el;
-    el?.focus();
+    if (el && !el.contains(document.activeElement)) el.focus();
   }, []);
   useTelegramBackButton(open && onClose ? stableClose : null);
+  // a full-screen sheet's backdrop already covers the sidebar
+  useOutsideFrameDismiss(open && onClose && !fullScreen ? stableClose : null);
 
   useEffect(() => {
     if (!open) return;
@@ -105,7 +162,12 @@ export function BottomSheet({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-40 flex items-center justify-center bg-black/55 p-4 backdrop-blur-3xl"
+          // in the frame the glass panel frosts the page itself, so the backdrop only dims (the panel's Modal); over the
+          // whole screen the page melts into the shader's glow (the panel's donate dialog), and bare content, with no
+          // panel, stands on that too
+          className={`fixed inset-0 z-40 flex items-center justify-center p-4 transition-[background-color,backdrop-filter] duration-300 ${
+            bare || fullScreen ? "bg-black/55 backdrop-blur-3xl" : "bg-black/30"
+          }`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: reduced ? { duration: 0 } : FADE_IN }}
           exit={{ opacity: 0, transition: reduced ? { duration: 0 } : FADE_OUT }}
@@ -132,8 +194,9 @@ export function BottomSheet({
             </motion.div>
           ) : (
           <motion.div
-            key="panel"
+            key={view}
             ref={setPanel}
+            data-dialog
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
@@ -145,13 +208,13 @@ export function BottomSheet({
             exit={reduced ? { opacity: 0, transition: FADE_OUT } : { opacity: 0, scale: 0.94, y: 8, transition: FADE_OUT }}
             className={`flex max-h-[calc(var(--tg-viewport-stable-height,100dvh)*0.85)] w-full ${narrow ? "max-w-sm" : "max-w-2xl"} flex-col rounded-dialog outline-none ${GLASS}`}
           >
-            <div className="flex shrink-0 items-center gap-3 border-b border-border px-5 py-4">
+            <div className="flex shrink-0 items-center gap-3 border-b border-white/[0.08] p-4">
               {(Icon || glyph) && (
-                <div className={`-mr-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border ${ICON_TONE[iconTone]}`}>
+                <div className={`flex size-9 shrink-0 items-center justify-center rounded-full border ${ICON_TONE[iconTone]}`}>
                   {Icon ? <Icon className="size-4" /> : glyph}
                 </div>
               )}
-              <h2 id={titleId} className="min-w-0 flex-1 truncate text-base font-bold text-foreground">
+              <h2 id={titleId} className="min-w-0 flex-1 truncate text-base font-semibold tracking-tight text-foreground">
                 {title}
               </h2>
               {onClose && (
@@ -159,13 +222,21 @@ export function BottomSheet({
                   type="button"
                   onClick={onClose}
                   aria-label={t("common.close")}
-                  className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+                  // 36px like the header circle, no edge or fill of its own: the panel DialogHeader's IconButton
+                  className="relative flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
                 >
+                  <Ripple />
                   <X className="size-4" />
                 </button>
               )}
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-4">{children}</div>
+            <div className={`min-h-0 flex-1 overflow-y-auto ${cards ? "p-3" : "p-4"}`}>
+              <DialogContext.Provider value>
+                <FooterContext.Provider value={footerEl}>{children}</FooterContext.Provider>
+              </DialogContext.Provider>
+            </div>
+            {/* SheetFooter's buttons land here; empty, the strip is gone */}
+            <div ref={setFooterEl} className="flex shrink-0 justify-end gap-2 border-t border-white/[0.08] p-4 empty:hidden" />
           </motion.div>
           )}
           </AnimatePresence>

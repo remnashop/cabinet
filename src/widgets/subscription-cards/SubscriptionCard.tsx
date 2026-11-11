@@ -17,6 +17,7 @@ import {
   trafficRatio,
 } from "@entities/subscription/lib";
 import { formatBytes, formatDate, formatGb } from "@shared/lib/format";
+import { Ripple } from "@shared/ui/Ripple";
 
 // a card needing attention (cardAlert) says so with its texts and the strip; only a selected card that's fine gets a
 // long primary arc running slowly round it (.glow, a still contour with reduced motion)
@@ -108,7 +109,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
               <Icon className="size-[clamp(16px,4.5cqw,22px)] shrink-0 lg:size-4" />
               <span className="truncate">{sub.plan_name}</span>
             </div>
-            <span className="shrink-0 font-mono text-[length:clamp(12px,3.35cqw,16px)] tracking-[0.12em] text-muted-foreground lg:text-[12px]">
+            <span className="shrink-0 font-mono text-[length:clamp(12px,3.35cqw,16px)] tracking-[0.12em] text-muted-foreground lg:text-xs">
               {subscriptionNumber(sub.id)}
             </span>
           </div>
@@ -119,7 +120,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
           {!compact && (
             <div className="mt-auto flex flex-col lg:@min-[400px]/card:mb-6 gap-[clamp(6px,1.7cqw,9px)] lg:gap-1.5">
               <div className="flex items-baseline justify-between gap-2">
-                <span className={`text-[length:clamp(26px,7.3cqw,40px)] font-bold leading-[1.1] tracking-tight lg:text-[26px] ${TEXT_TONE[trafficTone]}`}>
+                <span className={`text-[length:clamp(26px,7.3cqw,40px)] font-bold leading-[1.1] tracking-tight lg:text-2xl ${TEXT_TONE[trafficTone]}`}>
                   {sub.effective_traffic_limit === 0
                     ? "∞"
                     : sub.used_traffic === null
@@ -127,7 +128,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
                       : formatBytes(Math.max(0, sub.effective_traffic_limit * GB - sub.used_traffic), locale)}
                 </span>
                 {ratio !== null && sub.used_traffic !== null && (
-                  <span className="min-w-0 truncate text-[length:clamp(13px,3.65cqw,18px)] font-bold lg:text-[13px]">
+                  <span className="min-w-0 truncate text-[length:clamp(13px,3.65cqw,18px)] font-bold lg:text-sm">
                     {t("home.trafficUsed", { value: formatBytes(sub.used_traffic, locale) })}
                   </span>
                 )}
@@ -139,7 +140,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
               )}
               {/* used up: nothing "left of" it to speak of, the strip says why; the empty line keeps the traffic where
                   it stands on the other cards */}
-              <div className="text-[length:clamp(12px,3.35cqw,16px)] text-muted-foreground lg:text-[12px]">
+              <div className="text-[length:clamp(12px,3.35cqw,16px)] text-muted-foreground lg:text-xs">
                 {trafficOut(sub)
                   ? " "
                   : sub.effective_traffic_limit === 0
@@ -185,7 +186,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
                 {t(`home.notice.${noticeKey(notice, left)}`, { count: left.count, date })}
               </span>
               {hint && (
-                <span className="text-[12px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {t(`home.noticeHint.${hint}${sub.is_trial ? "Trial" : ""}`, { date })}
                 </span>
               )}
@@ -210,7 +211,7 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
   if (!notice) return null;
   // a disabled or deleted one has nothing to renew: no link
   const link = alert ? to : undefined;
-  const className = `mb-3 flex min-h-16 items-center gap-2.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-6 py-2 ${RING_TONE[alert ?? "ok"]}`;
+  const className = `flex min-h-16 items-center gap-2.5 rounded-full glass-panel px-6 py-2 ${RING_TONE[alert ?? "ok"]}`;
   const content = (
     <>
       <span className={`size-2 shrink-0 rounded-full ${DOT_TONE[alert ?? "ok"]}`} />
@@ -219,7 +220,7 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
           {t(`home.notice.${noticeKey(notice, left)}`, { count: left.count, date })}
         </span>
         {hint && (
-          <span className="text-[12px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {t(`home.noticeHint.${hint}${sub.is_trial ? "Trial" : ""}`, { date })}
           </span>
         )}
@@ -229,7 +230,8 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
   );
 
   return link ? (
-    <Link to={link} className={`${className} transition-colors hover:bg-white/[0.06]`}>
+    <Link to={link} className={`relative ${className} transition-colors hover:bg-white/[0.06]`}>
+      <Ripple />
       {content}
     </Link>
   ) : (
@@ -274,7 +276,7 @@ function Pill({
   return (
     <span
       ref={ref}
-      className="flex min-w-0 flex-1 items-center justify-between gap-1.5 rounded-full bg-black/[0.22] px-[clamp(12px,3.7cqw,18px)] py-[clamp(6px,1.9cqw,9px)] text-[length:clamp(12px,3.7cqw,16px)] lg:px-3 lg:py-1.5 lg:text-[12px]"
+      className="flex min-w-0 flex-1 items-center justify-between gap-1.5 rounded-full bg-black/[0.22] px-[clamp(12px,3.7cqw,18px)] py-[clamp(6px,1.9cqw,9px)] text-[length:clamp(12px,3.7cqw,16px)] lg:px-3 lg:py-1.5 lg:text-xs"
     >
       <Icon className="size-[clamp(14px,4.35cqw,19px)] shrink-0 text-muted-foreground lg:size-3.5 @min-[290px]/row:hidden" aria-hidden />
       {/* not-sr-only would undo truncate, so the word and its screen-reader copy are two spans */}

@@ -193,7 +193,7 @@ export function CheckVariants({ onDone }: { onDone: () => void }) {
           <div key={run} className="flex flex-col items-center gap-4 text-center">
             <div className={`cv-art cv-${tone}`}>{variants[picked][1]()}</div>
             <div className="flex flex-col gap-1.5">
-              <p className="text-lg font-bold text-foreground">{title}</p>
+              <p className="text-xl font-bold tracking-tight text-foreground">{title}</p>
               <p className="text-sm text-muted-foreground">{hint}</p>
             </div>
           </div>
@@ -208,7 +208,7 @@ export function CheckVariants({ onDone }: { onDone: () => void }) {
       </BottomSheet>
       <div className="fixed inset-x-0 bottom-[calc(16px+var(--safe-bottom,0px))] z-50 flex justify-center px-4">
         <div className="flex max-w-full flex-col gap-2 rounded-2xl border border-white/[0.14] bg-popover/90 p-2.5 backdrop-blur-2xl">
-          <div className="flex items-center justify-between gap-3 px-1 text-[12px]">
+          <div className="flex items-center justify-between gap-3 px-1 text-xs">
             <span className="truncate text-muted-foreground">
               {picked !== null ? `${picked + 1}. ${variants[picked][0]}` : "Выберите вариант"}
             </span>
@@ -225,7 +225,7 @@ export function CheckVariants({ onDone }: { onDone: () => void }) {
                   setTone(key);
                   pick(0);
                 }}
-                className={`h-8 flex-1 rounded-full border px-3 text-[12.5px] font-semibold ${pill(tone === key)}`}
+                className={`h-8 flex-1 rounded-full border px-3 text-sm font-semibold ${pill(tone === key)}`}
               >
                 {TONES[key].label}
               </button>
@@ -238,7 +238,7 @@ export function CheckVariants({ onDone }: { onDone: () => void }) {
                 type="button"
                 aria-label={name}
                 onClick={() => pick(i)}
-                className={`flex size-9 shrink-0 items-center justify-center rounded-full border text-[13px] font-semibold ${pill(picked === i)}`}
+                className={`flex size-9 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${pill(picked === i)}`}
               >
                 {i + 1}
               </button>

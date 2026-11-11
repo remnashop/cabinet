@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, CircleCheck, Copy, ExternalLink, Languages, Link2Off, Loader2 } from "lucide-react";
+import { Check, CircleCheck, Copy, ExternalLink, Languages, Link2Off, Loader2, LogOut } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -16,9 +16,9 @@ import { LinkTelegramSheet } from "@features/link-identity/LinkTelegramSheet";
 import { useLinkResult } from "@features/link-identity/useLinkResult";
 import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@shared/i18n";
 import { getErrorMessage } from "@shared/api/http";
-import { openExternal } from "@shared/telegram";
+import { isMiniApp, openExternal } from "@shared/telegram";
 import { Avatar } from "@shared/ui/Avatar";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { ICON_BUTTON_CLASS } from "@shared/ui/button-class";
 import { ConfirmSheet } from "@shared/ui/ConfirmSheet";
@@ -41,29 +41,48 @@ import { ProfileBlocks } from "./ProfileBlocks";
 
 /**
  * Who is signed in: a pill with the avatar, the name and an ID, which the button on the right copies: the Telegram
- * one when linked, the shop's own otherwise (support finds the user by either).
+ * one when linked, the shop's own otherwise (support finds the user by either), and the sign-out beside it, as the
+ * panel's profile card: worded on desktop, a red circle by the copy one on a phone, where the name needs the width.
  */
-function Header({ me }: { me: Me }) {
+function Header({ me, onSignOut }: { me: Me; onSignOut: () => void }) {
   const { t } = useTranslation();
   const id = me.telegram_id ?? me.id;
   const [copied, copy] = useCopyLink(String(id));
   return (
-    <div className="flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.04] py-2 pr-2 pl-2">
+    // 60px tall: the 44px avatar 8px in, the 36px buttons 12px in, as far from the side as from top and bottom
+    <div className="flex items-center gap-2 rounded-full glass-panel py-2 pr-3 pl-2">
       <Avatar name={me.name} className="size-11 text-lg" />
-      <div className="min-w-0 flex-1">
+      <div className="ml-1 min-w-0 flex-1">
         <div className="truncate text-base font-semibold">{me.name}</div>
-        <div className="text-[12px] text-muted-foreground">{t("profile.id", { id })}</div>
+        <div className="text-xs text-muted-foreground">{t("profile.id", { id })}</div>
       </div>
       <RippleButton
         type="button"
         aria-label={t("profile.copyId")}
         onClick={() => void copy()}
         className={`relative ${ICON_BUTTON_CLASS} ${
-          copied ? "text-success" : "text-muted-foreground hover:text-foreground"
+          copied ? "text-success" : "text-foreground"
         }`}
       >
         {copied ? <Check className="size-[17px]" /> : <Copy className="size-[17px]" />}
       </RippleButton>
+      {/* the Mini App signs back in with Telegram's data at once: no sign-out there */}
+      {!isMiniApp() && (
+        <>
+          <RippleButton
+            type="button"
+            aria-label={t("common.logout")}
+            onClick={onSignOut}
+            className={`relative ${ICON_BUTTON_CLASS} text-error hover:bg-error/10 lg:hidden`}
+          >
+            <LogOut className="size-[17px]" />
+          </RippleButton>
+          <Button variant="glassDanger" className="max-lg:hidden" onClick={onSignOut}>
+            <LogOut className="size-4" />
+            {t("common.logout")}
+          </Button>
+        </>
+      )}
     </div>
   );
 }
@@ -85,13 +104,13 @@ function LanguageRow({
   const localName = t(`profile.languages.${language}`);
   return (
     <OptionRow selected={current} disabled={disabled} onClick={onPick}>
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-[12px] font-bold text-primary">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-bold text-primary">
         {language.toUpperCase()}
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-[13px] font-semibold">{LANGUAGE_NAMES[language]}</span>
+        <span className="truncate text-sm font-semibold">{LANGUAGE_NAMES[language]}</span>
         {localName !== LANGUAGE_NAMES[language] && (
-          <span className="truncate text-[12px] text-muted-foreground">{localName}</span>
+          <span className="truncate text-xs text-muted-foreground">{localName}</span>
         )}
       </span>
       {pending ? (
@@ -107,7 +126,7 @@ function LanguageSheet({ open, onClose }: { open: boolean; onClose: () => void }
   const { t, i18n } = useTranslation();
   const change = useChangeLanguage(onClose);
   return (
-    <BottomSheet narrow icon={Languages} open={open} onClose={onClose} title={t("profile.languageTitle")}>
+    <BottomSheet narrow cards icon={Languages} open={open} onClose={onClose} title={t("profile.languageTitle")}>
       <div className="flex flex-col gap-2">
         {SUPPORTED_LANGUAGES.map((language) => (
           <LanguageRow
@@ -182,7 +201,7 @@ export function ProfilePage() {
     return (
       <>
         {header}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           <Skeleton round className="h-12" />
           <Skeleton round className="h-32" />
           <Skeleton round className="h-40" />
@@ -194,8 +213,8 @@ export function ProfilePage() {
   return (
     <>
       {header}
-      <div className="flex flex-col gap-4">
-        <Header me={me.data} />
+      <div className="flex flex-col gap-5">
+        <Header me={me.data} onSignOut={() => setSignOutOpen(true)} />
         <ProfileBlocks
           me={me.data}
           linkError={pageError ?? (oauthLink.isError ? getErrorMessage(oauthLink.error, t("errors.generic")) : null)}
@@ -213,7 +232,6 @@ export function ProfilePage() {
             onWithdraw: support.available ? support.open : undefined,
             onUnlinkInBrowser: () => setInBrowserOpen(true),
             onLanguage: () => setLanguageOpen(true),
-            onSignOut: () => setSignOutOpen(true),
             onSignOutOthers: () => setOthersOpen(true),
             languageName: LANGUAGE_NAMES[i18n.language as SupportedLanguage] ?? i18n.language,
           }}
@@ -290,14 +308,13 @@ export function ProfilePage() {
         onClose={() => setInBrowserOpen(false)}
         title={t("profile.unlinkTitle", { kind: t("profile.kinds.TELEGRAM") })}
       >
-        <p className="text-sm text-muted-foreground">{t("profile.unlinkInBrowserText")}</p>
-        <div className="mt-5 flex gap-2">
-          <Button variant="outline" className="flex-1" onClick={() => setInBrowserOpen(false)}>
+        <p className="text-sm text-foreground/80">{t("profile.unlinkInBrowserText")}</p>
+        <SheetFooter>
+          <Button variant="glass" onClick={() => setInBrowserOpen(false)}>
             {t("common.close")}
           </Button>
           <Button
-            variant="accent"
-            className="flex-1"
+            variant="glassAccent"
             onClick={() => {
               setInBrowserOpen(false);
               openExternal(`${window.location.origin}/profile`);
@@ -305,7 +322,7 @@ export function ProfilePage() {
           >
             {t("profile.openInBrowser")}
           </Button>
-        </div>
+        </SheetFooter>
       </BottomSheet>
       <ConfirmSheet
         open={unlinking !== null}

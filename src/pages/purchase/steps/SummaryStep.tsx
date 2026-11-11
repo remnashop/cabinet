@@ -114,7 +114,7 @@ export function SummaryStep({
     // a form: Enter in the email field pays; noValidate keeps the browser's bubble out, the field says it itself
     <form
       noValidate
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-5"
       onSubmit={(e) => {
         e.preventDefault();
         if (canPay) pay();
@@ -130,8 +130,10 @@ export function SummaryStep({
               bright
             />
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="receipt-email" className="px-[13px] text-[12px] text-foreground">
+              <label htmlFor="receipt-email" className="px-[13px] text-xs text-foreground">
                 {t("purchase.email")}
+                {/* a red asterisk when this method can't pay without it, as the panel's Field */}
+                {method.requires_email && <span className="text-error"> *</span>}
               </label>
               <TextInput
                 id="receipt-email"

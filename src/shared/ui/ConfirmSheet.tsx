@@ -2,7 +2,7 @@ import { TriangleAlert, type LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@shared/ui/Button";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
 
 interface ConfirmSheetProps {
   open: boolean;
@@ -19,7 +19,7 @@ interface ConfirmSheetProps {
   error?: string | null;
 }
 
-/** A yes/no question in the panel's centred dialog: the mark in the header, what it means, cancel and the action. */
+/** A yes/no question, the panel's ConfirmDialog: the mark in the header, what it means, cancel and the action in the footer. */
 export function ConfirmSheet({
   open,
   title,
@@ -36,22 +36,23 @@ export function ConfirmSheet({
   return (
     <BottomSheet
       narrow
-      icon={icon}
+      // a destructive question always shows the warning sign, as the panel's ConfirmDialog
+      icon={danger ? TriangleAlert : icon}
       iconTone={danger ? "danger" : "glass"}
       open={open}
       onClose={onClose}
       title={title}
     >
-      <p className="text-sm text-muted-foreground">{text}</p>
-      {error && <p className="mt-3 text-[12px] text-error">{error}</p>}
-      <div className="mt-5 flex gap-2">
-        <Button variant="outline" className="flex-1" onClick={onClose}>
+      <p className="whitespace-pre-line text-sm text-foreground/80">{text}</p>
+      {error && <p className="mt-3 text-xs text-error">{error}</p>}
+      <SheetFooter>
+        <Button variant="glass" onClick={onClose}>
           {t("common.cancel")}
         </Button>
-        <Button variant={danger ? "danger" : "accent"} className="flex-1" disabled={pending} onClick={onConfirm}>
+        <Button variant={danger ? "glassDanger" : "glassAccent"} disabled={pending} onClick={onConfirm}>
           {confirmLabel}
         </Button>
-      </div>
+      </SheetFooter>
     </BottomSheet>
   );
 }

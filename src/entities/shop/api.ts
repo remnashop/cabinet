@@ -12,6 +12,7 @@ export interface CabinetSettings {
   // where support is: a Telegram username without "@", an https page; null = not set
   support_telegram: string | null;
   support_url: string | null;
+  payments_enabled: boolean;
 }
 
 export function useCabinetSettingsQuery() {

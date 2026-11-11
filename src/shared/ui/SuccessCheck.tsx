@@ -51,7 +51,7 @@ export function SuccessMessage({ children, hint }: { children: ReactNode; hint?:
     <div role="status" className="flex flex-col items-center gap-4 text-center">
       <SuccessCheck />
       <div className="flex flex-col gap-1.5">
-        <p className="text-lg font-bold text-foreground">{children}</p>
+        <p className="text-xl font-bold tracking-tight text-foreground">{children}</p>
         {hint && <p className="text-sm text-muted-foreground">{hint}</p>}
       </div>
     </div>

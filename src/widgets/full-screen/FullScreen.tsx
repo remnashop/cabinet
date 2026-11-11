@@ -27,7 +27,7 @@ export function FullScreenMessage({
   return (
     <FullScreen>
       {tone && <AlertMark tone={tone} />}
-      <h1 className="text-lg font-bold">{title}</h1>
+      <h1 className="text-xl font-bold tracking-tight">{title}</h1>
       {text && <p className="text-sm text-muted-foreground">{text}</p>}
       {children}
     </FullScreen>

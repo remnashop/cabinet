@@ -20,6 +20,7 @@ import { EVENT_ROW, EventIcon, EventList, EventRow } from "@shared/ui/EventList"
 import { AndroidIcon, AppleIcon, DevicesIcon, LinuxIcon, TvIcon, WindowsIcon } from "@shared/ui/PlatformIcons";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { FormError } from "@shared/ui/FormError";
+import { Ripple } from "@shared/ui/Ripple";
 
 function DeleteMark() {
   const { t } = useTranslation();
@@ -89,14 +90,14 @@ export function DevicesCard({ subscription }: { subscription: OwnSubscription })
 
   return (
     <Card round>
-      <div className="flex min-h-8 items-center justify-between gap-3">
-        <h3 className="pl-2 text-[11px] font-semibold uppercase tracking-wide text-foreground">
+      <div className="flex min-h-9 items-center justify-between gap-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-foreground">
           {maxDevices === 0
             ? t("home.devicesTitleUnlimited", { used: items.length })
             : t("home.devicesTitle", { used: items.length, limit: maxDevices })}
         </h3>
         {settings.data?.device_all_reset_enabled && items.length > 1 && (
-          <Button variant="secondary" size="sm" disabled={!!resetFrom} onClick={() => ask({ kind: "all" })}>
+          <Button variant="glass" disabled={!!resetFrom} onClick={() => ask({ kind: "all" })}>
             {resetFrom ? t("home.deleteAllFrom", { time: formatDateTime(resetFrom, i18n.language) }) : t("home.deleteAll")}
           </Button>
         )}
@@ -109,7 +110,7 @@ export function DevicesCard({ subscription }: { subscription: OwnSubscription })
           return (
             <EventRow
               key={device.hwid}
-              icon={<EventIcon glyph={<Icon className="size-5" strokeWidth={1.6} />} />}
+              icon={<EventIcon glyph={<Icon className="size-4" strokeWidth={1.6} />} />}
               title={name}
               caption={
                 <>
@@ -127,12 +128,13 @@ export function DevicesCard({ subscription }: { subscription: OwnSubscription })
         {addLabel && (
           <Link
             to={`/subscription/${subscription.id}/connect`}
-            className={`group flex ${EVENT_ROW} items-center gap-3 text-muted-foreground hover:bg-white/[0.04] hover:text-foreground`}
+            className={`group relative flex ${EVENT_ROW} items-center gap-3 text-muted-foreground hover:bg-white/[0.04] hover:text-foreground`}
           >
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-dashed border-white/20 transition-colors group-hover:border-primary/45 group-hover:text-primary">
+            <Ripple />
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-dashed border-white/20 transition-colors group-hover:border-primary/45 group-hover:text-primary">
               <Plus className="size-4" />
             </span>
-            <span className="text-[13px]">{addLabel}</span>
+            <span className="text-sm">{addLabel}</span>
           </Link>
         )}
       </EventList>

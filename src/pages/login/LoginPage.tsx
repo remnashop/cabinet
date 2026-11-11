@@ -60,7 +60,7 @@ function BrowserLogin({ heading }: { heading: ReactNode }) {
       return (
         <>
           <div className="mb-2">
-            <h1 className="text-2xl font-bold tracking-tight">{t("auth.miniAppOnly")}</h1>
+            <h1 className="text-xl font-bold tracking-tight">{t("auth.miniAppOnly")}</h1>
             <p className="mt-2.5 text-sm text-muted-foreground">{t("auth.miniAppOnlyHint")}</p>
           </div>
           <Button variant="solid" className="w-full" onClick={() => openExternal(`https://t.me/${bot_username}`)}>
@@ -83,11 +83,16 @@ function BrowserLogin({ heading }: { heading: ReactNode }) {
   return (
     <>
       {heading}
-      {oauth.length > 0 && <OAuthButtons providers={oauth} />}
-      {/* the bot leads when there's no Telegram OIDC to sit above it */}
-      {telegram_deeplink && <TelegramBotLogin />}
+      {/* one group, the OAuth buttons' 8px between them, not the screen's 16px; the bot leads when there's no
+          Telegram OIDC to sit above it */}
+      {(oauth.length > 0 || telegram_deeplink) && (
+        <div className="flex w-full flex-col gap-2">
+          {oauth.length > 0 && <OAuthButtons providers={oauth} />}
+          {telegram_deeplink && <TelegramBotLogin />}
+        </div>
+      )}
       {(oauth.length > 0 || telegram_deeplink) && email && (
-        <div className="flex w-full items-center gap-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="flex w-full items-center gap-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <span className="h-px flex-1 bg-border" />
           {t("auth.or")}
           <span className="h-px flex-1 bg-border" />
@@ -104,9 +109,9 @@ export function LoginPage() {
   const { t } = useTranslation();
   const heading = (
     <div className="mb-2">
-      <h1 className="text-2xl font-bold tracking-tight">{t("auth.title")}</h1>
+      <h1 className="text-xl font-bold tracking-tight">{t("auth.title")}</h1>
       <p className="mt-2.5 text-sm text-muted-foreground">{t("auth.subtitle")}</p>
-      {wasSessionExpired() && <p className="mt-2 text-[12px] text-muted-foreground">{t("auth.sessionExpired")}</p>}
+      {wasSessionExpired() && <p className="mt-2 text-xs text-muted-foreground">{t("auth.sessionExpired")}</p>}
     </div>
   );
   return (

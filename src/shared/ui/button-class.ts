@@ -1,24 +1,33 @@
 // accent/solid/outline/danger: primary and destructive actions, dialog and form footers (14px).
-// secondary: card-header actions and buttons next to a field (12.5px semibold).
-export type ButtonVariant = "accent" | "solid" | "outline" | "secondary" | "danger";
+// secondary: buttons next to a field (14px semibold).
+// glass: a card header's action, 36px like the panel Section's aside, and a dialog footer's cancel; glassAccent and
+// glassDanger: a dialog footer's action (14px medium, the panel's ConfirmDialog).
+export type ButtonVariant = "accent" | "solid" | "outline" | "secondary" | "danger" | "glass" | "glassAccent" | "glassDanger";
 
 const COLOR_CLASS: Record<ButtonVariant, string> = {
-  accent: "border-transparent bg-accent text-primary hover:bg-primary/20",
-  solid: "border-transparent bg-primary text-primary-foreground hover:bg-primary-hover",
+  // the panel's glassAccent and glassSolid
+  accent: "border-primary/35 bg-primary/15 text-primary hover:bg-primary/20",
+  solid: "border-transparent bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.25)] hover:bg-primary-hover",
   outline: "border-border bg-white/[0.03] text-foreground/80 hover:bg-white/[0.06]",
   secondary: "border-border text-foreground/90 hover:bg-white/[0.06]",
   danger: "border-border text-error hover:bg-error/10",
+  glass: "border-glass-border bg-white/[0.03] text-foreground/90 hover:bg-white/[0.06]",
+  glassAccent: "border-primary/35 bg-primary/15 text-primary hover:bg-primary/20",
+  glassDanger: "border-glass-border bg-white/[0.03] text-error hover:bg-error/10",
 };
 
 const TYPE_CLASS: Record<ButtonVariant, string> = {
   accent: "gap-1.5 px-4 text-sm font-medium",
   solid: "gap-1.5 px-4 text-sm font-semibold",
   outline: "gap-1.5 px-4 text-sm font-medium",
-  secondary: "gap-1.5 px-3.5 text-[12.5px] font-semibold",
+  secondary: "gap-1.5 px-3.5 text-sm font-semibold",
   danger: "gap-1.5 px-4 text-sm font-medium",
+  glass: "gap-1.5 px-3.5 text-sm font-medium",
+  glassAccent: "gap-1.5 px-3.5 text-sm font-medium",
+  glassDanger: "gap-1.5 px-3.5 text-sm font-medium",
 };
 
-const SM_TYPE_CLASS = "gap-1.5 px-3 text-[12.5px]";
+const SM_TYPE_CLASS = "gap-1.5 px-3 text-sm";
 
 const LG_TYPE_CLASS = "gap-2 px-6 text-base font-semibold";
 

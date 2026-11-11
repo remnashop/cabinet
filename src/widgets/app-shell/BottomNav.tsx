@@ -1,13 +1,15 @@
 import { Headset, type LucideIcon } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink } from "react-router";
+import { NavLink, useMatch, useResolvedPath } from "react-router";
 
 import { PILL_SPRING } from "@shared/lib/motion";
-import { GLASS } from "@shared/ui/BottomSheet";
 import { useNavItems } from "@widgets/app-shell/nav-items";
 import { useSupport } from "@widgets/support/use-support";
+
+// the panel's mobile header bar: the frame's glass, floating over the page
+const GLASS = "border border-glass-border bg-surface/50 shadow-2xl backdrop-blur-[28px] backdrop-saturate-150";
 
 // A floating pill: a glass capsule across the screen, 16px off the sides; off the bottom it sits in the iOS
 // home-indicator inset (16px where there is none), as the native floating tab bar, not 16px above it. The slot is
@@ -15,54 +17,54 @@ import { useSupport } from "@widgets/support/use-support";
 // on both sides, so the last card scrolls clear of it. When every tab's name fits beside its icon (an invisible probe
 // row measures them), all tabs are labelled. Otherwise icons only, but the active tab names its page: tabs are flex-auto,
 // so the label's own width animation widens its tab frame by frame, with nothing else to fall out of step with.
+// One layout animation for the whole bar: a tab's width (its label in or out), its neighbours' shift and the active
+// pill's glide are measured in the same pass, on the same spring. Animated apart (the label's width on its own, the pill
+// by layoutId), the pill aimed at a tab still growing under it and wobbled. The wrapper scales during the glide, so
+// what's inside is motion with layout="position", which Motion keeps undistorted; overflow-hidden keeps a label that
+// lands at its full width inside the tab while the tab is still growing to it.
+const TAB_SLOT = "relative isolate flex min-w-0 flex-auto overflow-hidden rounded-full";
 const TAB =
-  "relative isolate flex min-h-[50px] min-w-0 flex-auto items-center justify-center rounded-full transition-colors";
+  "flex min-h-[50px] w-full min-w-0 items-center justify-center rounded-full transition-colors";
 
-const LABEL = "text-[13px] font-semibold whitespace-nowrap";
+const LABEL = "text-sm font-semibold whitespace-nowrap";
 
 type TabProps = { label: string; to: string; end: boolean; icon: LucideIcon; labeled: boolean };
 
 function NavTab({ label, to, end, icon: Icon, labeled }: TabProps) {
+  // NavLink's rule: the path itself, or below it unless `end`
+  const isActive = useMatch({ path: useResolvedPath(to).pathname, end }) !== null;
   return (
-    <NavLink
-      to={to}
-      end={end}
-      aria-label={label}
-      className={({ isActive }) => `${TAB} ${isActive ? "text-primary" : "text-muted-foreground"}`}
-    >
-      {({ isActive }) => (
-        <>
-          {isActive && (
-            <motion.span
-              layoutId="bottom-nav-active-pill"
-              className="absolute inset-0 -z-10 rounded-full bg-accent"
-              transition={PILL_SPRING}
-            />
-          )}
-          <Icon className="size-[22px] shrink-0" strokeWidth={isActive ? 2.5 : 2.25} />
-          {labeled ? (
-            <span aria-hidden className={`${LABEL} pl-1.5`}>
-              {label}
-            </span>
-          ) : (
-            <AnimatePresence initial={false}>
-              {isActive && (
-                <motion.span
-                  aria-hidden
-                  className={`${LABEL} shrink-0 overflow-hidden`}
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: "auto", opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  transition={PILL_SPRING}
-                >
-                  <span className="pl-1.5">{label}</span>
-                </motion.span>
-              )}
-            </AnimatePresence>
-          )}
-        </>
+    <motion.div layout transition={PILL_SPRING} className={TAB_SLOT}>
+      {isActive && (
+        <motion.span
+          layoutId="bottom-nav-active-pill"
+          className="absolute inset-0 -z-10 rounded-full bg-accent"
+          transition={PILL_SPRING}
+        />
       )}
-    </NavLink>
+      <NavLink
+        to={to}
+        end={end}
+        aria-label={label}
+        className={`${TAB} ${isActive ? "text-primary" : "text-muted-foreground"}`}
+      >
+        <motion.span layout="position" transition={PILL_SPRING} className="flex shrink-0">
+          <Icon className="size-[22px]" strokeWidth={isActive ? 2.5 : 2.25} />
+        </motion.span>
+        {(labeled || isActive) && (
+          <motion.span
+            layout="position"
+            aria-hidden
+            className={`${LABEL} pl-1.5`}
+            initial={labeled ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={PILL_SPRING}
+          >
+            {label}
+          </motion.span>
+        )}
+      </NavLink>
+    </motion.div>
   );
 }
 
@@ -72,19 +74,19 @@ function SupportTab({ support, labeled }: { support: ReturnType<typeof useSuppor
   if (!support.available) return null;
   return (
     <>
-      <button
-        type="button"
-        aria-label={t("help.support")}
-        onClick={support.open}
-        className={`${TAB} text-muted-foreground`}
-      >
-        <Headset className="size-[22px] shrink-0" strokeWidth={2.25} />
-        {labeled && (
-          <span aria-hidden className={`${LABEL} pl-1.5`}>
-            {t("help.support")}
-          </span>
-        )}
-      </button>
+      {/* in the same layout pass as the tabs: it slides over as they resize */}
+      <motion.div layout transition={PILL_SPRING} className={TAB_SLOT}>
+        <button type="button" aria-label={t("help.support")} onClick={support.open} className={`${TAB} text-muted-foreground`}>
+          <motion.span layout="position" transition={PILL_SPRING} className="flex shrink-0">
+            <Headset className="size-[22px]" strokeWidth={2.25} />
+          </motion.span>
+          {labeled && (
+            <motion.span layout="position" aria-hidden className={`${LABEL} pl-1.5`}>
+              {t("help.support")}
+            </motion.span>
+          )}
+        </button>
+      </motion.div>
       {support.dialog}
     </>
   );

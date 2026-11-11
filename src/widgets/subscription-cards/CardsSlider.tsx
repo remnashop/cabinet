@@ -22,7 +22,7 @@ interface CardsSliderProps {
 
 // below lg a slide is the page's full width, the dots say there are more (a gap as wide as the gutter keeps the next
 // one out of view); desktop: three across, more scroll sideways
-const SLIDE = "w-full shrink-0 snap-center lg:w-[calc((100%-1.5rem)/3)]";
+const SLIDE = "w-full shrink-0 snap-center lg:w-[calc((100%-2.5rem)/3)]";
 
 // every card counts its own devices; the selected one shares the query with the devices list
 export function SlideCard({
@@ -153,10 +153,10 @@ export function CardsSlider({
 
   return (
     <div>
-      <div className="relative mb-3 lg:mb-0">
+      <div className="relative">
         <div
           ref={trackRef}
-          className="relative -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-0.5 [scrollbar-width:none] lg:-mx-3 lg:-mt-3 lg:mb-1 lg:gap-3 lg:p-3 [&::-webkit-scrollbar]:hidden"
+          className="relative -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-0.5 [scrollbar-width:none] lg:-mx-2.5 lg:-my-2.5 lg:gap-5 lg:p-2.5 [&::-webkit-scrollbar]:hidden"
         >
           {/* the slides stretch to the tallest card, the cards and the buy slide fill them; strips stand apart (NoticeBar) */}
           {subscriptions.map((sub, index) => (

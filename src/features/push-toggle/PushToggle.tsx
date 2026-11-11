@@ -2,7 +2,7 @@ import { BellRing } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { pushApi } from "@entities/notification/api";
+import { pushApi, usePushConfiguredQuery } from "@entities/notification/api";
 import { getErrorMessage } from "@shared/api/http";
 import { currentPushEndpoint, detectPushSupport, disablePush, enablePush } from "@shared/lib/push";
 import { isMiniApp } from "@shared/telegram";
@@ -19,6 +19,7 @@ export function PushToggle() {
   const [problem, setProblem] = useState<string | null>(null);
   const support = detectPushSupport();
   const miniApp = isMiniApp();
+  const configured = usePushConfiguredQuery();
 
   const refresh = () =>
     currentPushEndpoint().then((endpoint) => setOn(endpoint !== null && Notification.permission === "granted"));
@@ -27,8 +28,9 @@ export function PushToggle() {
     void currentPushEndpoint().then((endpoint) => setOn(endpoint !== null && Notification.permission === "granted"));
   }, [miniApp, support]);
 
-  // the Mini App gets its notifications from the bot
-  if (miniApp) return null;
+  // the Mini App gets its notifications from the bot; with no VAPID key on the backend there's nothing to offer (and
+  // nothing shows until that's known, so the row doesn't flash in and out)
+  if (miniApp || configured.data !== true) return null;
 
   const denied = support === "ready" && Notification.permission === "denied";
   const note =

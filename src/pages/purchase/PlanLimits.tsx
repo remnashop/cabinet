@@ -9,7 +9,7 @@ export function PlanLimits({ plan, className = "" }: { plan: Plan; className?: s
   const { t, i18n } = useTranslation();
   const [traffic, devices] = planLimits(plan, t, i18n.language);
   return (
-    <ul className={`flex flex-col gap-1.5 text-[13px] ${className}`}>
+    <ul className={`flex flex-col gap-1.5 text-sm ${className}`}>
       {[
         { icon: Gauge, text: traffic },
         { icon: Smartphone, text: devices },

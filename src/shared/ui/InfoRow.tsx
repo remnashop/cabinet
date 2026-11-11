@@ -15,9 +15,9 @@ export function InfoRow({ icon: Icon, label, value, onClick, bright }: InfoRowPr
     <>
       <span className={`flex shrink-0 items-center gap-2.5 ${bright ? "text-foreground" : "text-muted-foreground"}`}>
         {Icon && <Icon className="size-[15px]" />}
-        <span className="text-[12.5px]">{label}</span>
+        <span className="text-sm">{label}</span>
       </span>
-      <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-semibold text-foreground">{value}</span>
+      <span className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-foreground">{value}</span>
     </>
   );
   const base =

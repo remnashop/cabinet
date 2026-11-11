@@ -13,7 +13,11 @@ const push = vi.hoisted(() => ({
   disablePush: vi.fn(),
 }));
 vi.mock("@shared/lib/push", () => push);
-vi.mock("@entities/notification/api", () => ({ pushApi: { tag: "api" } }));
+const backend = vi.hoisted(() => ({ configured: true as boolean | undefined }));
+vi.mock("@entities/notification/api", () => ({
+  pushApi: { tag: "api" },
+  usePushConfiguredQuery: () => ({ data: backend.configured }),
+}));
 const telegram = vi.hoisted(() => ({ isMiniApp: vi.fn(() => false) }));
 vi.mock("@shared/telegram", () => telegram);
 
@@ -39,6 +43,7 @@ beforeEach(async () => {
   push.enablePush.mockResolvedValue("subscribed");
   push.disablePush.mockResolvedValue(undefined);
   telegram.isMiniApp.mockReturnValue(false);
+  backend.configured = true;
   permission("default");
 });
 afterEach(() => {
@@ -90,6 +95,15 @@ describe("PushToggle", () => {
     await act(async () => button()!.click());
     expect(push.disablePush).toHaveBeenCalledWith({ tag: "api" }, { optOut: true });
     expect(button()!.textContent).toBe("Enable");
+  });
+
+  it("renders nothing when the backend has no VAPID key, or until that is known", async () => {
+    backend.configured = false;
+    await render();
+    expect(container.innerHTML).toBe("");
+    backend.configured = undefined;
+    await render();
+    expect(container.innerHTML).toBe("");
   });
 
   it("renders nothing in the Mini App", async () => {

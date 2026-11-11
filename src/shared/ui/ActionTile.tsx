@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
+import { useSurface } from "./surface";
 import { useRipple } from "./use-ripple";
 
 /**
@@ -14,6 +15,7 @@ export function ActionTile({
   icon: Icon,
   value,
   label,
+  desktopLabel,
   main,
   disabled,
   round,
@@ -25,6 +27,8 @@ export function ActionTile({
   /** a figure over the label instead of the icon: the profile's balance */
   value?: ReactNode;
   label: string;
+  /** a longer label for the desktop's wider tile; a phone keeps `label` */
+  desktopLabel?: string;
   main?: boolean;
   disabled?: boolean;
   round?: boolean;
@@ -32,15 +36,16 @@ export function ActionTile({
   onClick?: () => void;
 }) {
   const ripple = useRipple();
-  const classes = `relative flex min-h-[95.5px] flex-col items-center justify-center gap-1.5 ${round ? "rounded-home" : "rounded-2xl"} border px-2 py-4 text-center text-[13px] font-medium leading-tight transition-colors disabled:pointer-events-none disabled:opacity-50 ${
-    main ? "border-primary/45 bg-primary/10 hover:bg-primary/15" : "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]"
+  const { shape, fill } = useSurface(round);
+  const classes = `relative flex min-h-[95.5px] flex-col items-center justify-center gap-1.5 ${shape} px-2 py-4 text-center text-sm font-medium leading-tight transition-colors disabled:pointer-events-none disabled:opacity-50 ${
+    main ? "border border-primary/45 bg-primary/10 hover:bg-primary/15" : `${fill} hover:bg-white/[0.06]`
   } ${className}`;
   const content = (
     <>
       {ripple.ripples}
       {value !== undefined ? (
         // the icon circle's 34px line: a figure tile stands as tall as an icon one
-        <span className="flex h-[34px] items-center text-[26px] font-bold tabular-nums tracking-tight">{value}</span>
+        <span className="flex h-[34px] items-center text-2xl font-bold tabular-nums tracking-tight">{value}</span>
       ) : (
         Icon && (
           <span
@@ -52,7 +57,14 @@ export function ActionTile({
           </span>
         )
       )}
-      {label}
+      {desktopLabel ? (
+        <>
+          <span className="lg:hidden">{label}</span>
+          <span className="max-lg:hidden">{desktopLabel}</span>
+        </>
+      ) : (
+        label
+      )}
     </>
   );
   return to ? (

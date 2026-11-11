@@ -34,9 +34,9 @@ export function WizardHead(props: HeadProps) {
   );
   const price = quote.data && { price: quote.data.final_price, currency: quote.data.currency };
   return (
-    <div className="mb-4 flex flex-col gap-3">
+    <div className="mb-5 flex flex-col gap-5">
       <DotStepper {...props} />
-      <div className="relative overflow-hidden rounded-home border border-white/[0.14] bg-white/[0.06] backdrop-blur-xl backdrop-saturate-150 p-5 text-foreground">
+      <div className="relative overflow-hidden rounded-home glass-panel p-5 text-foreground lg:p-4">
         <div className="relative flex items-end justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-2">
             <span className="flex min-w-0 items-center gap-1.5">
@@ -47,9 +47,9 @@ export function WizardHead(props: HeadProps) {
           </div>
           {days !== null && step > 0 && (
             <div className="flex shrink-0 flex-col items-end justify-between gap-2 self-stretch">
-              <span className="rounded-full bg-white/[0.12] px-2.5 py-1 text-[12px] font-semibold">{durationLabel(days, t)}</span>
+              <span className="rounded-full bg-white/[0.12] px-2.5 py-1 text-xs font-semibold">{durationLabel(days, t)}</span>
               {step === 1 && price && (
-                <span className="text-[21px] font-bold tabular-nums tracking-tight">
+                <span className="text-xl font-bold tabular-nums tracking-tight">
                   {formatMoney(price.price, price.currency, i18n.language)}
                 </span>
               )}
@@ -78,7 +78,7 @@ function Receipt({ quote }: { quote: Quote }) {
     lines.push([t("purchase.receiptDiscount", { percent: quote.discount_percent }), `−${money(base - promo - final)}`, true]);
   }
   return (
-    <div className="relative mt-4 flex flex-col gap-2.5 border-t border-dashed border-white/15 pt-4 text-[13px]">
+    <div className="relative mt-4 flex flex-col gap-2.5 border-t border-dashed border-white/15 pt-4 text-sm">
       <div className="flex flex-col gap-1">
         {lines.map(([label, amount, off]) => (
           <div key={label} className="flex justify-between gap-3">
@@ -88,14 +88,14 @@ function Receipt({ quote }: { quote: Quote }) {
         ))}
       </div>
       <div className="mt-1 flex items-baseline justify-between gap-3 border-t border-dashed border-white/15 pt-3.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wide">{t("purchase.total")}</span>
+        <span className="text-xs font-semibold uppercase tracking-wide">{t("purchase.total")}</span>
         <span className="flex items-baseline gap-2">
-          {final < base && <span className="text-[12px] text-muted-foreground tabular-nums line-through">{money(base)}</span>}
-          <span className="text-[26px] font-bold leading-tight tabular-nums tracking-tight">{money(final)}</span>
+          {final < base && <span className="text-xs text-muted-foreground tabular-nums line-through">{money(base)}</span>}
+          <span className="text-2xl font-bold leading-tight tabular-nums tracking-tight">{money(final)}</span>
         </span>
       </div>
       {final < base && (
-        <span className="-mt-1.5 self-end text-[12px] text-success">{t("purchase.savings", { amount: money(base - final) })}</span>
+        <span className="-mt-1.5 self-end text-xs text-success">{t("purchase.savings", { amount: money(base - final) })}</span>
       )}
     </div>
   );
@@ -125,7 +125,11 @@ function DotStepper({ step, skipMethod, onStep }: HeadProps) {
   }, [compact, step, t]);
   const steps = STEPS.map((key, i) => ({ key, i })).filter(({ i }) => !(i === 1 && skipMethod));
   return (
-    <div ref={ref} className="flex w-full rounded-full border border-white/[0.08] bg-white/[0.03] p-1">
+    // the panel's TabBar: a 48px glass capsule with 36px tabs 6px in
+    <div
+      ref={ref}
+      className="glass-panel flex h-12 w-full gap-1 rounded-full p-1.5"
+    >
       {steps.map(({ key, i }, position) => {
         const done = i < step;
         const current = i === step;
@@ -138,7 +142,7 @@ function DotStepper({ step, skipMethod, onStep }: HeadProps) {
             aria-label={t(key)}
             aria-current={current ? "step" : undefined}
             onClick={() => onStep(i as 0 | 1)}
-            className={`relative isolate flex h-8 min-w-0 ${named ? "flex-auto" : "flex-none"} items-center justify-center rounded-full transition-colors ${
+            className={`relative isolate flex h-9 min-w-0 ${named ? "flex-auto" : "flex-none"} items-center justify-center rounded-full transition-colors ${
               current ? "text-primary" : done ? "text-foreground hover:bg-white/[0.06]" : "text-muted-foreground"
             }`}
           >
@@ -149,8 +153,8 @@ function DotStepper({ step, skipMethod, onStep }: HeadProps) {
                 transition={PILL_SPRING}
               />
             )}
-            <span aria-hidden className="flex min-w-0 items-center gap-1 px-2 text-[12px] font-semibold">
-              {done && <Check className="size-3 shrink-0" strokeWidth={3} />}
+            <span aria-hidden className="flex min-w-0 items-center gap-1 px-2 text-sm font-medium lg:gap-1.5 lg:px-4">
+              {done && <Check className="size-3.5 shrink-0" strokeWidth={3} />}
               <span className="truncate">{named ? t(key) : t("purchase.stepNumber", { number: position + 1 })}</span>
             </span>
           </RippleButton>

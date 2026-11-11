@@ -33,7 +33,7 @@ export function LinkPanel({ subscription, dialog = false }: { subscription: OwnS
         <CopyLinkField url={subscription.url} caption={t("connect.tapToCopy")} />
       ) : (
         <>
-          <p ref={linkRef} className="w-full break-all rounded-xl bg-white/[0.04] p-3 font-mono text-[12px]">
+          <p ref={linkRef} className="w-full break-all rounded-xl bg-white/[0.04] p-3 font-mono text-xs">
             {subscription.url}
           </p>
           {/* stacked on phones: "Открыть в приложении" doesn't fit half a row */}

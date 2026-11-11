@@ -1,16 +1,16 @@
+import { useMutation } from "@tanstack/react-query";
 import { Gift, TriangleAlert, Zap } from "lucide-react";
 import { motion } from "motion/react";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate, useSearchParams } from "react-router";
 
-import { useCatalogQuery, type Plan } from "@entities/plan/api";
+import { joinPaymentWaitlist, useCatalogQuery, type Plan } from "@entities/plan/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { canBuyMore } from "@entities/subscription/lib";
 import { effectivePrice, minPrice } from "@features/purchase/savings";
 import { durationLabel, parseWizardParams } from "@features/purchase/wizard";
-import { bounceTap } from "@shared/lib/bounceState";
 import { formatMoney } from "@shared/lib/format";
 import { buttonClass } from "@shared/ui/button-class";
 import { ErrorCard } from "@shared/ui/ErrorCard";
@@ -74,31 +74,31 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
             )
           )}
         </div>
-        {plan.description && <p className="text-[12px] text-muted-foreground [grid-area:desc]">{plan.description}</p>}
+        {plan.description && <p className="text-xs text-muted-foreground [grid-area:desc]">{plan.description}</p>}
         <PlanLimits plan={plan} className="self-end [grid-area:feat] lg:flex-row lg:gap-4" />
         {price !== null && (
           <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
             {price.discounted_price && (
-              <span className="flex items-center gap-1.5 text-[12px]">
+              <span className="flex items-center gap-1.5 text-xs">
                 <span className="text-muted-foreground line-through">{money(price.price)}</span>
                 <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
                   −{plan.discount_percent}%
                 </span>
               </span>
             )}
-            <span className="text-[26px] leading-none font-bold tabular-nums tracking-tight">
+            <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
               {single ? money(effectivePrice(price)) : t("purchase.from", { price: money(effectivePrice(price)) })}
             </span>
             {single && (
-              <span className="text-[12px] text-muted-foreground">{t("purchase.per", { period: durationLabel(single.days, t) })}</span>
+              <span className="text-xs text-muted-foreground">{t("purchase.per", { period: durationLabel(single.days, t) })}</span>
             )}
           </span>
         )}
-        {to && <span className={`${buttonClass("outline", "md")} [grid-area:btn] lg:self-center`}>{t("purchase.choose")}</span>}
+        {to && <span className={`${buttonClass("glass", "md")} [grid-area:btn] lg:self-center`}>{t("purchase.choose")}</span>}
       </div>
     </>
   );
-  const frame = "relative block overflow-hidden rounded-home border border-white/[0.14] bg-white/[0.06] backdrop-blur-xl backdrop-saturate-150 p-5";
+  const frame = "relative block overflow-hidden rounded-home glass-panel p-5 lg:p-4";
   if (!to) {
     return (
       <div aria-disabled className={`${frame} ${dimmed ? "text-muted-foreground" : "text-foreground"}`}>
@@ -107,11 +107,33 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
     );
   }
   return (
-    <MotionLink to={to} {...bounceTap()} onPointerDown={ripple.onPointerDown} className={`${frame} text-foreground`}>
+    <MotionLink to={to} onPointerDown={ripple.onPointerDown} className={`${frame} text-foreground`}>
       {body}
       {ripple.ripples}
     </MotionLink>
   );
+}
+
+function WarningBanner({ title, hint }: { title: string; hint: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-home border border-warning/30 bg-linear-to-r from-warning/[0.12] to-warning/[0.03] p-5 lg:p-4">
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
+        <TriangleAlert className="size-5" />
+      </span>
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <h2 className="text-base font-bold text-warning">{title}</h2>
+        <span className="text-xs text-foreground">{hint}</span>
+      </div>
+    </div>
+  );
+}
+
+// seeing the catalog while payments are off is wanting to buy: the user goes on the waitlist and hears once they're back
+function PaymentsOffBanner() {
+  const { t } = useTranslation();
+  const { mutate } = useMutation({ mutationFn: joinPaymentWaitlist });
+  useEffect(() => mutate(), [mutate]);
+  return <WarningBanner title={t("purchase.paymentsOffTitle")} hint={t("purchase.paymentsOffHint")} />;
 }
 
 export function PurchasePage() {
@@ -139,6 +161,8 @@ export function PurchasePage() {
       settings.data !== undefined &&
       subscriptions.data !== undefined &&
       !canBuyMore(max, subscriptions.data.items);
+    // unknown while loading: the cards stay open, the checkout itself refuses
+    const paymentsOff = settings.data?.payments_enabled === false;
     // a plan change lists the one the subscription is already on too, first, marked and not to pick
     const currentPlanId =
       change ? subscriptions.data?.items.find((s) => s.id === subId)?.plan_id : undefined;
@@ -146,7 +170,7 @@ export function PurchasePage() {
     const query = type !== "NEW" ? `?type=${type}&sub=${subId}` : code ? `?code=${code}` : "";
     // a plan link opens its plan's wizard straight away, once it's known there's room for one more
     const linked = code && catalog.data.items.length === 1 ? catalog.data.items[0] : null;
-    if (linked && settings.data && subscriptions.data && !blocked) {
+    if (linked && settings.data && subscriptions.data && !blocked && !paymentsOff) {
       return <Navigate to={`/purchase/${linked.id}${query}`} replace />;
     }
     if (plans.every((p) => p.id === currentPlanId)) {
@@ -157,25 +181,15 @@ export function PurchasePage() {
       );
     } else body = (
       <>
-        {blocked && (
-          <div className="flex items-center gap-3 rounded-home border border-warning/30 bg-linear-to-r from-warning/[0.12] to-warning/[0.03] p-5">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
-              <TriangleAlert className="size-5" />
-            </span>
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <h2 className="text-base font-bold text-warning">{t("purchase.limitTitle")}</h2>
-              <span className="text-[12px] text-foreground">{t("purchase.limitHint")}</span>
-            </div>
-          </div>
-        )}
-        <div className="grid auto-rows-fr gap-4">
+        {paymentsOff ? <PaymentsOffBanner /> : blocked && <WarningBanner title={t("purchase.limitTitle")} hint={t("purchase.limitHint")} />}
+        <div className="grid auto-rows-fr gap-5">
           {plans.map((plan) => (
             <PlanCard
               key={plan.id}
               plan={plan}
               currency={catalog.data.anchor_currency}
               current={plan.id === currentPlanId}
-              to={blocked || plan.id === currentPlanId ? undefined : `/purchase/${plan.id}${query}`}
+              to={blocked || paymentsOff || plan.id === currentPlanId ? undefined : `/purchase/${plan.id}${query}`}
             />
           ))}
         </div>
@@ -187,7 +201,7 @@ export function PurchasePage() {
     <>
       {/* the catalog is the sidebar's "Buy"; a renewal or a plan change came from the home page and keeps its arrow */}
       <PageHeader title={title} backTo="/" navItem={type === "NEW"} />
-      <div className="flex flex-col gap-4">{body}</div>
+      <div className="flex flex-col gap-5">{body}</div>
     </>
   );
 }

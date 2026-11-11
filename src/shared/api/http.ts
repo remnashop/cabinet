@@ -1,5 +1,6 @@
 import type { ParseKeys } from "i18next";
 
+import { markServiceClosed } from "@shared/api/maintenance";
 import { clearAccessToken, getAccessToken, setAccessToken, type AccessToken } from "@shared/api/tokens";
 import i18n from "@shared/i18n";
 
@@ -153,7 +154,9 @@ function errorFor(response: Response, body: unknown): Error {
   if (GATEWAY_ERROR_STATUSES.has(response.status) && extractErrorCode(body) === null) {
     return new NetworkError("Backend unreachable");
   }
-  return new ApiError(response.status, extractErrorMessage(body), extractErrorCode(body));
+  const code = extractErrorCode(body);
+  if (code === "ACCESS_RESTRICTED") markServiceClosed();
+  return new ApiError(response.status, extractErrorMessage(body), code);
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

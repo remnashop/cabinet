@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Percent } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { activatePromocode, usePromocodeTargetsQuery, type PromocodeActivation } from "@entities/plan/api";
@@ -8,7 +8,7 @@ import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { ApiError, getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
 import { AlertMark } from "@shared/ui/AlertMark";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { ButtonLink } from "@shared/ui/ButtonLink";
 import { TextInput } from "@shared/ui/TextInput";
@@ -25,6 +25,7 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
   const queryClient = useQueryClient();
   const subscriptions = useSubscriptionsQuery();
   const [code, setCode] = useState("");
+  const formId = useId();
   // the backend asked which subscription the reward goes to
   const [picking, setPicking] = useState(false);
   const [result, setResult] = useState<PromocodeActivation | null>(null);
@@ -88,22 +89,22 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
       <>
         <div className="flex flex-col items-center gap-3 pt-4 text-center">
           <AlertMark tone="warning" />
-          <p className="text-sm text-muted-foreground">{t("promo.noTargetTitle")}</p>
+          <p className="text-sm text-foreground/80">{t("promo.noTargetTitle")}</p>
         </div>
-        <div className="mt-5 flex gap-2">
-          <Button variant="outline" className="flex-1" onClick={cancelPick}>
+        <SheetFooter>
+          <Button variant="glass" onClick={cancelPick}>
             {t("common.cancel")}
           </Button>
-          <ButtonLink to="/purchase" onClick={close} variant="accent" className="flex-1">
+          <ButtonLink to="/purchase" onClick={close} variant="glassAccent">
             {t("home.buy")}
           </ButtonLink>
-        </div>
+        </SheetFooter>
       </>
     );
   } else if (picking) {
     body = (
       <>
-        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {t("promo.pickTitle")}
         </h3>
         <div className="flex flex-col gap-3">
@@ -117,7 +118,6 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
           {!targets && !listError && <Skeleton round className="aspect-[2.6] w-full" />}
           {targets?.map((sub) => (
             <RippleButton
-              bounce={0.05}
               key={sub.id}
               type="button"
               disabled={activation.isPending}
@@ -128,9 +128,11 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
             </RippleButton>
           ))}
         </div>
-        <Button variant="outline" className="mt-5 w-full" onClick={cancelPick}>
-          {t("common.cancel")}
-        </Button>
+        <SheetFooter>
+          <Button variant="glass" onClick={cancelPick}>
+            {t("common.cancel")}
+          </Button>
+        </SheetFooter>
       </>
     );
   } else {
@@ -139,7 +141,7 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
       if (code.trim() && !activation.isPending) submit();
     };
     body = (
-      <form onSubmit={onSubmit} className="flex flex-col gap-3">
+      <form id={formId} onSubmit={onSubmit} className="flex flex-col gap-3">
         <TextInput
           autoFocus
           value={code}
@@ -152,14 +154,14 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
           }}
         />
         {error && <FormError>{error}</FormError>}
-        <div className="mt-2 flex gap-2">
-          <Button variant="outline" className="flex-1" type="button" onClick={close}>
+        <SheetFooter>
+          <Button variant="glass" onClick={close}>
             {t("common.cancel")}
           </Button>
-          <Button type="submit" variant="accent" className="flex-1" disabled={!code.trim() || activation.isPending}>
+          <Button type="submit" form={formId} variant="glassAccent" disabled={!code.trim() || activation.isPending}>
             {t("promo.activate")}
           </Button>
-        </div>
+        </SheetFooter>
       </form>
     );
   }

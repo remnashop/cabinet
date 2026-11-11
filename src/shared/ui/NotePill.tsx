@@ -18,7 +18,7 @@ export function NotePill({
 }) {
   const [frame, ink] = TONE[tone];
   return (
-    <p className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-[12.5px] text-foreground ${frame}`}>
+    <p className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm text-foreground ${frame}`}>
       <Icon className={`size-4 shrink-0 ${ink}`} />
       {children}
     </p>

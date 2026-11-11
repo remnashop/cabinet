@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, CalendarPlus, CircleCheck, Minus, Plus, Zap } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { redeemDays, useRedeemTargetsQuery, type RedeemDaysResult } from "@entities/referral/api";
@@ -10,7 +10,7 @@ import { getErrorMessage } from "@shared/api/http";
 import { formatDate } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
 import { AlertMark } from "@shared/ui/AlertMark";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { NotePill } from "@shared/ui/NotePill";
 import { SuccessMessage } from "@shared/ui/SuccessCheck";
@@ -35,8 +35,8 @@ function TargetRow({ sub, picked, onPick }: { sub: OwnSubscription; picked: bool
         <Zap className="size-4" />
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-[13px] font-semibold">{sub.plan_name}</span>
-        <span className="truncate text-[12px] text-muted-foreground">
+        <span className="truncate text-sm font-semibold">{sub.plan_name}</span>
+        <span className="truncate text-xs text-muted-foreground">
           {subscriptionNumber(sub.id)} · {t("home.until", { date: formatDate(sub.expire_at, i18n.language) })}
         </span>
       </span>
@@ -50,6 +50,7 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
   const { t, i18n } = useTranslation();
   const client = useQueryClient();
   const subscriptions = useSubscriptionsQuery();
+  const formId = useId();
   const [picked, setPicked] = useState<number | null>(null);
   const [days, setDays] = useState("");
   const [result, setResult] = useState<RedeemDaysResult | null>(null);
@@ -129,16 +130,18 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
         <>
           <div className="flex flex-col items-center gap-3 pt-4 text-center">
             <AlertMark tone="warning" />
-            <p className="text-sm text-muted-foreground">{t("referral.noTargetTitle")}</p>
+            <p className="text-sm text-foreground/80">{t("referral.noTargetTitle")}</p>
           </div>
-          <Button variant="outline" className="mt-5 w-full" onClick={close}>
-            {t("common.close")}
-          </Button>
+          <SheetFooter>
+            <Button variant="glass" onClick={close}>
+              {t("common.close")}
+            </Button>
+          </SheetFooter>
         </>
       ) : (
-        <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <form id={formId} onSubmit={onSubmit} className="flex flex-col gap-4">
           <section className="flex flex-col gap-2">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {t("referral.pickSubscription")}
             </h3>
             {targets.map((sub) => (
@@ -148,13 +151,13 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
 
           <section className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {t("referral.howMany")}
               </h3>
-              <span className="text-[12px] text-muted-foreground">{t("referral.available", { count: max })}</span>
+              <span className="text-xs text-muted-foreground">{t("referral.available", { count: max })}</span>
             </div>
             <div
-              className={`flex items-center gap-2 rounded-2xl border bg-white/[0.03] py-2 pr-2 pl-4 ${
+              className={`flex items-center gap-2 rounded-xl border bg-white/[0.03] py-2 pr-2 pl-4 ${
                 valid ? "border-white/[0.08]" : "border-error"
               }`}
             >
@@ -173,7 +176,7 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
                   }}
                   // as wide as its digits, so the word sits right after the number
                   style={{ width: `${Math.max(1, shownDays.length)}ch` }}
-                  className="min-w-0 bg-transparent text-[26px] font-bold tabular-nums tracking-tight outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                  className="min-w-0 bg-transparent text-2xl font-bold tabular-nums tracking-tight outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <span className="truncate text-sm text-muted-foreground">
                   {t("referral.daysWord", { count: valid ? count : max })}
@@ -182,10 +185,10 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
               <Button variant="secondary" size="sm" disabled={count === max} onClick={() => setDays("")}>
                 {t("referral.max")}
               </Button>
-              <Button variant="outline" size="sm" bounce={false} aria-label={t("referral.fewer")} disabled={valid && count <= 1} onClick={() => step(-1)}>
+              <Button variant="outline" size="sm" aria-label={t("referral.fewer")} disabled={valid && count <= 1} onClick={() => step(-1)}>
                 <Minus className="size-4" />
               </Button>
-              <Button variant="outline" size="sm" bounce={false} aria-label={t("referral.more")} disabled={valid && count >= max} onClick={() => step(1)}>
+              <Button variant="outline" size="sm" aria-label={t("referral.more")} disabled={valid && count >= max} onClick={() => step(1)}>
                 <Plus className="size-4" />
               </Button>
             </div>
@@ -200,9 +203,14 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
             <NotePill icon={CalendarClock}>{t("referral.newEnd", { date: formatDate(newEnd, i18n.language) })}</NotePill>
           )}
           {redeem.isError && <FormError>{getErrorMessage(redeem.error, t("errors.generic"))}</FormError>}
-          <Button type="submit" variant="accent" className="mt-1" disabled={!target || !valid || redeem.isPending}>
-            {t("referral.apply")}
-          </Button>
+          <SheetFooter>
+            <Button variant="glass" onClick={close}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" form={formId} variant="glassAccent" disabled={!target || !valid || redeem.isPending}>
+              {t("referral.apply")}
+            </Button>
+          </SheetFooter>
         </form>
       )}
     </BottomSheet>

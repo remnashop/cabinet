@@ -40,7 +40,7 @@ import { useCopyLink } from "./use-copy-link";
 
 const appKey = (platform: PlatformId) => `cabinet_connect_app_${platform}`;
 
-const CHIP = "flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[12.5px] font-semibold transition-colors";
+const CHIP = "flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold transition-colors";
 const chipClass = (active: boolean) =>
   `${CHIP} ${active ? "border-primary/45 bg-accent text-primary" : "border-white/[0.08] text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"}`;
 
@@ -154,7 +154,7 @@ function PlatformTile({
       </span>
       <span className="flex flex-col leading-snug">
         <span className="text-base font-bold">{title}</span>
-        <span className="text-[12px] text-muted-foreground">{hint}</span>
+        <span className="text-xs text-muted-foreground">{hint}</span>
       </span>
     </button>
   );
@@ -349,7 +349,7 @@ export function GuideView({
           hint={t(add ? "connect.addHint" : "connect.addManually", { app: app.name })}
           art={<HeroArt icon={CircleFadingPlus} />}
           // the catalog's text promises the app; from a Mini App a browser page opens first
-          above={action && "onClick" in action && <p className="text-[12px] text-muted-foreground">{t("connect.hopHint")}</p>}
+          above={action && "onClick" in action && <p className="text-xs text-muted-foreground">{t("connect.hopHint")}</p>}
         >
           {action ? (
             <PulseButton {...action}>

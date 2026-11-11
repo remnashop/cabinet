@@ -99,7 +99,7 @@ describe("SummaryStep", () => {
       vi.fn(async () => Response.json({ items: [{ kind: "OFFER", title: "Offer", body: "x", revision_id: 3 }], total: 1 })),
     );
     await render("NEW", null);
-    await until(() => expect(container.textContent).toContain("By paying, you accept the Offer"));
+    await until(() => expect(container.textContent).toContain("By paying, you accept the Public offer"));
     const pay = [...container.querySelectorAll("button")].find((b) => b.textContent?.startsWith("Pay"))!;
     await until(() => expect((pay as HTMLButtonElement).disabled).toBe(false));
     await act(async () => pay.click());

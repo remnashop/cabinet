@@ -32,6 +32,8 @@ export interface Scenario {
   miniAppOnly: boolean; // every browser sign-in off: the login page sends to the bot
   feed: MockFeed; // the bell's notifications
   pushConfigured: boolean; // the backend has a VAPID key
+  restricted: boolean; // the admin closed the service: every call but sign-in answers ACCESS_RESTRICTED
+  paymentsEnabled: boolean;
 }
 
 export const DEFAULT_SCENARIO: Scenario = {
@@ -60,6 +62,8 @@ export const DEFAULT_SCENARIO: Scenario = {
   miniAppOnly: false,
   feed: "normal",
   pushConfigured: true,
+  restricted: false,
+  paymentsEnabled: true,
 };
 
 // bumped when the defaults change, so a saved scenario doesn't hide them

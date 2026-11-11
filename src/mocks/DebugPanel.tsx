@@ -53,6 +53,8 @@ const FIELDS: [Key, string, Option[]][] = [
   ["miniAppOnly", "Только Mini App", yesNo],
   ["feed", "Лента уведомлений", (["normal", "empty", "error"] as MockFeed[]).map((s) => [s, s])],
   ["pushConfigured", "Пуш настроен", yesNo],
+  ["restricted", "Сервис закрыт (техработы)", yesNo],
+  ["paymentsEnabled", "Приём платежей", yesNo],
 ];
 
 /** The header's slot for the button (HeaderActions), while the page has a header: login and payment pages don't. */
@@ -82,11 +84,12 @@ export function DebugPanel() {
         aria-label="Моки"
         aria-expanded={open}
         onClick={() => setOpen((shown) => !shown)}
-        className={`flex size-9 shrink-0 items-center justify-center rounded-full border border-glass-border transition-colors hover:bg-white/[0.06] hover:text-foreground ${
-          open ? "bg-white/[0.08] text-foreground" : "bg-white/[0.05] text-muted-foreground"
+        // as the bell beside it: glass-panel on a phone, a plain capsule item on desktop
+        className={`flex size-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/[0.06] hover:text-foreground max-lg:glass-panel ${
+          open ? "bg-white/[0.08] text-foreground" : "text-muted-foreground"
         }`}
       >
-        <Bug className="size-[17px]" />
+        <Bug className="size-4" />
       </button>,
       slot,
     );
@@ -111,18 +114,18 @@ export function DebugPanel() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-wide">Моки</span>
+                <span className="text-xs font-semibold uppercase tracking-wide">Моки</span>
                 <button type="button" aria-label="Закрыть" onClick={() => setOpen(false)} className="text-muted-foreground">
                   <X className="size-4" />
                 </button>
               </div>
               {FIELDS.map(([key, label, options]) => (
-                <label key={key} className="flex items-center justify-between gap-3 text-[12.5px]">
+                <label key={key} className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-muted-foreground">{label}</span>
                   <select
                     value={options.findIndex(([, v]) => v === draft[key])}
                     onChange={(event) => setDraft({ ...draft, [key]: options[Number(event.target.value)][1] })}
-                    className="rounded-full border border-border bg-surface px-2 py-1 text-[12.5px] text-foreground"
+                    className="rounded-full border border-border bg-surface px-2 py-1 text-sm text-foreground"
                   >
                     {options.map(([optionLabel], i) => (
                       <option key={optionLabel} value={i}>
@@ -136,14 +139,14 @@ export function DebugPanel() {
                 <button
                   type="button"
                   onClick={() => saveScenario(null)}
-                  className="h-8 flex-1 rounded-full border border-border text-[12.5px] font-semibold"
+                  className="h-8 flex-1 rounded-full border border-border text-sm font-semibold"
                 >
                   Сбросить
                 </button>
                 <button
                   type="button"
                   onClick={() => saveScenario(draft)}
-                  className="h-8 flex-1 rounded-full bg-primary text-[12.5px] font-semibold text-primary-foreground"
+                  className="h-8 flex-1 rounded-full bg-primary text-sm font-semibold text-primary-foreground"
                 >
                   Применить
                 </button>
@@ -154,7 +157,7 @@ export function DebugPanel() {
                   setOpen(false);
                   setChecks(true);
                 }}
-                className="h-8 rounded-full border border-border text-[12.5px] font-semibold"
+                className="h-8 rounded-full border border-border text-sm font-semibold"
               >
                 Варианты значков
               </button>

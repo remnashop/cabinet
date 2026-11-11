@@ -78,7 +78,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
   );
   const heading = (title: string, text: string) => (
     <div className="flex flex-col gap-1.5">
-      <h1 className="text-lg font-bold">{title}</h1>
+      <h1 className="text-xl font-bold tracking-tight">{title}</h1>
       <p className="text-sm text-muted-foreground">{text}</p>
     </div>
   );

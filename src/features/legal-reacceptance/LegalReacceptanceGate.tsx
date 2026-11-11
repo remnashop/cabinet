@@ -13,7 +13,7 @@ import {
 import { logout } from "@features/auth/logout";
 import { getErrorMessage } from "@shared/api/http";
 import { formatDate } from "@shared/lib/format";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
@@ -48,9 +48,15 @@ export function LegalReacceptanceGate() {
 
   return (
     <>
-      <BottomSheet narrow fullScreen icon={FileText} open title={t("legal.reaccept.title")}>
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground">{t("legal.reaccept.text")}</p>
+      <BottomSheet
+        narrow
+        fullScreen
+        icon={FileText}
+        open
+        title={t("legal.reaccept.title")}
+      >
+        <div className="flex flex-col gap-3">
+          <p className="text-sm text-foreground/80">{t("legal.reaccept.text")}</p>
           <Card variant="list">
             {items.map((doc) => (
               <InfoRow
@@ -58,7 +64,7 @@ export function LegalReacceptanceGate() {
                 icon={FileText}
                 label={doc.title}
                 value={
-                  <span className="flex items-center gap-1.5 text-[12px] font-normal text-muted-foreground">
+                  <span className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground">
                     {t("legal.reaccept.revision", { date: formatDate(doc.created_at, i18n.language) })}
                     <ChevronRight className="size-4" />
                   </span>
@@ -68,18 +74,18 @@ export function LegalReacceptanceGate() {
             ))}
           </Card>
           {error && <FormError>{error}</FormError>}
-          <div className="mt-1 flex gap-2">
-            {/* the Mini App would sign straight back in and land here again: no sign-out there, accept takes the row */}
-            {!isMiniApp() && (
-              <Button variant="outline" className="flex-1" onClick={() => void logout().then(() => queryClient.clear())}>
-                {t("common.logout")}
-              </Button>
-            )}
-            <Button variant="accent" className="flex-1" disabled={busy} onClick={() => void accept()}>
-              {t("legal.reaccept.accept")}
-            </Button>
-          </div>
         </div>
+        <SheetFooter>
+          {/* the Mini App would sign straight back in and land here again: no sign-out there */}
+          {!isMiniApp() && (
+            <Button variant="glass" onClick={() => void logout().then(() => queryClient.clear())}>
+              {t("common.logout")}
+            </Button>
+          )}
+          <Button variant="glassAccent" disabled={busy} onClick={() => void accept()}>
+            {t("legal.reaccept.accept")}
+          </Button>
+        </SheetFooter>
       </BottomSheet>
       <LegalDocumentDialog document={open} onClose={() => setOpen(null)} />
     </>

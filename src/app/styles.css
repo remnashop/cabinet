@@ -179,12 +179,61 @@
   }
 }
 
-/* Desktop: the panel's card corners (rounded-2xl) on the same blocks; a phone keeps the rounder ones, with no page
-   frame around them to echo */
+/* Desktop: the panel's glass-panel corners (rounded-3xl) on the same blocks; a phone keeps the rounder ones, with no
+   page frame around them to echo */
 @media (width >= 64rem) {
   :root {
-    --radius-home: var(--radius-2xl);
+    --radius-home: var(--radius-3xl);
   }
+}
+
+/* The panel's liquid glass (its app/styles.css). panel: a page's card, a translucent fill with a specular top rim,
+   no backdrop-filter (the frame already blurs the shader); dialog: a dialog or a popover over the dimmed page;
+   well: a sunken field. Reduced transparency swaps the fill for an opaque one. */
+@utility glass-panel {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.075), rgb(255 255 255 / 0.025));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    inset 0 0 0 1px rgb(255 255 255 / 0.07),
+    0 8px 16px -8px rgb(0 0 0 / 0.4);
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--color-surface);
+  }
+}
+
+/* a raised capsule: the avatar, as the panel's (also its active tab, switch knob) */
+@utility glass-control {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.06));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    inset 0 0 0 1px rgb(255 255 255 / 0.1),
+    0 6px 16px -8px rgb(0 0 0 / 0.5);
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--color-popover);
+  }
+}
+
+@utility glass-dialog {
+  background: color-mix(in srgb, var(--color-popover) 90%, transparent);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  backdrop-filter: blur(40px) saturate(1.8);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    inset 0 0 0 1px rgb(255 255 255 / 0.12),
+    0 0 0 1px rgb(0 0 0 / 0.35),
+    0 40px 80px -24px rgb(0 0 0 / 0.7);
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--color-popover);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@utility glass-well {
+  background: rgb(0 0 0 / 0.24);
+  box-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 0.35),
+    inset 0 0 0 1px rgb(255 255 255 / 0.08);
 }
 
 /* Fallback paint behind ShaderBackground's canvas: before it mounts, and when
@@ -254,6 +303,44 @@ html {
 body {
   margin: 0;
   color: var(--color-foreground);
+}
+
+/* The panel's scroll-fade-y: a scroller's content fades into its top and bottom edges instead of a hard clip. The
+   fades fit inside its own padding (--fade-top-size, --fade-bottom-size), so at rest they cover only padding. Two
+   mask layers: the fade over everything but the rightmost --scrollbar-size, an opaque one over the scrollbar, so the
+   scrollbar doesn't fade too. */
+:root {
+  --scrollbar-size: 10px;
+}
+.scroll-fade-y {
+  -webkit-mask-image:
+    linear-gradient(
+      to bottom,
+      transparent,
+      black var(--fade-top-size, 12px),
+      black calc(100% - var(--fade-bottom-size, 16px)),
+      transparent
+    ),
+    linear-gradient(black, black);
+  -webkit-mask-size:
+    calc(100% - var(--scrollbar-size)) 100%,
+    var(--scrollbar-size) 100%;
+  -webkit-mask-position: left top, right top;
+  -webkit-mask-repeat: no-repeat, no-repeat;
+  mask-image:
+    linear-gradient(
+      to bottom,
+      transparent,
+      black var(--fade-top-size, 12px),
+      black calc(100% - var(--fade-bottom-size, 16px)),
+      transparent
+    ),
+    linear-gradient(black, black);
+  mask-size:
+    calc(100% - var(--scrollbar-size)) 100%,
+    var(--scrollbar-size) 100%;
+  mask-position: left top, right top;
+  mask-repeat: no-repeat, no-repeat;
 }
 
 /* rows rise in one after another, as the panel's lists (LIST_BODY_CLASS there) */

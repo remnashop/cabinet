@@ -10,14 +10,13 @@ import { useHasLegalDocuments } from "@entities/legal/api";
 import { BrandMark } from "@entities/appearance/BrandMark";
 import { useReferralQuery } from "@entities/referral/api";
 import { rewardTerms } from "@features/referral/links";
-import { bounceTap, NAV_ICON_HOVER_SIZE, NAV_ICON_SIZE } from "@shared/lib/bounceState";
 import { PILL_SPRING } from "@shared/lib/motion";
 import { toggleSidebarCollapsed, useSidebarCollapsed } from "@shared/lib/sidebar-collapse";
-import { BounceIcon } from "@shared/ui/BounceIcon";
 import { MotionLink } from "@shared/ui/MotionLink";
 import { useNavItems } from "@widgets/app-shell/nav-items";
 import { InfoDialog } from "@widgets/info/InfoDialog";
 import { useSupport } from "@widgets/support/use-support";
+import { Ripple } from "@shared/ui/Ripple";
 
 // only while the program runs and the user has a link to share; the referral page already leads with it
 function InviteCard() {
@@ -38,7 +37,7 @@ function InviteCard() {
         </span>
         {t("referral.title")}
       </span>
-      <p className="mt-1.5 text-[12px] leading-snug text-muted-foreground">
+      <p className="mt-1.5 text-xs leading-snug text-muted-foreground">
         {rewardTerms(referral.data.program, t, i18n.language)}
       </p>
     </Link>
@@ -48,12 +47,12 @@ function InviteCard() {
 // The panel's sidebar pill (nav-pill.ts). Icon rail: a 40px circle, icon dead centre. Expanded: a full-width row
 // whose 16px icon keeps the same 12px inset on every side.
 const PILL_SHAPE =
-  "flex size-10 shrink-0 items-center justify-center gap-2.5 self-center rounded-full text-[13px] xl:group-data-expanded/sidebar:w-auto xl:group-data-expanded/sidebar:self-stretch xl:group-data-expanded/sidebar:justify-start xl:group-data-expanded/sidebar:pl-3 xl:group-data-expanded/sidebar:pr-2.5";
+  "relative flex size-10 shrink-0 items-center justify-center gap-2.5 self-center rounded-full text-sm xl:group-data-expanded/sidebar:w-auto xl:group-data-expanded/sidebar:self-stretch xl:group-data-expanded/sidebar:justify-start xl:group-data-expanded/sidebar:pl-3 xl:group-data-expanded/sidebar:pr-2.5";
 const PILL = `${PILL_SHAPE} font-medium text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground`;
 // labels show from xl, and only while the sidebar is expanded
 const LABEL = "hidden whitespace-nowrap xl:group-data-expanded/sidebar:inline";
 const HINT_BUBBLE =
-  "pointer-events-none z-50 w-max max-w-56 -translate-y-1/2 rounded-popover-item border border-white/[0.14] bg-popover px-3 py-2 text-[12px] text-foreground shadow-[0_24px_48px_-20px_rgba(4,8,20,0.6)] transition-opacity duration-150";
+  "pointer-events-none z-50 w-max max-w-56 -translate-y-1/2 rounded-popover-item border border-white/[0.14] bg-popover px-3 py-2 text-xs text-foreground shadow-[0_24px_48px_-20px_rgba(4,8,20,0.6)] transition-opacity duration-150";
 
 interface Hint {
   text: string;
@@ -73,7 +72,7 @@ function hintProps(text: string, onHint: (hint: Hint | null) => void) {
 }
 
 function FooterButton({
-  icon,
+  icon: Icon,
   label,
   onClick,
   onHint,
@@ -87,21 +86,19 @@ function FooterButton({
     <motion.button
       type="button"
       onClick={onClick}
-      initial="rest"
-      whileHover="hover"
-      {...bounceTap()}
       {...hintProps(label, onHint)}
       aria-label={label}
       className={PILL}
     >
-      <BounceIcon icon={icon} size={NAV_ICON_SIZE} hoverSize={NAV_ICON_HOVER_SIZE} />
+      <Ripple />
+      <Icon className="size-4 shrink-0" />
       <span className={LABEL}>{label}</span>
     </motion.button>
   );
 }
 
 function NavItemLink({
-  item: { to, end, icon },
+  item: { to, end, icon: Icon },
   label,
   onHint,
 }: {
@@ -114,14 +111,11 @@ function NavItemLink({
   return (
     <MotionLink
       to={to}
-      initial="rest"
-      whileHover="hover"
-      {...bounceTap()}
       {...hintProps(label, onHint)}
       // the rail hides the label (display: none), so the link names itself
       aria-label={label}
       aria-current={isActive ? "page" : undefined}
-      className={isActive ? `relative isolate ${PILL_SHAPE} font-semibold text-primary` : PILL}
+      className={isActive ? `isolate ${PILL_SHAPE} font-semibold text-primary` : PILL}
     >
       {/* one layoutId, so the highlight glides between rows instead of jumping */}
       {isActive && (
@@ -131,7 +125,8 @@ function NavItemLink({
           transition={PILL_SPRING}
         />
       )}
-      <BounceIcon icon={icon} size={NAV_ICON_SIZE} hoverSize={NAV_ICON_HOVER_SIZE} />
+      <Ripple />
+      <Icon className="size-4 shrink-0" />
       <span className={LABEL}>{label}</span>
     </MotionLink>
   );
@@ -165,8 +160,8 @@ export function Sidebar() {
         >
           <BrandMark className="size-8 shrink-0 text-primary" />
           <div className={`min-w-0 ${LABEL}`}>
-            <span className="block truncate text-[15px] font-bold leading-[22px] tracking-tight text-foreground">{brand}</span>
-            <span className="block truncate text-[11px] font-medium leading-4 text-muted-foreground">{t("app.tagline")}</span>
+            <span className="block truncate text-base font-bold leading-[22px] tracking-tight text-foreground">{brand}</span>
+            <span className="block truncate text-xs font-medium leading-4 text-muted-foreground">{t("app.tagline")}</span>
           </div>
         </Link>
         {/* pt matches the Link's, so the button lines up with the logo on whole pixels */}
@@ -175,11 +170,10 @@ export function Sidebar() {
             type="button"
             aria-label={t(collapsed ? "sidebar.expand" : "sidebar.collapse")}
             onClick={toggleSidebarCollapsed}
-            initial="rest"
-            whileHover="hover"
-            className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+            className="relative flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
           >
-            <BounceIcon icon={collapsed ? ChevronsRight : ChevronsLeft} size={NAV_ICON_SIZE} hoverSize={NAV_ICON_HOVER_SIZE} />
+            <Ripple />
+            {collapsed ? <ChevronsRight className="size-4" /> : <ChevronsLeft className="size-4" />}
           </motion.button>
         </div>
       </div>

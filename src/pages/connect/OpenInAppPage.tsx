@@ -51,7 +51,7 @@ export function OpenInAppPage() {
   }
   return (
     <Message title={t("connect.openTitle")} text={t("connect.openHint")}>
-      <p className="break-all text-[12px] text-muted-foreground">
+      <p className="break-all text-xs text-muted-foreground">
         {t("connect.openSource", { host: new URL(hop.sub).host })}
       </p>
       <ButtonLink href={hop.link} variant="solid" className="w-full">
@@ -61,7 +61,7 @@ export function OpenInAppPage() {
         {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
         {copied ? t("connect.copied") : t("connect.copy")}
       </Button>
-      <p className="text-[12px] text-muted-foreground">{t("connect.openNotOpened")}</p>
+      <p className="text-xs text-muted-foreground">{t("connect.openNotOpened")}</p>
     </Message>
   );
 }

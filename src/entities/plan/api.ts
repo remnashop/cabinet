@@ -127,6 +127,9 @@ export function useQuoteQueries(inputs: QuoteInput[]) {
   return useQueries({ queries: inputs.map(quoteQuery) });
 }
 
+/** While payments are off: a Telegram message once they're back. */
+export const joinPaymentWaitlist = () => apiPost<null, object>("/checkout/waitlist", {});
+
 export function createCheckout(body: CheckoutInput) {
   return apiPost<{ order_id: number; confirmation_url: string | null }, CheckoutInput>("/checkout", body);
 }

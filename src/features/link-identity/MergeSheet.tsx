@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { ApiError, getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
@@ -69,22 +69,21 @@ export function MergeBody({ offer, onClose, onMerged, onExpired }: MergeSheetPro
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm text-muted-foreground">{t("link.mergeText")}</p>
+      <p className="text-sm text-foreground/80">{t("link.mergeText")}</p>
       <Card variant="list">
         {rows.map(([label, value]) => (
           <InfoRow key={label} label={label} value={<span className="truncate">{value}</span>} />
         ))}
       </Card>
-      <p className="text-[12px] text-muted-foreground">{t("link.mergeRules")}</p>
+      <p className="text-xs text-muted-foreground">{t("link.mergeRules")}</p>
       {merge.isError && <FormError>{getErrorMessage(merge.error, t("errors.generic"))}</FormError>}
-      <div className="mt-2 flex gap-2">
+      <SheetFooter>
         {/* the one Cancel locked in flight: closing drops this body, and with it the answer to a merge for good */}
-        <Button variant="outline" className="flex-1" disabled={merge.isPending} onClick={onClose}>
+        <Button variant="glass" disabled={merge.isPending} onClick={onClose}>
           {t("common.cancel")}
         </Button>
         <Button
-          variant="accent"
-          className="flex-1"
+          variant="glassAccent"
           disabled={left === 0 || merge.isPending || failed}
           onClick={() => {
             haptic();
@@ -93,8 +92,8 @@ export function MergeBody({ offer, onClose, onMerged, onExpired }: MergeSheetPro
         >
           {t("link.merge")}
         </Button>
-      </div>
-      <p className="text-center text-[12px] text-muted-foreground">
+      </SheetFooter>
+      <p className="text-center text-xs text-muted-foreground">
         {left === 0 ? t("link.mergeExpired") : t("link.mergeCountdown", { count: Math.ceil(left / 60_000) })}
       </p>
     </div>

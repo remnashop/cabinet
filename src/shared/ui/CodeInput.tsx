@@ -28,8 +28,8 @@ export function CodeInput({
           <span
             key={i}
             aria-hidden
-            className={`flex h-13 items-center justify-center rounded-xl border bg-input text-xl font-semibold tabular-nums transition-colors ${
-              invalid ? "border-error" : i === active ? "border-primary" : "border-border"
+            className={`flex h-13 items-center justify-center rounded-xl glass-well ring-inset text-xl font-semibold tabular-nums transition-shadow ${
+              invalid ? "ring-1 ring-error" : i === active ? "ring-1 ring-primary" : ""
             }`}
           >
             {value[i] ?? (i === active && <span className="h-5 w-px animate-pulse bg-primary" />)}

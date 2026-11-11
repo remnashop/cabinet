@@ -38,21 +38,22 @@ function DurationTile({
       disabled={disabled}
       onClick={onClick}
       onPointerDown={ripple.onPointerDown}
-      // an odd one out takes the whole last row; p-5 keeps the saving pill (r 10) concentric in the 32px corner
-      className="relative flex flex-col gap-3 overflow-hidden rounded-home border border-white/[0.08] bg-white/[0.03] p-5 text-left transition-colors last:odd:col-span-2 enabled:hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
+      // an odd one out takes the whole last row; p-5 keeps the saving pill (r 10) concentric in the 32px corner, p-4 near
+      // enough in the desktop's 24px one, as the panel's cards
+      className="relative flex flex-col gap-3 overflow-hidden rounded-home glass-panel p-5 lg:p-4 text-left transition-colors last:odd:col-span-2 enabled:hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
     >
       {ripple.ripples}
       <span className="flex min-h-5 items-center justify-between gap-2">
-        <span className="text-[13px] text-muted-foreground">{label}</span>
+        <span className="text-sm text-muted-foreground">{label}</span>
         {saving}
       </span>
       {/* self-stretch: the tile's width, not the prices', is what they have to fit in */}
       <span className="flex flex-col gap-0.5 self-stretch">
         <span data-price-row className={`flex ${stacked ? "flex-col items-start" : "flex-wrap items-baseline gap-x-1.5"}`}>
-          <span className="text-[26px] font-bold tabular-nums tracking-tight">{price}</span>
-          {usual && <span className="text-[12px] text-muted-foreground line-through">{usual}</span>}
+          <span className="text-2xl font-bold tabular-nums tracking-tight">{price}</span>
+          {usual && <span className="text-xs text-muted-foreground line-through">{usual}</span>}
         </span>
-        <span className="text-[12px] text-muted-foreground">{caption ?? "\u00a0"}</span>
+        <span className="text-xs text-muted-foreground">{caption ?? "\u00a0"}</span>
       </span>
     </button>
   );
@@ -103,10 +104,10 @@ export function DurationStep({
   });
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="px-5 text-[11px] font-semibold uppercase tracking-wide text-foreground">
+      <h2 className="px-5 text-xs font-semibold uppercase tracking-wide text-foreground">
         {t(`purchase.chooseDuration.${type}`)}
       </h2>
-      <div ref={gridRef} className="grid grid-cols-2 gap-2.5">
+      <div ref={gridRef} className="grid grid-cols-2 gap-5">
         {priced.map(({ d, price }, i) => {
           const quote = quotes[i].data;
           const saving = price ? savingsPercent(plan, d.days, price.currency) : null;

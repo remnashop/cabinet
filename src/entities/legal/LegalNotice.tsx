@@ -16,7 +16,7 @@ export function LegalNotice({ kinds, message }: { kinds: LegalKind[]; message: "
   const [before, after = ""] = t(`legal.${message}`, { documents: SLOT }).split(SLOT);
   return (
     <>
-      <p className="text-center text-[12px] text-muted-foreground">
+      <p className="text-center text-xs text-muted-foreground">
         {before}
         {shown.map((doc, i) => (
           <Fragment key={doc.kind}>

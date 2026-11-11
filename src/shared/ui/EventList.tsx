@@ -2,7 +2,9 @@ import type { ComponentType, ReactNode } from "react";
 
 import { useRipple } from "./use-ripple";
 
-export const EVENT_ROW = "h-15 rounded-full px-3 transition-colors";
+// the panel's list row: a 32px circle 14px in, on the 60px pill's curve; a title or caption too long for a phone beside
+// its button wraps and the row grows, as the panel Row's description does
+export const EVENT_ROW = "min-h-15 rounded-full px-3.5 py-2 transition-colors";
 
 /** The panel's event log: rows split by hairlines and staggered in (list-rows, app/styles.css). Dividers are an
  *  inset shadow, not divide-y: a border would add 1px to every row but the last. */
@@ -30,7 +32,7 @@ export function EventIcon({
   tone?: string;
 }) {
   return (
-    <span className={`flex size-9 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ${tone}`}>
+    <span className={`flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${tone}`}>
       {Icon ? <Icon className="size-4" /> : glyph}
     </span>
   );
@@ -40,12 +42,18 @@ export function EventRow({
   icon,
   title,
   caption,
+  meta,
+  wrap = false,
   aside,
   onClick,
 }: {
   icon: ReactNode;
   title: ReactNode;
   caption?: ReactNode;
+  /** a third line under the caption (a time) */
+  meta?: ReactNode;
+  /** the caption wraps to three lines instead of one, for a text that must be read whole (a notification) */
+  wrap?: boolean;
   aside?: ReactNode;
   onClick?: () => void;
 }) {
@@ -55,13 +63,16 @@ export function EventRow({
       {onClick && ripple.ripples}
       {icon}
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-[13px] font-medium text-foreground/90">{title}</span>
-        {caption && <span className="truncate text-[12px] text-muted-foreground">{caption}</span>}
+        <span className="line-clamp-2 text-sm font-medium text-foreground [overflow-wrap:anywhere]">{title}</span>
+        {caption && <span className={`${wrap ? "line-clamp-3" : "line-clamp-2"} text-xs text-muted-foreground [overflow-wrap:anywhere]`}>{caption}</span>}
+        {meta && <span className="truncate text-xs text-muted-foreground/70">{meta}</span>}
       </span>
-      {aside && <span className="flex shrink-0 items-center gap-1.5 text-[13px] font-semibold">{aside}</span>}
+      {aside && <span className="flex shrink-0 items-center gap-1.5 self-center text-sm font-semibold">{aside}</span>}
     </>
   );
-  const className = `relative flex w-full items-center gap-3 text-left ${EVENT_ROW}`;
+  // a wrapped row grows with its text, the icon at the top, as the panel's announcements in its bell
+  const shape = wrap ? "min-h-15 items-start rounded-3xl px-3.5 py-3 transition-colors" : `items-center ${EVENT_ROW}`;
+  const className = `relative flex w-full gap-3 text-left ${shape}`;
   // group: the aside can answer the row's hover (a device's trash)
   return onClick ? (
     <button

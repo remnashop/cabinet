@@ -1,5 +1,7 @@
 import type { ComponentType, HTMLAttributes, ReactNode } from "react";
 
+import { useSurface } from "./surface";
+
 const PADDING = {
   page: "p-4",
   form: "flex flex-col gap-3 px-3.5 pb-3.5",
@@ -23,12 +25,13 @@ export function Card({ variant = "page", title, icon: Icon, titleFor, round, cla
   // the title's own pt-2 plus pt-1.5 lines its text up where pt-3.5 would put untitled content
   const top = variant === "form" ? (title ? "pt-1.5" : "pt-3.5") : "";
   const Title = titleFor ? "label" : "h3";
+  const { shape, fill } = useSurface(round);
   return (
-    <div className={`${round ? "rounded-home" : "rounded-2xl"} border border-white/[0.08] bg-white/[0.03] ${PADDING[variant]} ${top} ${className}`} {...props}>
+    <div className={`${shape} ${fill} ${PADDING[variant]} ${top} ${className}`} {...props}>
       {title && (
         <Title
           htmlFor={titleFor}
-          className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-foreground ${
+          className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-foreground ${
             variant === "list" ? "px-2.5 pb-1 pt-2" : "pt-2"
           }`}
         >

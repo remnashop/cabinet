@@ -45,7 +45,7 @@ export interface InviteData {
 
 function LinkField({ data }: { data: InviteData }) {
   const { t } = useTranslation();
-  if (data.linkPending) return <Skeleton className="h-15 w-full rounded-2xl" />;
+  if (data.linkPending) return <Skeleton corners="rounded-2xl" className="h-15 w-full" />;
   if (!data.main) return <p className="text-sm text-muted-foreground">{t("referral.noCode")}</p>;
   return <CopyLinkField url={data.main} caption={t("referral.yourLink")} />;
 }
@@ -54,7 +54,7 @@ function BalanceTiles({ data }: { data: InviteData }) {
   const { t, i18n } = useTranslation();
   const points = Number(data.points);
   return (
-    <div className={`grid gap-3 ${points > 0 ? "grid-cols-2" : "grid-cols-1"}`}>
+    <div className={`grid gap-5 ${points > 0 ? "grid-cols-2" : "grid-cols-1"}`}>
       {points > 0 && (
         <ActionTile
           round
@@ -90,7 +90,7 @@ function NetworkChain({ data }: { data: InviteData }) {
     <Card round className="flex flex-col gap-4">
       {/* one level: its pill is the total already */}
       {levels.length > 1 && (
-        <span className="text-[11px] font-semibold uppercase tracking-wide">
+        <span className="text-xs font-semibold uppercase tracking-wide">
           {t("referral.networkTotal", { count: data.invited })}
         </span>
       )}
@@ -99,7 +99,7 @@ function NetworkChain({ data }: { data: InviteData }) {
           <span className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <User className="size-5" />
           </span>
-          <span className="text-[12px] font-semibold">{t("referral.you")}</span>
+          <span className="text-xs font-semibold">{t("referral.you")}</span>
         </div>
         {levels.map((level, i) => (
           <Fragment key={level}>
@@ -112,7 +112,7 @@ function NetworkChain({ data }: { data: InviteData }) {
                 {data.countsByLevel[String(level)] ?? 0}
               </span>
               {/* one level is everyone invited, not a "1st level" */}
-              <span className="truncate text-[12px] text-muted-foreground">
+              <span className="truncate text-xs text-muted-foreground">
                 {levels.length > 1 ? t("referral.levelN", { level }) : t("referral.invited")}
               </span>
             </div>
@@ -132,11 +132,16 @@ function ActionPill({
   label: string;
   onClick: () => void;
 }) {
+  // the same glass pill as "How does it work?" beside it (HowFolded), 64px with the home's corners
   return (
-    <Button variant="outline" size="lg" className="w-full min-w-0" onClick={onClick}>
+    <RippleButton
+      type="button"
+      onClick={onClick}
+      className="relative flex h-16 w-full min-w-0 items-center justify-center gap-2 rounded-home px-6 text-base font-semibold text-foreground/80 transition-colors hover:bg-white/[0.04] glass-panel"
+    >
       <Icon className="size-5 shrink-0" />
       <span className="truncate">{label}</span>
-    </Button>
+    </RippleButton>
   );
 }
 
@@ -203,12 +208,12 @@ function HowRail({ program }: { program: ReferralProgram }) {
             </div>
             <div className={`flex min-w-0 flex-1 flex-col gap-0.5 pt-1.5 ${last ? "" : "pb-5"}`}>
               <span className="text-sm font-semibold">{title}</span>
-              <span className="text-[12px] text-muted-foreground">{hint}</span>
+              <span className="text-xs text-muted-foreground">{hint}</span>
             </div>
           </li>
         );
       })}
-      <li className="mt-4 border-t border-border pt-3 text-[12px] text-muted-foreground">{t("referral.how.note")}</li>
+      <li className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">{t("referral.how.note")}</li>
     </ol>
   );
 }
@@ -218,7 +223,7 @@ function HowFolded({ program }: { program: ReferralProgram }) {
   const [open, setOpen] = useState(false);
   return (
     // closed, a pill as tall as the lg button under it: 64px, so the home's 32px corners round it off whole
-    <div className="rounded-home border border-white/[0.08] bg-white/[0.03]">
+    <div className="rounded-home glass-panel">
       <RippleButton
         type="button"
         aria-expanded={open}
@@ -252,12 +257,13 @@ function InviteCard({ data }: { data: InviteData }) {
   return (
     <Card round className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
-          <Gift className="size-5" />
+        {/* the panel Section's header: a 36px glass circle, a 16px title over a 12px line */}
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-glass-border bg-white/[0.05] text-foreground">
+          <Gift className="size-4" />
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <h2 className="text-base font-bold">{t("referral.title")}</h2>
-          <span className="text-sm text-muted-foreground">
+          <h2 className="text-base font-semibold tracking-tight">{t("referral.title")}</h2>
+          <span className="text-xs text-muted-foreground">
             {t("referral.earnTerms", { terms: rewardTerms(data.program, t, i18n.language) })}
           </span>
         </div>

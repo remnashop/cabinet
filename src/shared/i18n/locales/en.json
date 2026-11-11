@@ -24,6 +24,7 @@
   "header": {
     "language": "Language",
     "notifications": "Notifications",
+    "clear": "Clear",
     "notificationsEmpty": "No notifications",
     "account": "Account"
   },
@@ -52,10 +53,13 @@
     "backHome": "Back to the home page",
     "logout": "Log out",
     "more": "Load more",
+    "lessThanMinuteAgo": "less than a minute ago",
     "reload": "Reload"
   },
   "signOut": {
     "others": "Sign out on all other devices",
+    "sessionsTitle": "Other devices",
+    "sessionsCaption": "Sign out everywhere except this device",
     "othersTitle": "Sign out on all other devices?",
     "othersText": "You will have to sign in again on each of them. This session stays",
     "othersDone": "All other sessions were signed out",
@@ -68,7 +72,7 @@
     "telegram": "Continue with Telegram",
     "continueWith": "Continue with {{provider}}",
     "or": "or",
-    "emailPlaceholder": "Email",
+    "emailPlaceholder": "Enter your email",
     "emailRequired": "Enter your email",
     "emailInvalid": "Enter a valid email address",
     "sendCode": "Continue",
@@ -263,6 +267,7 @@
   "home": {
     "welcome": "Welcome, {{name}}!",
     "promo": "Promo code",
+    "promoDesktop": "Activate promo code",
     "buy": "Buy a subscription",
     "slideOf": "Subscription {{index}} of {{total}}",
     "limitReached": "Subscription limit reached",
@@ -308,7 +313,9 @@
     "devicesOf": "{{used}} of {{limit}}",
     "connect": "Connect a device",
     "renew": "Renew",
+    "renewDesktop": "Renew subscription",
     "changePlan": "Change",
+    "changePlanDesktop": "Change plan",
     "devicesTitle": "My devices · {{used}} of {{limit}}",
     "devicesTitleUnlimited": "My devices · {{used}}",
     "discount": "Your discount",
@@ -338,6 +345,10 @@
     "emptyHint": "Pick a plan and connect in a couple of minutes",
     "tryFree": "Try it free"
   },
+  "maintenance": {
+    "title": "Maintenance",
+    "text": "The service is temporarily closed. Please check back later"
+  },
   "purchase": {
     "catalog": "Plans",
     "changeTitle": "Change plan",
@@ -360,6 +371,8 @@
     "devicesUnlimited": "Unlimited devices",
     "limitTitle": "Subscription limit reached",
     "limitHint": "You can't buy a new one, but you can renew the current ones or change their plan on the home page",
+    "paymentsOffTitle": "Payments are temporarily unavailable",
+    "paymentsOffHint": "We'll let you know once payments are back",
     "empty": "Plans aren't available yet",
     "emptyChange": "No other plans yet",
     "planNotFound": "Plan not found or unavailable",
@@ -565,6 +578,11 @@
     "notConfigured": "Push is not configured by the administrator",
     "failed": "Couldn't turn notifications on"
   },
+  "pushPrompt": {
+    "title": "Turn on notifications",
+    "text": "We'll remind you to renew and tell you if something goes wrong",
+    "later": "Not now"
+  },
   "gateways": {
     "TELEGRAM_STARS": "Telegram Stars",
     "YOOKASSA": "YooKassa",
@@ -654,7 +672,7 @@
       "revision": "{{date}}"
     },
     "link": {
-      "OFFER": "the Offer",
+      "OFFER": "the Public offer",
       "USER_AGREEMENT": "the User agreement",
       "PRIVACY_POLICY": "the Privacy policy"
     }

@@ -29,7 +29,7 @@ function TelegramLinkBody() {
   }
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">{t("link.botHint")}</p>
+      <p className="text-sm text-foreground/80">{t("link.botHint")}</p>
       {request.data ? (
         <BotLinkActions primary="accent" url={request.data.bot_url} renewing={request.isPending} onRenew={() => mutate()} />
       ) : (

@@ -59,7 +59,7 @@ export function MethodStep({
   }
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="mb-1 px-3.5 text-[11px] font-semibold uppercase tracking-wide text-foreground">
+      <h2 className="mb-1 px-3.5 text-xs font-semibold uppercase tracking-wide text-foreground">
         {t("purchase.chooseMethod")}
       </h2>
       {methods.data.items.map((m) => {
@@ -91,7 +91,7 @@ function MethodPrice({ price, quote }: { price: { currency: string; price: strin
   if (!quote || Number(quote.final_price) >= Number(price.price)) return money(quote?.final_price ?? price.price);
   return (
     <span className="flex items-baseline gap-1.5">
-      <span className="text-[12px] font-normal text-muted-foreground line-through">{money(price.price)}</span>
+      <span className="text-xs font-normal text-muted-foreground line-through">{money(price.price)}</span>
       {money(quote.final_price)}
     </span>
   );

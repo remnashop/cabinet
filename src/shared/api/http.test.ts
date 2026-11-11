@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 import { apiGet, apiPost, cookieRefresh, NetworkError, setReauthenticator, setSessionEndHandler } from "@shared/api/http";
+import { isServiceClosed } from "@shared/api/maintenance";
 import { clearAccessToken, getAccessToken, setAccessToken, wasSessionExpired } from "@shared/api/tokens";
 
 const json = (status: number, body: unknown) =>
@@ -115,4 +116,11 @@ it("tells an offline device from an unreachable server", async () => {
   online.mockReturnValue(true);
   expect(getErrorMessage(new NetworkError("x"), "fallback")).toBe(i18n.t("errors.network"));
   online.mockRestore();
+});
+
+it("closes the cabinet when the backend answers ACCESS_RESTRICTED", async () => {
+  expect(isServiceClosed()).toBe(false);
+  mockFetch(() => json(403, { detail: "closed", code: "ACCESS_RESTRICTED" }));
+  await expect(apiGet("/subscriptions/me")).rejects.toMatchObject({ code: "ACCESS_RESTRICTED" });
+  expect(isServiceClosed()).toBe(true);
 });
