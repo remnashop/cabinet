@@ -330,7 +330,7 @@
     "deleteDeviceTitle": "Delete device?",
     "deleteDeviceText": "“{{name}}” will be disconnected from the subscription and lose access. You can connect again any time",
     "deleteAllTitle": "Delete all devices?",
-    "deleteAllText": "All devices will be disconnected from the subscription and lose access. You can connect again any time",
+    "deleteAllText": "The subscription link changes and every device loses access. Connect them again with the new link",
     "trialText_one": "Try it free for {{count}} day",
     "trialText_other": "Try it free for {{count}} days",
     "trialTextShort": "Try it for free",
