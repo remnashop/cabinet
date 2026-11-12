@@ -56,8 +56,8 @@ export function usePaymentStatus(orderId: number | null): PaymentState & { retry
         setState({ status: "pending", transaction });
       } catch (err) {
         if (ctrl.signal.aborted) return;
-        // 4xx (unknown order, not ours) won't change; network blips and 5xx are retried until the deadline
-        if (err instanceof ApiError && err.status < 500) {
+        // 4xx (unknown order, not ours) won't change; network blips, 429 and 5xx are retried until the deadline
+        if (err instanceof ApiError && err.status < 500 && err.status !== 429) {
           stop();
           setState({ status: "error", error: err });
           return;
