@@ -83,16 +83,18 @@ describe("usePaymentStatus", () => {
     expect(fetchTx).toHaveBeenCalledTimes(1);
   });
 
-  it("retries a 5xx and a network error until PAID", async () => {
+  it("retries a 5xx, a 429 and a network error until PAID", async () => {
     fetchTx
       .mockRejectedValueOnce(new ApiError(500, "boom"))
       .mockRejectedValueOnce(new NetworkError("offline"))
+      .mockRejectedValueOnce(new ApiError(429, "Too many requests"))
       .mockResolvedValue(tx("PAID"));
     await mount();
     await advance(2000);
     await advance(2000);
+    await advance(2000);
     expect(status()).toBe("paid");
-    expect(fetchTx).toHaveBeenCalledTimes(3);
+    expect(fetchTx).toHaveBeenCalledTimes(4);
   });
 
   it("gives up after POLL_TIMEOUT_MS of PENDING", async () => {
