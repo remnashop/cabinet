@@ -5,8 +5,9 @@ import { useInvitedInfinite, type InvitedUser } from "@entities/referral/api";
 import { formatDate, formatNumber } from "@shared/lib/format";
 import { Card } from "@shared/ui/Card";
 import { ErrorCard } from "@shared/ui/ErrorCard";
-import { EventIcon, EventList, EventRow } from "@shared/ui/EventList";
-import { LoadMore } from "@shared/ui/LoadMore";
+import { EventList, EventRow } from "@shared/ui/EventList";
+import { IconCircle } from "@shared/ui/IconCircle";
+import { LoadMoreButton } from "@shared/ui/LoadMoreButton";
 import { PageEmpty } from "@shared/ui/PageEmpty";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { PageHeader } from "@widgets/page-header/PageHeader";
@@ -61,7 +62,7 @@ export function InvitedPage() {
             return (
               <EventRow
                 key={i}
-                icon={<EventIcon glyph={(user.name?.trim()[0] ?? "?").toUpperCase()} tone="bg-primary/12 text-primary" />}
+                icon={<IconCircle glyph={(user.name?.trim()[0] ?? "?").toUpperCase()} tone="bg-primary/12 text-primary" />}
                 title={user.name ?? t("referral.goneUser")}
                 caption={
                   <>
@@ -75,7 +76,7 @@ export function InvitedPage() {
           })}
         </EventList>
       </Card>
-      <LoadMore query={query} />
+      <LoadMoreButton query={query} />
     </>
   );
 }

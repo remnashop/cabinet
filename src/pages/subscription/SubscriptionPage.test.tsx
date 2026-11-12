@@ -45,7 +45,7 @@ vi.mock("@features/push-prompt/PushPromptCard", () => ({ PushPromptCard: () => n
 vi.mock("@widgets/devices/DevicesCard", () => ({ DevicesCard: () => null }));
 vi.mock("@widgets/page-header/HeaderSlot", () => ({ HeaderSlot: () => null }));
 vi.mock("@widgets/promo/PromoDialog", () => ({ PromoDialog: () => null }));
-vi.mock("@widgets/redeem-days/RedeemDaysSheet", () => ({ RedeemDaysSheet: () => null }));
+vi.mock("@widgets/redeem-days/RedeemDaysDialog", () => ({ RedeemDaysDialog: () => null }));
 vi.mock("@widgets/subscription-cards/CardsSlider", () => ({
   CardsSlider: ({ selectedId }: { selectedId: number }) => <div data-testid="selected">{selectedId}</div>,
 }));

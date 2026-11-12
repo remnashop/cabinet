@@ -26,7 +26,7 @@ export function RouteErrorPage() {
   if (reloading) return null;
   return (
     <FullScreenMessage tone="error" title={t("errors.pageTitle")} text={stale ? t("errors.newVersion") : t("errors.generic")}>
-      <Button variant="solid" size="lg" className="w-full" onClick={() => window.location.reload()}>
+      <Button variant="glassSolid" size="lg" className="w-full" onClick={() => window.location.reload()}>
         {t("common.reload")}
       </Button>
     </FullScreenMessage>

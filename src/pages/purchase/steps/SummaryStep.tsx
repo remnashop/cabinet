@@ -16,7 +16,7 @@ import { haptic } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
-import { TextInput } from "@shared/ui/TextInput";
+import { Input } from "@shared/ui/Input";
 import { FormError } from "@shared/ui/FormError";
 
 type CheckoutResult = Awaited<ReturnType<typeof createCheckout>>;
@@ -138,7 +138,7 @@ export function SummaryStep({
                 {/* a red asterisk when this method can't pay without it, as the panel's Field */}
                 {method.requires_email && <span className="text-error"> *</span>}
               </label>
-              <TextInput
+              <Input
                 id="receipt-email"
                 type="email"
                 inputMode="email"
@@ -158,7 +158,7 @@ export function SummaryStep({
       {quote.isError && (
         <div className="flex items-center justify-between gap-3">
           <FormError>{getErrorMessage(quote.error, t("errors.generic"))}</FormError>
-          <Button variant="outline" className="shrink-0" onClick={() => void quote.refetch()}>
+          <Button variant="glass" className="shrink-0" onClick={() => void quote.refetch()}>
             {t("common.retry")}
           </Button>
         </div>
@@ -179,7 +179,7 @@ export function SummaryStep({
         {awaited !== null ? (
           <AwaitPaymentButton key={awaited} orderId={awaited} onStop={stopWaiting} />
         ) : (
-          <Button type="submit" variant="solid" size="lg" disabled={!canPay}>
+          <Button type="submit" variant="glassSolid" size="lg" disabled={!canPay}>
             {t("purchase.pay", { amount: amount ?? "…" })}
           </Button>
         )}

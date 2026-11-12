@@ -106,9 +106,9 @@ export function AppShell() {
             <HeaderActions />
           </div>
         </header>
-        {/* the stable gutter's 10px (the scrollbar, app/styles.css) comes out of the right padding */}
+        {/* the stable gutter (--scrollbar-size, app/styles.css) comes out of the right padding: 20px either side */}
         <main
-          className={`mx-auto w-full max-w-[560px] min-w-0 px-4 pb-[calc(max(var(--safe-bottom),16px)+80px)] lg:max-w-none lg:flex-1 lg:overflow-y-auto lg:pl-5 lg:pr-[calc(1.25rem-10px)] lg:pt-0 lg:pb-5 lg:[scrollbar-gutter:stable] ${wide ? "lg:flex lg:flex-col" : ""}`}
+          className={`mx-auto w-full max-w-[560px] min-w-0 px-4 pb-[calc(max(var(--safe-bottom),16px)+80px)] lg:max-w-none lg:flex-1 lg:overflow-y-auto lg:pl-5 lg:pr-[calc(1.25rem-var(--scrollbar-size))] lg:pt-0 lg:pb-5 lg:[scrollbar-gutter:stable] ${wide ? "lg:flex lg:flex-col" : ""}`}
         >
           <HeaderSlotContext.Provider value={headerSlot}>
             <AnimatedOutlet className={wide ? "lg:flex lg:flex-1 lg:flex-col" : undefined} />

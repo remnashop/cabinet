@@ -7,33 +7,32 @@ import { useNavigate } from "react-router";
 import { unlinkIdentity, type Identity, type IdentityKind } from "@entities/identity/api";
 import { useHasLegalDocuments } from "@entities/legal/api";
 import { useChangeLanguage, useMeQuery, type Me } from "@entities/session/api";
-import { SignOutOthersSheet } from "@features/auth/ui/SignOutOthersSheet";
+import { SignOutOthersDialog } from "@features/auth/ui/SignOutOthersDialog";
 import { useSignOutOthersLink } from "@features/auth/ui/use-sign-out-others-link";
-import { MergeSheet } from "@features/link-identity/MergeSheet";
+import { MergeDialog } from "@features/link-identity/MergeDialog";
 import { startOAuthLink } from "@features/link-identity/api";
-import { LinkEmailSheet } from "@features/link-identity/LinkEmailSheet";
-import { LinkTelegramSheet } from "@features/link-identity/LinkTelegramSheet";
+import { LinkEmailDialog } from "@features/link-identity/LinkEmailDialog";
+import { LinkTelegramDialog } from "@features/link-identity/LinkTelegramDialog";
 import { useLinkResult } from "@features/link-identity/useLinkResult";
 import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@shared/i18n";
 import { getErrorMessage } from "@shared/api/http";
 import { isMiniApp, openExternal } from "@shared/telegram";
 import { Avatar } from "@shared/ui/Avatar";
-import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
+import { Modal, DialogFooter } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
-import { ICON_BUTTON_CLASS } from "@shared/ui/button-class";
-import { ConfirmSheet } from "@shared/ui/ConfirmSheet";
+import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { OptionRow } from "@shared/ui/OptionRow";
-import { RippleButton } from "@shared/ui/RippleButton";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { SuccessMessage } from "@shared/ui/SuccessCheck";
 import { FormError } from "@shared/ui/FormError";
-import { SignOutSheet } from "@widgets/app-shell/SignOutSheet";
+import { IconButton } from "@shared/ui/IconButton";
+import { SignOutDialog } from "@widgets/app-shell/SignOutDialog";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 import { InfoDialog } from "@widgets/info/InfoDialog";
 import { PromoDialog } from "@widgets/promo/PromoDialog";
 import { useSupport } from "@widgets/support/use-support";
-import { RedeemDaysSheet } from "@widgets/redeem-days/RedeemDaysSheet";
+import { RedeemDaysDialog } from "@widgets/redeem-days/RedeemDaysDialog";
 import { useCopyLink } from "@pages/connect/use-copy-link";
 
 import { KIND_ICON } from "./identity-icons";
@@ -56,27 +55,15 @@ function Header({ me, onSignOut }: { me: Me; onSignOut: () => void }) {
         <div className="truncate text-base font-semibold">{me.name}</div>
         <div className="text-xs text-muted-foreground">{t("profile.id", { id })}</div>
       </div>
-      <RippleButton
-        type="button"
-        aria-label={t("profile.copyId")}
-        onClick={() => void copy()}
-        className={`relative ${ICON_BUTTON_CLASS} ${
-          copied ? "text-success" : "text-foreground"
-        }`}
-      >
+      <IconButton tone={copied ? "success" : "default"} onClick={() => void copy()}>
         {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-      </RippleButton>
+      </IconButton>
       {/* the Mini App signs back in with Telegram's data at once: no sign-out there */}
       {!isMiniApp() && (
         <>
-          <RippleButton
-            type="button"
-            aria-label={t("common.logout")}
-            onClick={onSignOut}
-            className={`relative ${ICON_BUTTON_CLASS} text-error hover:bg-error/10 lg:hidden`}
-          >
+          <IconButton tone="danger" className="lg:hidden" onClick={onSignOut}>
             <LogOut className="size-4" />
-          </RippleButton>
+          </IconButton>
           <Button variant="glassDanger" className="max-lg:hidden" onClick={onSignOut}>
             <LogOut className="size-4" />
             {t("common.logout")}
@@ -126,7 +113,7 @@ function LanguageSheet({ open, onClose }: { open: boolean; onClose: () => void }
   const { t, i18n } = useTranslation();
   const change = useChangeLanguage(onClose);
   return (
-    <BottomSheet narrow cards icon={Languages} open={open} onClose={onClose} title={t("profile.languageTitle")}>
+    <Modal narrow cards icon={Languages} open={open} onClose={onClose} title={t("profile.languageTitle")}>
       <div className="flex flex-col gap-2">
         {SUPPORTED_LANGUAGES.map((language) => (
           <LanguageRow
@@ -140,7 +127,7 @@ function LanguageSheet({ open, onClose }: { open: boolean; onClose: () => void }
         ))}
         {change.isError && <FormError>{getErrorMessage(change.error, t("errors.generic"))}</FormError>}
       </div>
-    </BottomSheet>
+    </Modal>
   );
 }
 
@@ -238,11 +225,11 @@ export function ProfilePage() {
         />
       </div>
       <LanguageSheet open={languageOpen} onClose={() => setLanguageOpen(false)} />
-      <RedeemDaysSheet open={redeemOpen} onClose={() => setRedeemOpen(false)} bonusDays={me.data.bonus_days} />
+      <RedeemDaysDialog open={redeemOpen} onClose={() => setRedeemOpen(false)} bonusDays={me.data.bonus_days} />
       <PromoDialog open={promoOpen} onClose={() => setPromoOpen(false)} />
       <InfoDialog open={documentsOpen} onClose={() => setDocumentsOpen(false)} />
       {support.dialog}
-      <LinkEmailSheet
+      <LinkEmailDialog
         open={linkSheet === "email"}
         onClose={() => setLinkSheet(null)}
         onResult={(result) => {
@@ -250,8 +237,8 @@ export function ProfilePage() {
           link.handleLinkResult(result, "EMAIL");
         }}
       />
-      <LinkTelegramSheet open={linkSheet === "telegram"} onClose={() => setLinkSheet(null)} />
-      <MergeSheet
+      <LinkTelegramDialog open={linkSheet === "telegram"} onClose={() => setLinkSheet(null)} />
+      <MergeDialog
         offer={link.merge}
         onClose={link.closeMerge}
         onMerged={() => {
@@ -263,9 +250,9 @@ export function ProfilePage() {
           link.closeMerge();
         }}
       />
-      <SignOutSheet open={signOutOpen} onClose={() => setSignOutOpen(false)} />
-      <SignOutOthersSheet open={othersOpen} onClose={() => setOthersOpen(false)} />
-      <BottomSheet
+      <SignOutDialog open={signOutOpen} onClose={() => setSignOutOpen(false)} />
+      <SignOutOthersDialog open={othersOpen} onClose={() => setOthersOpen(false)} />
+      <Modal
         narrow
         bare
         glyph={link.notice && KIND_ICON[link.notice.kind]}
@@ -295,12 +282,12 @@ export function ProfilePage() {
                 ? t("link.linkedEmailTitle")
                 : t("link.linkedTitle", { kind: link.notice ? t(`profile.kinds.${link.notice.kind}`) : "" })}
         </SuccessMessage>
-        <Button variant="outline" size="lg" className="mt-6 w-full" onClick={link.closeNotice}>
+        <Button variant="glass" size="lg" className="mt-6 w-full" onClick={link.closeNotice}>
           {t("common.continue")}
         </Button>
-      </BottomSheet>
+      </Modal>
       {/* inside the Mini App its next sign-in would make a fresh account: the browser unlinks Telegram */}
-      <BottomSheet
+      <Modal
         narrow
         // nothing destructive here, only the way to where it can be done
         icon={ExternalLink}
@@ -309,7 +296,7 @@ export function ProfilePage() {
         title={t("profile.unlinkTitle", { kind: t("profile.kinds.TELEGRAM") })}
       >
         <p className="text-sm text-foreground/80">{t("profile.unlinkInBrowserText")}</p>
-        <SheetFooter>
+        <DialogFooter>
           <Button variant="glass" onClick={() => setInBrowserOpen(false)}>
             {t("common.close")}
           </Button>
@@ -322,9 +309,9 @@ export function ProfilePage() {
           >
             {t("profile.openInBrowser")}
           </Button>
-        </SheetFooter>
-      </BottomSheet>
-      <ConfirmSheet
+        </DialogFooter>
+      </Modal>
+      <ConfirmDialog
         open={unlinking !== null}
         // email reads "почту" in the question, not "Почта": its own line
         title={

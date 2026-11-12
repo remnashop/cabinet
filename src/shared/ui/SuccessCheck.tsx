@@ -9,7 +9,7 @@ export function SuccessCheck() {
     <span className="relative flex size-16 items-center justify-center">
       <Sparks />
       <span className="relative flex size-16 items-center justify-center rounded-full border border-success/40 bg-success/15 text-success motion-safe:animate-pop">
-        <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth={2.25} aria-hidden>
+        <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth={2.25}>
           {/* pathLength 1: the dash animation draws it whatever the path's real length */}
           <path
             d="M20 6 9 17l-5-5"
@@ -28,7 +28,7 @@ export function SuccessCheck() {
 /** Ten sparks flying out from under a success disc as it pops in, success and primary in turn; none with reduced motion. */
 function Sparks() {
   return (
-    <span className="pointer-events-none absolute inset-0 hidden motion-safe:block" aria-hidden>
+    <span className="pointer-events-none absolute inset-0 hidden motion-safe:block">
       {Array.from({ length: 10 }, (_, i) => (
         <span
           key={i}
@@ -48,7 +48,7 @@ function Sparks() {
  */
 export function SuccessMessage({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
   return (
-    <div role="status" className="flex flex-col items-center gap-4 text-center">
+    <div className="flex flex-col items-center gap-4 text-center">
       <SuccessCheck />
       <div className="flex flex-col gap-1.5">
         <p className="text-xl font-bold tracking-tight text-foreground">{children}</p>

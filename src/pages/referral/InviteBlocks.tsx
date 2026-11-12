@@ -19,11 +19,11 @@ import type { ReferralProgram } from "@entities/referral/api";
 import { rewardTerms } from "@features/referral/links";
 import { formatNumber } from "@shared/lib/format";
 import { Button } from "@shared/ui/Button";
-import { ICON_CIRCLE_CLASS } from "@shared/ui/button-class";
 import { ActionTile } from "@shared/ui/ActionTile";
 import { Card } from "@shared/ui/Card";
-import { RippleButton } from "@shared/ui/RippleButton";
+import { Ripple } from "@shared/ui/Ripple";
 import { Skeleton } from "@shared/ui/Skeleton";
+import { IconCircle } from "@shared/ui/IconCircle";
 import { CopyLinkField } from "@pages/connect/CopyLinkField";
 
 export interface InviteData {
@@ -135,14 +135,15 @@ function ActionPill({
 }) {
   // the same glass pill as "How does it work?" beside it (HowFolded), 64px with the home's corners
   return (
-    <RippleButton
+    <button
       type="button"
       onClick={onClick}
-      className="relative flex h-16 w-full min-w-0 items-center justify-center gap-2 rounded-home px-6 text-base font-semibold text-foreground/80 transition-colors hover:bg-white/[0.06] glass-panel"
+      className="relative flex h-16 w-full min-w-0 items-center justify-center gap-2 rounded-card px-6 text-base font-semibold text-foreground/80 transition-colors hover:bg-white/[0.06] glass-panel"
     >
       <Icon className="size-5 shrink-0" />
       <span className="truncate">{label}</span>
-    </RippleButton>
+      <Ripple />
+    </button>
   );
 }
 
@@ -224,18 +225,18 @@ function HowFolded({ program }: { program: ReferralProgram }) {
   const [open, setOpen] = useState(false);
   return (
     // closed, a pill as tall as the lg button under it: 64px, so the home's 32px corners round it off whole
-    <div className="rounded-home glass-panel">
-      <RippleButton
+    <div className="rounded-card glass-panel">
+      <button
         type="button"
-        aria-expanded={open}
         onClick={() => setOpen((shown) => !shown)}
         className={`relative flex h-16 w-full items-center justify-center gap-2 px-6 text-base font-semibold text-foreground/80 transition-colors hover:bg-white/[0.06] ${
-          open ? "rounded-t-home" : "rounded-home"
+          open ? "rounded-t-card" : "rounded-card"
         }`}
       >
         <CircleHelp className="size-5 shrink-0" />
         <span className="truncate">{t("referral.how.title")}</span>
-      </RippleButton>
+        <Ripple />
+      </button>
       {/* 0fr → 1fr rows: the height glides to the content's; inert keeps the folded steps out of focus */}
       <div
         inert={!open}
@@ -259,9 +260,7 @@ function InviteCard({ data }: { data: InviteData }) {
     <Card round className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         {/* the panel Section's header: a 36px glass circle, a 16px title over a 12px line */}
-        <span className={`${ICON_CIRCLE_CLASS} text-foreground`}>
-          <Gift className="size-4" />
-        </span>
+        <IconCircle icon={Gift} header />
         <div className="flex min-w-0 flex-col gap-0.5">
           <h2 className="text-base font-semibold tracking-tight">{t("referral.title")}</h2>
           <span className="text-xs text-muted-foreground">
@@ -270,7 +269,7 @@ function InviteCard({ data }: { data: InviteData }) {
         </div>
       </div>
       <LinkField data={data} />
-      <Button variant="solid" disabled={!data.main} onClick={data.onQr}>
+      <Button variant="glassSolid" disabled={!data.main} onClick={data.onQr}>
         <QrCode className="size-4" />
         {t("referral.openQr")}
       </Button>

@@ -16,7 +16,7 @@ interface InfinitePages {
  * IntersectionObserver doesn't fire, and the retry after a failure: the observer stays off then, or the
  * still-visible sentinel would refetch in a loop.
  */
-export function LoadMore({ query }: { query: InfinitePages }) {
+export function LoadMoreButton({ query }: { query: InfinitePages }) {
   const { t } = useTranslation();
   const sentinel = useRef<HTMLDivElement>(null);
   const { hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } = query;
@@ -35,7 +35,7 @@ export function LoadMore({ query }: { query: InfinitePages }) {
   return (
     <div ref={sentinel} className="mt-5 flex flex-col items-center gap-2">
       {isFetchNextPageError && <FormError>{t("common.loadFailed")}</FormError>}
-      <Button variant="outline" disabled={isFetchingNextPage} onClick={() => void fetchNextPage()}>
+      <Button variant="glass" disabled={isFetchingNextPage} onClick={() => void fetchNextPage()}>
         {t("common.more")}
       </Button>
     </div>

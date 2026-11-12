@@ -29,8 +29,8 @@
   --radius-popover-item: 18px;
   --radius-dialog: 24px;
   /* the home page's blocks: the corners of its 64px notice pill (NoticeBar), on tiles and cards of any height */
-  --radius-home: 32px;
-  /* the subscription cards and the slider's buy slide: --radius-home's 32px at every width, desktop too */
+  --radius-card: 32px;
+  /* the subscription cards and the slider's buy slide: --radius-card's 32px at every width, desktop too */
   --radius-subscription: 32px;
   /* the one action to take (PulseButton): a primary glow round it flares and fades */
   --animate-glow-pulse: glow-pulse 2.4s ease-in-out infinite;
@@ -183,7 +183,7 @@
    page frame around them to echo */
 @media (width >= 64rem) {
   :root {
-    --radius-home: var(--radius-3xl);
+    --radius-card: var(--radius-3xl);
   }
 }
 

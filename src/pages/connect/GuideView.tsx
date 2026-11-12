@@ -29,8 +29,7 @@ import { Button } from "@shared/ui/Button";
 import { AndroidIcon, AppleIcon, DevicesIcon, LinuxIcon, TvIcon, WindowsIcon } from "@shared/ui/PlatformIcons";
 import { StepTransition } from "@shared/ui/StepTransition";
 import { PulseButton } from "@shared/ui/PulseButton";
-import { RippleButton } from "@shared/ui/RippleButton";
-import { useRipple } from "@shared/ui/use-ripple";
+import { Ripple } from "@shared/ui/Ripple";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 
 import { Confetti } from "./Confetti";
@@ -139,16 +138,14 @@ function PlatformTile({
   hint: string;
   onClick: () => void;
 }) {
-  const ripple = useRipple();
   return (
     <button
       type="button"
       onClick={onClick}
-      onPointerDown={ripple.onPointerDown}
       // an odd one out on a phone takes the whole last row; three to a row on desktop, it stays one
-      className="relative flex flex-col gap-4 rounded-home glass-panel p-5 text-left transition-colors last:odd:col-span-2 hover:bg-white/[0.06] lg:p-4 lg:last:odd:col-span-1"
+      className="relative flex flex-col gap-4 rounded-card glass-panel p-5 text-left transition-colors last:odd:col-span-2 hover:bg-white/[0.06] lg:p-4 lg:last:odd:col-span-1"
     >
-      {ripple.ripples}
+      <Ripple />
       <span className="flex size-11 items-center justify-center rounded-full bg-accent text-primary">
         <Mark className="size-6" strokeWidth={1.67} />
       </span>
@@ -232,7 +229,7 @@ export function GuideView({
             <PlatformMark platform={here.platform} />
             <FitLabel full={t("connect.startHere")} short={t("connect.startHereShort")} />
           </PulseButton>
-          <Button variant="outline" size="lg" onClick={() => go("device")}>
+          <Button variant="glass" size="lg" onClick={() => go("device")}>
             <DevicesIcon className="size-5" />
             {t("connect.otherDevice")}
           </Button>
@@ -251,10 +248,10 @@ export function GuideView({
           hint={t("connect.unavailableHint", { platform: t(`connect.platforms.${platform.id}`) })}
           art={<HeroArt icon={CloudOff} />}
         >
-          <Button variant="solid" size="lg" onClick={() => go("device")}>
+          <Button variant="glassSolid" size="lg" onClick={() => go("device")}>
             {t("connect.pickOther")}
           </Button>
-          <Button variant="outline" size="lg" onClick={() => void navigate("/")}>
+          <Button variant="glass" size="lg" onClick={() => void navigate("/")}>
             {t("connect.backHome")}
           </Button>
         </Hero>
@@ -274,7 +271,7 @@ export function GuideView({
             platform.apps.length > 1 && (
               <div className="flex flex-wrap justify-center gap-2">
                 {platform.apps.map((candidate) => (
-                  <RippleButton
+                  <button
                     key={candidate.id}
                     type="button"
                     onClick={() => {
@@ -285,9 +282,10 @@ export function GuideView({
                   >
                     {candidate.name}
                     {candidate.featured && (
-                      <span aria-label={t("connect.recommended")} className="size-1.5 rounded-full bg-primary" />
+                      <span className="size-1.5 rounded-full bg-primary" />
                     )}
-                  </RippleButton>
+                    <Ripple />
+                  </button>
                 ))}
               </div>
             )
@@ -305,7 +303,7 @@ export function GuideView({
               {onThisDevice ? t("connect.installApp") : storeCopied ? t("connect.copied") : t("connect.appLink")}
             </PulseButton>
           )}
-          <Button variant="outline" size="lg" onClick={() => go("add")}>
+          <Button variant="glass" size="lg" onClick={() => go("add")}>
             {t("connect.nextStep")}
             <ArrowRight className="size-5" />
           </Button>
@@ -328,7 +326,7 @@ export function GuideView({
             <Plus className="size-5" />
             {t("connect.addSubscription")}
           </PulseButton>
-          <Button variant="outline" size="lg" onClick={() => go("done")}>
+          <Button variant="glass" size="lg" onClick={() => go("done")}>
             {t("connect.nextStep")}
             <ArrowRight className="size-5" />
           </Button>
@@ -362,7 +360,7 @@ export function GuideView({
               {copied ? t("connect.copied") : t("connect.copyLink")}
             </PulseButton>
           )}
-          <Button variant="outline" size="lg" onClick={() => go("done")}>
+          <Button variant="glass" size="lg" onClick={() => go("done")}>
             {t("connect.nextStep")}
             <ArrowRight className="size-5" />
           </Button>
@@ -381,11 +379,11 @@ export function GuideView({
           hint={t("connect.doneHint", { app: app?.name ?? "" })}
           art={<SuccessArt />}
         >
-          <Button variant="solid" size="lg" onClick={() => void navigate("/")}>
+          <Button variant="glassSolid" size="lg" onClick={() => void navigate("/")}>
             <House className="size-5" />
             {t("connect.backHome")}
           </Button>
-          <Button variant="outline" size="lg" onClick={() => go("device")}>
+          <Button variant="glass" size="lg" onClick={() => go("device")}>
             {t("connect.otherDevice")}
           </Button>
         </Hero>
@@ -420,7 +418,7 @@ export function GuideView({
               ))}
             </div>
             {hidden > 0 && (
-              <Button variant="outline" size="lg" onClick={() => setShowAll(true)}>
+              <Button variant="glass" size="lg" onClick={() => setShowAll(true)}>
                 {t("connect.morePlatforms")}
               </Button>
             )}

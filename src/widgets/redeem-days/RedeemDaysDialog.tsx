@@ -10,7 +10,7 @@ import { getErrorMessage } from "@shared/api/http";
 import { formatDate } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
 import { AlertMark } from "@shared/ui/AlertMark";
-import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
+import { Modal, DialogFooter } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
 import { NotePill } from "@shared/ui/NotePill";
 import { SuccessMessage } from "@shared/ui/SuccessCheck";
@@ -46,7 +46,7 @@ function TargetRow({ sub, picked, onPick }: { sub: OwnSubscription; picked: bool
 }
 
 /** Bonus days onto a subscription: which one, how many (a stepper that also takes a typed number), and its new end. */
-export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
+export function RedeemDaysDialog({ open, onClose, bonusDays }: Props) {
   const { t, i18n } = useTranslation();
   const client = useQueryClient();
   const subscriptions = useSubscriptionsQuery();
@@ -102,7 +102,7 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
   };
 
   return (
-    <BottomSheet
+    <Modal
       narrow
       bare={result !== null}
       icon={CalendarPlus}
@@ -121,7 +121,7 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
           >
             {t("referral.redeemedTitle")}
           </SuccessMessage>
-          <Button variant="outline" size="lg" className="mt-6 w-full" onClick={close}>
+          <Button variant="glass" size="lg" className="mt-6 w-full" onClick={close}>
             {t("common.continue")}
           </Button>
         </>
@@ -132,11 +132,11 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
             <AlertMark tone="warning" />
             <p className="text-sm text-foreground/80">{t("referral.noTargetTitle")}</p>
           </div>
-          <SheetFooter>
+          <DialogFooter>
             <Button variant="glass" onClick={close}>
               {t("common.close")}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </>
       ) : (
         <form id={formId} onSubmit={onSubmit} className="flex flex-col gap-4">
@@ -169,7 +169,6 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
                   max={max}
                   value={shownDays}
                   aria-invalid={!valid}
-                  aria-label={t("referral.howMany")}
                   onChange={(e) => {
                     setDays(e.target.value);
                     redeem.reset();
@@ -185,10 +184,10 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
               <Button variant="secondary" size="sm" disabled={count === max} onClick={() => setDays("")}>
                 {t("referral.max")}
               </Button>
-              <Button variant="outline" size="sm" aria-label={t("referral.fewer")} disabled={valid && count <= 1} onClick={() => step(-1)}>
+              <Button variant="glass" size="sm" disabled={valid && count <= 1} onClick={() => step(-1)}>
                 <Minus className="size-4" />
               </Button>
-              <Button variant="outline" size="sm" aria-label={t("referral.more")} disabled={valid && count >= max} onClick={() => step(1)}>
+              <Button variant="glass" size="sm" disabled={valid && count >= max} onClick={() => step(1)}>
                 <Plus className="size-4" />
               </Button>
             </div>
@@ -203,16 +202,16 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
             <NotePill icon={CalendarClock}>{t("referral.newEnd", { date: formatDate(newEnd, i18n.language) })}</NotePill>
           )}
           {redeem.isError && <FormError>{getErrorMessage(redeem.error, t("errors.generic"))}</FormError>}
-          <SheetFooter>
+          <DialogFooter>
             <Button variant="glass" onClick={close}>
               {t("common.cancel")}
             </Button>
             <Button type="submit" form={formId} variant="glassAccent" disabled={!target || !valid || redeem.isPending}>
               {t("referral.apply")}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
       )}
-    </BottomSheet>
+    </Modal>
   );
 }

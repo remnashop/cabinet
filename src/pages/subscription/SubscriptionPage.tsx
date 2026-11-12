@@ -14,7 +14,7 @@ import { getErrorMessage } from "@shared/api/http";
 import { formatDate, formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
 import { ActionTile } from "@shared/ui/ActionTile";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { Skeleton } from "@shared/ui/Skeleton";
@@ -105,7 +105,7 @@ function EmptyState({ onActivated }: { onActivated: () => void }) {
             {t("home.tryFree")}
           </PulseButton>
           )}
-          <Button variant="outline" size="lg" onClick={() => void navigate("/purchase")}>
+          <Button variant="glass" size="lg" onClick={() => void navigate("/purchase")}>
             <ShoppingCart className="size-5" />
             {t("home.buy")}
           </Button>
@@ -295,7 +295,7 @@ export function SubscriptionPage() {
         <Navigate replace to={renewTo} />
       )}
       <Header />
-      <BottomSheet
+      <Modal
         bare
         open={trialActivated}
         onClose={() => setTrialActivated(false)}
@@ -306,10 +306,10 @@ export function SubscriptionPage() {
         >
           {t("home.trialActivated")}
         </SuccessMessage>
-        <Button variant="outline" size="lg" className="mt-6 w-full" onClick={() => setTrialActivated(false)}>
+        <Button variant="glass" size="lg" className="mt-6 w-full" onClick={() => setTrialActivated(false)}>
           {t("common.continue")}
         </Button>
-      </BottomSheet>
+      </Modal>
       {!selected ? (
         <EmptyState
           onActivated={() => {

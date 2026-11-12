@@ -11,8 +11,9 @@ interface Wave {
 }
 
 /**
- * The panel's Ripple: a tap wave for its positioned parent, for an element that isn't a Button (a nav pill, a row
- * link). It listens on the parent itself, so dropping it in is the whole wiring; same look as useRipple.
+ * The panel's Ripple, the cabinet's only one: a tap wave for its positioned parent, from where the pointer went down.
+ * It listens on the parent itself, so dropping it in is the whole wiring. Clips to its own layer with the parent's
+ * radius, so the parent needs no overflow-hidden; after the content, it lays over a positioned child (a card).
  */
 export function Ripple() {
   const layerRef = useRef<HTMLSpanElement>(null);
@@ -36,7 +37,7 @@ export function Ripple() {
   }, []);
 
   return (
-    <span ref={layerRef} aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
+    <span ref={layerRef} className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
       {waves.map(({ id, x, y, size }) => (
         <span
           key={id}

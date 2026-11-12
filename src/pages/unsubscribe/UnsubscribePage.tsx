@@ -45,11 +45,11 @@ export function UnsubscribePage() {
     <FullScreenMessage tone={!token ? "warning" : action.isError ? "error" : undefined} title={title} text={text}>
       <div className="flex w-full flex-col gap-2">
         {canSubmit && (
-          <Button variant="solid" size="lg" disabled={action.isPending} onClick={() => action.mutate(token)}>
+          <Button variant="glassSolid" size="lg" disabled={action.isPending} onClick={() => action.mutate(token)}>
             {action.isError ? t("common.retry") : t("unsubscribe.confirm")}
           </Button>
         )}
-        <ButtonLink to="/" variant="outline" size="lg">
+        <ButtonLink to="/" variant="glass" size="lg">
           {t("common.home")}
         </ButtonLink>
       </div>

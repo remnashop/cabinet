@@ -7,12 +7,12 @@ import { invitedCount, useReferralQuery } from "@entities/referral/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { inviteLinks } from "@features/referral/links";
 import { isMiniApp } from "@shared/telegram";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { QrCode } from "@shared/ui/QrCode";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { PageHeader } from "@widgets/page-header/PageHeader";
-import { RedeemDaysSheet } from "@widgets/redeem-days/RedeemDaysSheet";
+import { RedeemDaysDialog } from "@widgets/redeem-days/RedeemDaysDialog";
 import { useSupport } from "@widgets/support/use-support";
 import { CopyLinkField } from "@pages/connect/CopyLinkField";
 
@@ -84,10 +84,10 @@ export function ReferralPage() {
         />
       </div>
 
-      <RedeemDaysSheet open={sheet === "days"} onClose={close} bonusDays={referral.data.bonus_days} />
+      <RedeemDaysDialog open={sheet === "days"} onClose={close} bonusDays={referral.data.bonus_days} />
       {support.dialog}
 
-      <BottomSheet
+      <Modal
         narrow
         icon={QrCodeIcon}
         open={sheet === "qr"}
@@ -100,7 +100,7 @@ export function ReferralPage() {
             <CopyLinkField url={main} caption={t("connect.tapToCopy")} />
           </div>
         )}
-      </BottomSheet>
+      </Modal>
     </>
   );
 }

@@ -5,7 +5,7 @@ import type { Transaction } from "@entities/transaction/api";
 import { durationLabel, gatewayLabel } from "@features/purchase/wizard";
 import { formatDateTime, formatMoney } from "@shared/lib/format";
 import { Badge } from "@shared/ui/Badge";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
 import { KpiTile } from "@shared/ui/KpiTile";
@@ -13,12 +13,12 @@ import { KpiTile } from "@shared/ui/KpiTile";
 import { discountParts, hasDiscount } from "./discount";
 import { STATUS_TONE } from "./status-tone";
 
-export function PaymentDetailsSheet({ transaction, onClose }: { transaction: Transaction | null; onClose: () => void }) {
+export function PaymentDetailsDialog({ transaction, onClose }: { transaction: Transaction | null; onClose: () => void }) {
   const { t, i18n } = useTranslation();
   const tx = transaction;
   const discounted = tx !== null && hasDiscount(tx);
   return (
-    <BottomSheet
+    <Modal
       narrow
       cards
       icon={Receipt}
@@ -55,6 +55,6 @@ export function PaymentDetailsSheet({ transaction, onClose }: { transaction: Tra
           </Card>
         </div>
       )}
-    </BottomSheet>
+    </Modal>
   );
 }

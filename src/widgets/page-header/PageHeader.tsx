@@ -1,13 +1,12 @@
 import { ChevronLeft, type LucideIcon } from "lucide-react";
 import { useCallback } from "react";
-import { useTranslation } from "react-i18next";
 import { Link, matchPath, useLocation, useNavigate } from "react-router";
 
 import { isMiniApp, useTelegramBackButton } from "@shared/telegram";
 import { NAV_ITEMS } from "@widgets/app-shell/nav-items";
 import { HeaderSlot } from "@widgets/page-header/HeaderSlot";
-import { ICON_CIRCLE_CLASS } from "@shared/ui/button-class";
 import { Ripple } from "@shared/ui/Ripple";
+import { IconCircle } from "@shared/ui/IconCircle";
 
 // desktop: the capsule's 36px bordered circle, as the panel header's page icon
 const BACK_CLASS =
@@ -16,9 +15,7 @@ const BACK_CLASS =
 /** The page's icon at the start of the desktop header capsule (the panel Header's IconCircle); a phone has none. */
 export function HeaderIcon({ icon: Icon }: { icon: LucideIcon }) {
   return (
-    <span className={`${ICON_CIRCLE_CLASS} text-foreground max-lg:hidden`}>
-      <Icon className="size-4" />
-    </span>
+    <IconCircle icon={Icon} header className="max-lg:hidden" />
   );
 }
 
@@ -35,7 +32,6 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ title, desktopTitle, backTo, onBack, navItem }: PageHeaderProps) {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const goBack = useCallback(() => {
     // replace: a native back that pushed would stack /profile ↔ /profile/payments forever
@@ -53,12 +49,12 @@ export function PageHeader({ title, desktopTitle, backTo, onBack, navItem }: Pag
       {handler &&
         !isMiniApp() &&
         (onBack ? (
-          <button type="button" onClick={onBack} aria-label={t("common.back")} className={backClass}>
+          <button type="button" onClick={onBack} className={backClass}>
             <Ripple />
             <ChevronLeft className="size-5 lg:size-4" />
           </button>
         ) : (
-          <Link to={backTo!} aria-label={t("common.back")} className={backClass}>
+          <Link to={backTo!} className={backClass}>
             <Ripple />
             <ChevronLeft className="size-5 lg:size-4" />
           </Link>

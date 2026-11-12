@@ -110,7 +110,7 @@ export function Confetti() {
 
   if (done) return null;
   return createPortal(
-    <canvas ref={ref} aria-hidden className="pointer-events-none fixed inset-0 z-50 size-full" />,
+    <canvas ref={ref} className="pointer-events-none fixed inset-0 z-50 size-full" />,
     document.body,
   );
 }

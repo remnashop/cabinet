@@ -5,13 +5,13 @@ import { useTranslation } from "react-i18next";
 
 import { revokeOtherSessions } from "@features/auth/api";
 import { getErrorMessage } from "@shared/api/http";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
-import { ConfirmSheet } from "@shared/ui/ConfirmSheet";
+import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
 import { SuccessMessage } from "@shared/ui/SuccessCheck";
 
 /** "Sign out on all other devices?", then the done notice. */
-export function SignOutOthersSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function SignOutOthersDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   const [done, setDone] = useState(false);
   const revoke = useMutation({
@@ -27,7 +27,7 @@ export function SignOutOthersSheet({ open, onClose }: { open: boolean; onClose: 
   };
   return (
     <>
-      <ConfirmSheet
+      <ConfirmDialog
         open={open}
         title={t("signOut.othersTitle")}
         text={t("signOut.othersText")}
@@ -39,12 +39,12 @@ export function SignOutOthersSheet({ open, onClose }: { open: boolean; onClose: 
         error={revoke.isError ? getErrorMessage(revoke.error, t("errors.generic")) : null}
         onClose={close}
       />
-      <BottomSheet narrow bare icon={MonitorX} open={done} onClose={() => setDone(false)} title={t("signOut.others")}>
+      <Modal narrow bare icon={MonitorX} open={done} onClose={() => setDone(false)} title={t("signOut.others")}>
         <SuccessMessage>{t("signOut.othersDone")}</SuccessMessage>
-        <Button variant="outline" size="lg" className="mt-6 w-full" onClick={() => setDone(false)}>
+        <Button variant="glass" size="lg" className="mt-6 w-full" onClick={() => setDone(false)}>
           {t("common.continue")}
         </Button>
-      </BottomSheet>
+      </Modal>
     </>
   );
 }

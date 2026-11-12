@@ -11,7 +11,7 @@ export function SupportButton({ className = "" }: { className?: string }) {
   if (!support.available) return null;
   return (
     <>
-      <Button variant="outline" className={className} onClick={support.open}>
+      <Button variant="glass" className={className} onClick={support.open}>
         <Headset className="size-4" />
         {t("help.contactSupport")}
       </Button>

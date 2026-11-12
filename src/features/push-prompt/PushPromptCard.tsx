@@ -7,7 +7,8 @@ import { detectPushSupport, enablePush } from "@shared/lib/push";
 import { isMiniApp } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
-import { EventIcon, EventList, EventRow } from "@shared/ui/EventList";
+import { EventList, EventRow } from "@shared/ui/EventList";
+import { IconCircle } from "@shared/ui/IconCircle";
 import { FormError } from "@shared/ui/FormError";
 
 import { isPushPromptEligible, recordPushPrompt, wasPushPromptAnswered } from "./push-prompt";
@@ -52,7 +53,7 @@ export function PushPromptCard() {
       <Card round>
         <EventList>
           <EventRow
-            icon={<EventIcon icon={BellRing} />}
+            icon={<IconCircle icon={BellRing} />}
             title={t("pushPrompt.title")}
             caption={t("pushPrompt.text")}
             aside={
@@ -67,7 +68,7 @@ export function PushPromptCard() {
                 >
                   {t("pushPrompt.later")}
                 </Button>
-                <Button variant="accent" size="sm" disabled={phase === "busy"} onClick={() => void enable()}>
+                <Button variant="glassAccent" size="sm" disabled={phase === "busy"} onClick={() => void enable()}>
                   {t("push.enable")}
                 </Button>
               </>

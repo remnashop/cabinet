@@ -29,7 +29,7 @@ export function OAuthButtons({ providers }: { providers: string[] }) {
       {sorted.map((provider) => (
         <Button
           key={provider}
-          variant="outline"
+          variant="glass"
           className="w-full"
           disabled={start.isPending}
           onClick={() => start.mutate(provider)}

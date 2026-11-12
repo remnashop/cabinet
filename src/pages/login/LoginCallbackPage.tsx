@@ -61,7 +61,7 @@ export function LoginCallbackPage() {
       title={t(linking ? "link.failed" : "auth.callbackFailed")}
       text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : null}
     >
-      <ButtonLink to={linking ? "/profile" : "/login"} variant="outline" size="lg" className="w-full">
+      <ButtonLink to={linking ? "/profile" : "/login"} variant="glass" size="lg" className="w-full">
         {t(linking ? "link.toProfile" : "auth.backToLogin")}
       </ButtonLink>
     </FullScreenMessage>

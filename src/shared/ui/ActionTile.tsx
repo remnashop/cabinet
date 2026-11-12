@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Link } from "react-router";
 
 import { useSurface } from "./surface";
-import { useRipple } from "./use-ripple";
+import { Ripple } from "./Ripple";
 
 /**
  * A square-ish action: its icon in a circle over the label, or a figure in its place (value). to: a route, else a
@@ -35,14 +35,13 @@ export function ActionTile({
   className?: string;
   onClick?: () => void;
 }) {
-  const ripple = useRipple();
   const { shape, fill } = useSurface(round);
   const classes = `relative flex min-h-[95.5px] flex-col items-center justify-center gap-1.5 ${shape} px-2 py-4 text-center text-sm font-medium leading-tight transition-colors disabled:pointer-events-none disabled:opacity-50 ${
     main ? "border border-primary/45 bg-primary/10 hover:bg-primary/15" : `${fill} hover:bg-white/[0.06]`
   } ${className}`;
   const content = (
     <>
-      {ripple.ripples}
+      <Ripple />
       {value !== undefined ? (
         // the icon circle's 34px line: a figure tile stands as tall as an icon one
         <span className="flex h-[34px] items-center text-2xl font-bold tabular-nums tracking-tight">{value}</span>
@@ -68,7 +67,7 @@ export function ActionTile({
     </>
   );
   return to ? (
-    <Link to={to} onClick={onClick} onPointerDown={ripple.onPointerDown} className={classes}>
+    <Link to={to} onClick={onClick} className={classes}>
       {content}
     </Link>
   ) : (
@@ -76,7 +75,6 @@ export function ActionTile({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      onPointerDown={ripple.onPointerDown}
       className={classes}
     >
       {content}

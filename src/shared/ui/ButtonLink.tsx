@@ -4,7 +4,7 @@ import { Link } from "react-router";
 
 
 import { buttonClass, type ButtonSize, type ButtonVariant } from "./button-class";
-import { useRipple } from "./use-ripple";
+import { Ripple } from "./Ripple";
 
 const MotionLink = motion.create(Link);
 
@@ -35,15 +35,13 @@ export function ButtonLink({
   onClick?: () => void;
   children: ReactNode;
 }) {
-  const ripple = useRipple();
   const props = {
     onClick,
-    onPointerDown: ripple.onPointerDown,
     className: `${buttonClass(variant, size)} ${className}`,
   };
   const content = (
     <>
-      {ripple.ripples}
+      <Ripple />
       {children}
     </>
   );

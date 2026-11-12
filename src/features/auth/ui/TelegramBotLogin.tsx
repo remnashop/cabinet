@@ -36,7 +36,7 @@ export function TelegramBotLogin() {
 
   return (
     <div className="flex w-full flex-col gap-2">
-      <Button variant="outline" className="w-full" disabled={request.isPending} onClick={() => request.mutate()}>
+      <Button variant="glass" className="w-full" disabled={request.isPending} onClick={() => request.mutate()}>
         {PROVIDER_ICONS.telegram}
         {t("auth.botLogin")}
       </Button>

@@ -16,6 +16,7 @@ import { Button } from "@shared/ui/Button";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { FormError } from "@shared/ui/FormError";
 import { Spinner } from "@shared/ui/Spinner";
+import { LabeledDivider } from "@shared/ui/LabeledDivider";
 import { FullScreen } from "@widgets/full-screen/FullScreen";
 
 // In a Mini App the session normally starts on the splash; this screen shows
@@ -30,7 +31,7 @@ function MiniAppLogin({ heading }: { heading: ReactNode }) {
   return (
     <>
       {heading}
-      <Button variant="solid" className="w-full" disabled={login.isPending} onClick={() => login.mutate()}>
+      <Button variant="glassSolid" className="w-full" disabled={login.isPending} onClick={() => login.mutate()}>
         {t("auth.telegram")}
       </Button>
       {login.isError && <FormError>{getErrorMessage(login.error, t("errors.generic"))}</FormError>}
@@ -63,9 +64,9 @@ function BrowserLogin({ heading }: { heading: ReactNode }) {
             <h1 className="text-xl font-bold tracking-tight">{t("auth.miniAppOnly")}</h1>
             <p className="mt-2.5 text-sm text-muted-foreground">{t("auth.miniAppOnlyHint")}</p>
           </div>
-          <Button variant="solid" className="w-full" onClick={() => openExternal(`https://t.me/${bot_username}`)}>
+          <Button variant="glassSolid" className="w-full" onClick={() => openExternal(`https://t.me/${bot_username}`)}>
             {/* the plane alone, in the button's text color */}
-            <svg viewBox="0 0 24 24" className="size-4.5" fill="currentColor" aria-hidden>
+            <svg viewBox="0 0 24 24" className="size-4.5" fill="currentColor">
               <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
             </svg>
             {t("auth.openBot")}
@@ -92,11 +93,7 @@ function BrowserLogin({ heading }: { heading: ReactNode }) {
         </div>
       )}
       {(oauth.length > 0 || telegram_deeplink) && email && (
-        <div className="flex w-full items-center gap-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          <span className="h-px flex-1 bg-border" />
-          {t("auth.or")}
-          <span className="h-px flex-1 bg-border" />
-        </div>
+        <LabeledDivider className="w-full">{t("auth.or")}</LabeledDivider>
       )}
       {email && <EmailLogin captcha={captcha ?? null} />}
       {/* what signing in accepts: under the ways in, gone with them */}

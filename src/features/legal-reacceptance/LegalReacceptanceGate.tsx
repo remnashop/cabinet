@@ -13,7 +13,7 @@ import {
 import { logout } from "@features/auth/logout";
 import { getErrorMessage } from "@shared/api/http";
 import { formatDate } from "@shared/lib/format";
-import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
+import { Modal, DialogFooter } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
@@ -48,7 +48,7 @@ export function LegalReacceptanceGate() {
 
   return (
     <>
-      <BottomSheet
+      <Modal
         narrow
         fullScreen
         icon={FileText}
@@ -75,7 +75,7 @@ export function LegalReacceptanceGate() {
           </Card>
           {error && <FormError>{error}</FormError>}
         </div>
-        <SheetFooter>
+        <DialogFooter>
           {/* the Mini App would sign straight back in and land here again: no sign-out there */}
           {!isMiniApp() && (
             <Button variant="glass" onClick={() => void logout().then(() => queryClient.clear())}>
@@ -85,8 +85,8 @@ export function LegalReacceptanceGate() {
           <Button variant="glassAccent" disabled={busy} onClick={() => void accept()}>
             {t("legal.reaccept.accept")}
           </Button>
-        </SheetFooter>
-      </BottomSheet>
+        </DialogFooter>
+      </Modal>
       <LegalDocumentDialog document={open} onClose={() => setOpen(null)} />
     </>
   );

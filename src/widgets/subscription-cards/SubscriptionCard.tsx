@@ -225,7 +225,7 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
           </span>
         )}
       </div>
-      {link && <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground" aria-hidden />}
+      {link && <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground" />}
     </>
   );
 
@@ -269,8 +269,7 @@ function Pill({
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el || !short || abbreviated) return;
-    // the screen-reader copy is clipped to 1px by design
-    const cut = (node: Element) => !node.classList.contains("sr-only") && node.scrollWidth > node.clientWidth;
+    const cut = (node: Element) => node.scrollWidth > node.clientWidth;
     if (cut(el) || [...el.children].some(cut)) setAbbreviated(true);
   }, [abbreviated, short, value]);
   return (
@@ -278,9 +277,7 @@ function Pill({
       ref={ref}
       className="flex min-w-0 flex-1 items-center justify-between gap-1.5 rounded-full bg-black/[0.22] px-[clamp(12px,3.7cqw,18px)] py-[clamp(6px,1.9cqw,9px)] text-[length:clamp(12px,3.7cqw,16px)] lg:px-3 lg:py-1.5 lg:text-xs"
     >
-      <Icon className="size-[clamp(14px,4.35cqw,19px)] shrink-0 text-muted-foreground lg:size-3.5 @min-[290px]/row:hidden" aria-hidden />
-      {/* not-sr-only would undo truncate, so the word and its screen-reader copy are two spans */}
-      <span className="sr-only @min-[290px]/row:hidden">{label}</span>
+      <Icon className="size-[clamp(14px,4.35cqw,19px)] shrink-0 text-muted-foreground lg:size-3.5 @min-[290px]/row:hidden" />
       <span className="hidden truncate text-muted-foreground @min-[290px]/row:block">{label}</span>
       <span className={`shrink-0 font-bold ${tone}`}>{abbreviated && short ? short : value}</span>
     </span>

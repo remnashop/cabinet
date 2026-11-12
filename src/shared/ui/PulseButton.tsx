@@ -5,7 +5,7 @@ import { haptic } from "@shared/telegram";
 
 import { Button } from "./Button";
 import { buttonClass } from "./button-class";
-import { useRipple } from "./use-ripple";
+import { Ripple } from "./Ripple";
 
 /**
  * The one action to take: a solid lg button whose glow flares and fades (animate-glow-pulse, on a wrapper: the
@@ -24,22 +24,21 @@ export function PulseButton({
   className?: string;
   children: ReactNode;
 }) {
-  const ripple = useRipple();
-  const linkProps = { onClick: () => haptic(), onPointerDown: ripple.onPointerDown, className: buttonClass("solid", "lg") };
+  const linkProps = { onClick: () => haptic(), className: buttonClass("glassSolid", "lg") };
   return (
     <div className={`flex flex-col rounded-full motion-safe:animate-glow-pulse ${className}`}>
       {to ? (
         <Link to={to} {...linkProps}>
-          {ripple.ripples}
+          <Ripple />
           {children}
         </Link>
       ) : href ? (
         <a href={href} {...linkProps}>
-          {ripple.ripples}
+          <Ripple />
           {children}
         </a>
       ) : (
-        <Button variant="solid" size="lg" onClick={onClick}>
+        <Button variant="glassSolid" size="lg" onClick={onClick}>
           {children}
         </Button>
       )}

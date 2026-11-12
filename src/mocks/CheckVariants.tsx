@@ -1,7 +1,7 @@
 import { TriangleAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
 import { SuccessCheck } from "@shared/ui/SuccessCheck";
 
@@ -16,7 +16,7 @@ const BANG = "M12 4.5v10M12 19.5h.01";
 
 // "!" is two short strokes: thicker, or it reads thinner than the check and the cross
 const Mark = ({ d, size = 32, stroke = d === BANG ? 3 : 2.25 }: { d: string; size?: number; stroke?: number }) => (
-  <svg className="cv-mark" viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth={stroke} aria-hidden>
+  <svg className="cv-mark" viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth={stroke}>
     {/* pathLength 1: the dash animation draws it whatever the path's real length */}
     <path d={d} pathLength={1} strokeLinecap="round" strokeLinejoin="round" />
   </svg>
@@ -47,7 +47,7 @@ const solid = (d: string): Variant[1] => () => (
 );
 const ring = (d: string): Variant[1] => () => (
   <>
-    <svg className="cv-ring" viewBox="0 0 100 100" width={76} height={76} aria-hidden>
+    <svg className="cv-ring" viewBox="0 0 100 100" width={76} height={76}>
       <circle cx={50} cy={50} r={46} fill="var(--soft)" stroke="currentColor" strokeWidth={2.5} pathLength={1} />
     </svg>
     <span className="cv-after-ring relative">
@@ -188,7 +188,7 @@ export function CheckVariants({ onDone }: { onDone: () => void }) {
 
   return (
     <>
-      <BottomSheet bare open={picked !== null} onClose={close} title={title}>
+      <Modal bare open={picked !== null} onClose={close} title={title}>
         {picked !== null && (
           <div key={run} className="flex flex-col items-center gap-4 text-center">
             <div className={`cv-art cv-${tone}`}>{variants[picked][1]()}</div>
@@ -200,12 +200,12 @@ export function CheckVariants({ onDone }: { onDone: () => void }) {
         )}
         <div className="mt-6 flex flex-col gap-2">
           {buttons.map((label, i) => (
-            <Button key={label} variant={buttons.length > 1 && i === 0 ? "solid" : "outline"} size="lg" className="w-full" onClick={close}>
+            <Button key={label} variant={buttons.length > 1 && i === 0 ? "glassSolid" : "glass"} size="lg" className="w-full" onClick={close}>
               {label}
             </Button>
           ))}
         </div>
-      </BottomSheet>
+      </Modal>
       <div className="fixed inset-x-0 bottom-[calc(16px+var(--safe-bottom,0px))] z-50 flex justify-center px-4">
         <div className="flex max-w-full flex-col gap-2 rounded-2xl border border-white/[0.14] bg-popover/90 p-2.5 backdrop-blur-2xl">
           <div className="flex items-center justify-between gap-3 px-1 text-xs">
@@ -236,7 +236,6 @@ export function CheckVariants({ onDone }: { onDone: () => void }) {
               <button
                 key={name}
                 type="button"
-                aria-label={name}
                 onClick={() => pick(i)}
                 className={`flex size-9 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${pill(picked === i)}`}
               >

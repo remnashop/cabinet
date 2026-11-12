@@ -17,7 +17,8 @@ import { ActionTile } from "@shared/ui/ActionTile";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { ErrorCard } from "@shared/ui/ErrorCard";
-import { EventIcon, EventList, EventRow } from "@shared/ui/EventList";
+import { EventList, EventRow } from "@shared/ui/EventList";
+import { IconCircle } from "@shared/ui/IconCircle";
 import { FormError } from "@shared/ui/FormError";
 import { Skeleton } from "@shared/ui/Skeleton";
 
@@ -97,7 +98,7 @@ function IdentityRows({ actions }: { actions: ProfileActions }) {
       {data.rows.map(({ identity, action }) => (
         <EventRow
           key={identity.kind}
-          icon={<EventIcon glyph={KIND_ICON[identity.kind]} />}
+          icon={<IconCircle glyph={KIND_ICON[identity.kind]} />}
           title={t(`profile.kinds.${identity.kind}`)}
           caption={identity.linked ? identity.label : t("profile.notLinked")}
           aside={<IdentityAction identity={identity} action={action} onConnect={actions.onConnect} />}
@@ -160,11 +161,11 @@ export function ProfileBlocks({ me, actions, linkError }: { me: Me; actions: Pro
           {/* the panel's Sessions, set off from the accounts by a line, as its SectionRows divided */}
           <EventList className="mt-2 border-t border-white/[0.08] pt-2">
             <EventRow
-              icon={<EventIcon icon={MonitorX} />}
+              icon={<IconCircle icon={MonitorX} />}
               title={t("signOut.sessionsTitle")}
               caption={t("signOut.sessionsCaption")}
               aside={
-                <Button variant="danger" size="sm" onClick={actions.onSignOutOthers}>
+                <Button variant="glassDanger" size="sm" onClick={actions.onSignOutOthers}>
                   {t("common.logout")}
                 </Button>
               }

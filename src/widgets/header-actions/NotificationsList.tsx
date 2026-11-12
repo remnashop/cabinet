@@ -27,7 +27,8 @@ import { useNavigate } from "react-router";
 import { useClearNotifications, type NotificationFeed } from "@entities/notification/api";
 import { formatRelative } from "@shared/lib/format";
 import { ErrorCard } from "@shared/ui/ErrorCard";
-import { EventIcon, EventList, EventListEmpty, EventRow } from "@shared/ui/EventList";
+import { EventList, EventListEmpty, EventRow } from "@shared/ui/EventList";
+import { IconCircle } from "@shared/ui/IconCircle";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { DialogContext } from "@shared/ui/surface";
 
@@ -114,7 +115,7 @@ export function NotificationsList({
         {data.items.map((item) => (
           <EventRow
             key={item.id}
-            icon={<EventIcon {...(ICONS[item.event_type] ?? { icon: Bell })} />}
+            icon={<IconCircle {...(ICONS[item.event_type] ?? { icon: Bell })} />}
             title={item.title}
             caption={item.body}
             wrap

@@ -2,11 +2,13 @@ import { CalendarDays, CreditCard, Package, Percent } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Badge, type BadgeTone } from "@shared/ui/Badge";
+import { Button, type ButtonVariant } from "@shared/ui/Button";
+import type { ButtonSize } from "@shared/ui/button-class";
 import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
 import { KpiTile } from "@shared/ui/KpiTile";
 import { DialogContext } from "@shared/ui/surface";
-import { TextInput } from "@shared/ui/TextInput";
+import { Input } from "@shared/ui/Input";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 
 // Dev-only (import.meta.env.DEV): the shared primitives, live, to check them against the panel's /dashboard/debug.
@@ -30,7 +32,7 @@ function Section({ title, note, children }: { title: string; note: string; child
   );
 }
 
-// a dialog's 12px-plate look, as PaymentDetailsSheet's body
+// a dialog's 12px-plate look, as PaymentDetailsDialog's body
 function DialogBody({ children }: { children: ReactNode }) {
   return (
     <DialogContext.Provider value={true}>
@@ -39,10 +41,52 @@ function DialogBody({ children }: { children: ReactNode }) {
   );
 }
 
+const VARIANTS: [ButtonVariant, string][] = [
+  ["glass", "второстепенное действие, отмена"],
+  ["glassAccent", "действие в футере окна или формы"],
+  ["glassSolid", "главное действие экрана"],
+  ["glassDanger", "разрушительное действие"],
+  ["secondary", "кнопка рядом с полем"],
+];
+
+const SIZES: [ButtonSize, string][] = [
+  ["sm", "Отмена"],
+  ["md", "Продлить"],
+  ["field", "Применить"],
+  ["lg", "Оплатить"],
+];
+
 export function DebugPage() {
   return (
     <>
       <PageHeader title="Дебаг: компоненты" />
+
+      <Section
+        title="Кнопки"
+        note="Варианты как в панели, 14px. Размеры: sm 32px (строка списка), md 36px, field 38px (рядом с полем), lg 64px (полноэкранный шаг, 16px semibold)."
+      >
+        {VARIANTS.map(([variant, use]) => (
+          <div
+            key={variant}
+            className="grid gap-3 border-t border-white/[0.08] pt-3 first:border-0 first:pt-0 md:grid-cols-[220px_1fr] md:items-center"
+          >
+            <div>
+              <span className="font-mono text-xs">{variant}</span>
+              <div className="text-xs text-muted-foreground">{use}</div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {SIZES.map(([size, label]) => (
+                <Button key={size} variant={variant} size={size} className={size === "lg" ? "w-40" : ""}>
+                  {label}
+                </Button>
+              ))}
+              <Button variant={variant} disabled>
+                Выключена
+              </Button>
+            </div>
+          </div>
+        ))}
+      </Section>
 
       <Section title="Badge" note="Без рамки, заливка тона; 12px uppercase.">
         <div className="flex flex-wrap gap-2">
@@ -82,11 +126,11 @@ export function DebugPage() {
         note="14px от края, выключенное 40%. Последнее — автозаполнение: кликни и выбери сохранённый адрес, поле должно остаться тёмным."
       >
         <div className="flex max-w-sm flex-col gap-2">
-          <TextInput placeholder="Промокод" />
-          <TextInput defaultValue="SUMMER-2026" />
-          <TextInput disabled defaultValue="Недоступно" />
+          <Input placeholder="Промокод" />
+          <Input defaultValue="SUMMER-2026" />
+          <Input disabled defaultValue="Недоступно" />
           <form onSubmit={(e) => e.preventDefault()}>
-            <TextInput className="w-full" type="email" name="email" autoComplete="email" placeholder="you@example.com" />
+            <Input className="w-full" type="email" name="email" autoComplete="email" placeholder="you@example.com" />
           </form>
         </div>
       </Section>

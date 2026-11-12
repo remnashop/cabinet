@@ -30,15 +30,16 @@ it("the account menu signs out, once confirmed", async () => {
       </QueryClientProvider>,
     ),
   );
-  const button = (text: string) =>
-    [...document.body.querySelectorAll("button")].find((b) => b.getAttribute("aria-label") === text || b.textContent === text);
+  const button = (text: string) => [...document.body.querySelectorAll("button")].find((b) => b.textContent === text);
+  // the account button is the one with the chevron
+  const account = () => document.body.querySelector(".lucide-chevron-down")!.closest("button")!;
 
   expect(button(i18n.t("common.logout"))).toBeUndefined();
-  await act(async () => button(i18n.t("header.account"))!.click());
+  await act(async () => account().click());
   await act(async () => button(i18n.t("common.logout"))!.click());
   // the menu item only asks
   expect(logout).not.toHaveBeenCalled();
-  const confirm = [...document.body.querySelectorAll("[role=dialog] button")].find(
+  const confirm = [...document.body.querySelectorAll("[data-dialog] button")].find(
     (b) => b.textContent === i18n.t("common.logout"),
   ) as HTMLButtonElement;
   await act(async () => confirm.click());
@@ -74,7 +75,7 @@ it("opening the bell marks the feed read once and the counter goes", async () =>
       </QueryClientProvider>,
     ),
   );
-  const bell = () => document.body.querySelector(`[aria-label="${i18n.t("header.notifications")}"]`) as HTMLButtonElement;
+  const bell = () => document.body.querySelector(".lucide-bell")!.closest("button")!;
   await vi.waitFor(() => expect(bell().textContent).toBe("2"));
 
   await act(async () => bell().click());

@@ -81,8 +81,6 @@ export function DebugPanel() {
     createPortal(
       <button
         type="button"
-        aria-label="Моки"
-        aria-expanded={open}
         onClick={() => setOpen((shown) => !shown)}
         // as the bell beside it: glass-panel on a phone, a plain capsule item on desktop
         className={`flex size-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/[0.06] hover:text-foreground max-lg:glass-panel ${
@@ -115,7 +113,7 @@ export function DebugPanel() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-wide">Моки</span>
-                <button type="button" aria-label="Закрыть" onClick={() => setOpen(false)} className="text-muted-foreground">
+                <button type="button" onClick={() => setOpen(false)} className="text-muted-foreground">
                   <X className="size-4" />
                 </button>
               </div>
@@ -167,7 +165,6 @@ export function DebugPanel() {
         {!open && !slot && (
           <button
             type="button"
-            aria-label="Моки"
             onClick={() => setOpen(true)}
             className="flex size-10 items-center justify-center rounded-full border border-white/[0.14] bg-popover/80 text-muted-foreground backdrop-blur-2xl hover:text-foreground"
           >

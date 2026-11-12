@@ -13,7 +13,6 @@ function icon(d: string) {
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden="true"
       {...props}
     >
       <path d={d} />
@@ -41,7 +40,7 @@ export const DevicesIcon = icon(
 function filledIcon(d: string) {
   // a fill has no line: strokeWidth from the caller changes nothing
   return (props: IconProps) => (
-    <svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" {...props}>
+    <svg viewBox="0 0 256 256" fill="currentColor" {...props}>
       <path d={d} />
     </svg>
   );

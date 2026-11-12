@@ -13,11 +13,9 @@ import { FADE_IN, FADE_OUT } from "@shared/lib/motion";
 import { onServiceWorkerMessage } from "@shared/lib/push";
 import { isMiniApp } from "@shared/telegram";
 import { Avatar } from "@shared/ui/Avatar";
-import { GLASS } from "@shared/ui/BottomSheet";
 import { MotionLink } from "@shared/ui/MotionLink";
-import { useRipple } from "@shared/ui/use-ripple";
 import { FormError } from "@shared/ui/FormError";
-import { SignOutSheet } from "@widgets/app-shell/SignOutSheet";
+import { SignOutDialog } from "@widgets/app-shell/SignOutDialog";
 import { useSupport } from "@widgets/support/use-support";
 
 import { NotificationsList } from "./NotificationsList";
@@ -27,7 +25,7 @@ const MAX_BADGE = 9;
 
 
 // the panel's header popover: glass, grows out of its top-right corner toward the trigger
-const POPOVER = `fixed z-[60] origin-top-right rounded-popover p-1.5 ${GLASS}`;
+const POPOVER = "fixed z-[60] origin-top-right rounded-popover p-1.5 glass-dialog";
 const POPOVER_MOTION = {
   initial: { opacity: 0, scale: 0.85 },
   animate: { opacity: 1, scale: 1, transition: FADE_IN },
@@ -86,8 +84,6 @@ export function HeaderActions() {
   const bellRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const changeLanguage = useChangeLanguage(() => setOpen(null));
-  const languageRipple = useRipple();
-  const bellRipple = useRipple();
   const client = useQueryClient();
   const feed = useNotificationsQuery();
   const markRead = useMarkNotificationsRead();
@@ -148,20 +144,17 @@ export function HeaderActions() {
           button beneath by accident (its trigger included: a second press on the bell closes it the same way) */}
       {open &&
         createPortal(
-          <div aria-hidden className="fixed inset-0 z-[59]" onClick={() => setOpen(null)} />,
+          <div className="fixed inset-0 z-[59]" onClick={() => setOpen(null)} />,
           document.body,
         )}
       {/* a phone changes the language in the profile */}
       <div ref={languageRef} className="relative hidden lg:block">
         <motion.button
           type="button"
-          aria-label={t("header.language")}
-          aria-expanded={open === "language"}
           onClick={() => toggle("language")}
-          onPointerDown={languageRipple.onPointerDown}
           className="relative flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
         >
-          {languageRipple.ripples}
+          <Ripple />
           <Languages className="size-4 shrink-0" />
           {/* the language's own name, as the menu lists it */}
           {LANGUAGE_NAMES[current]}
@@ -198,14 +191,11 @@ export function HeaderActions() {
       <div ref={bellRef}>
         <motion.button
           type="button"
-          aria-label={t("header.notifications")}
-          aria-expanded={open === "bell"}
           onClick={() => toggle("bell")}
-          onPointerDown={bellRipple.onPointerDown}
           // a phone: its own glass-panel circle (the panel's IconButton tone="panel"); desktop: a plain item of the capsule
           className="relative flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground max-lg:glass-panel"
         >
-          {bellRipple.ripples}
+          <Ripple />
           <Bell className="size-4" />
           {unread > 0 && (
             <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold leading-none tabular-nums text-primary-foreground">
@@ -228,8 +218,6 @@ export function HeaderActions() {
       <div ref={userRef} className="hidden lg:block">
         <motion.button
           type="button"
-          aria-label={t("header.account")}
-          aria-expanded={open === "user"}
           onClick={() => toggle("user")}
           className="group relative isolate flex h-9 items-center gap-2.5 rounded-full pl-0.5 pr-2.5"
         >
@@ -266,7 +254,7 @@ export function HeaderActions() {
           )}
         </HeaderPopover>
       </div>
-      <SignOutSheet open={signOutOpen} onClose={() => setSignOutOpen(false)} />
+      <SignOutDialog open={signOutOpen} onClose={() => setSignOutOpen(false)} />
       {support.dialog}
     </div>
   );

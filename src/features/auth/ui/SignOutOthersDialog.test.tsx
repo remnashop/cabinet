@@ -6,7 +6,7 @@ import { expect, it, vi } from "vitest";
 
 import i18n from "@shared/i18n";
 
-import { SignOutOthersSheet } from "./SignOutOthersSheet";
+import { SignOutOthersDialog } from "./SignOutOthersDialog";
 import { useSignOutOthersLink } from "./use-sign-out-others-link";
 
 const revoke = vi.hoisted(() => vi.fn(async () => null));
@@ -21,7 +21,7 @@ function Page() {
   return (
     <>
       <b id="loc">{pathname + search}</b>
-      <SignOutOthersSheet open={open} onClose={() => setOpen(false)} />
+      <SignOutOthersDialog open={open} onClose={() => setOpen(false)} />
     </>
   );
 }

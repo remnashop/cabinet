@@ -87,7 +87,6 @@ function FooterButton({
       type="button"
       onClick={onClick}
       {...hintProps(label, onHint)}
-      aria-label={label}
       className={PILL}
     >
       <Ripple />
@@ -113,8 +112,6 @@ function NavItemLink({
       to={to}
       {...hintProps(label, onHint)}
       // the rail hides the label (display: none), so the link names itself
-      aria-label={label}
-      aria-current={isActive ? "page" : undefined}
       className={isActive ? `isolate ${PILL_SHAPE} font-semibold text-primary` : PILL}
     >
       {/* one layoutId, so the highlight glides between rows instead of jumping */}
@@ -168,7 +165,6 @@ export function Sidebar() {
         <div className="hidden xl:block xl:group-data-expanded/sidebar:pt-1.5">
           <motion.button
             type="button"
-            aria-label={t(collapsed ? "sidebar.expand" : "sidebar.collapse")}
             onClick={toggleSidebarCollapsed}
             className="relative flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
           >

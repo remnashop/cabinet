@@ -1,15 +1,14 @@
 import { X, type LucideIcon } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
 
 import { EASE_SOFT, FADE_IN, FADE_OUT } from "@shared/lib/motion";
 import { useTelegramBackButton } from "@shared/telegram";
 import { DialogContext } from "@shared/ui/surface";
 import { Ripple } from "@shared/ui/Ripple";
 
-interface BottomSheetProps {
+interface ModalProps {
   open: boolean;
   /** none: the sheet can't be dismissed (no close button, Esc, backdrop or back button), only answered */
   onClose?: () => void;
@@ -25,7 +24,7 @@ interface BottomSheetProps {
   iconTone?: keyof typeof ICON_TONE;
   /** over the whole screen, sidebar included, as the legal re-acceptance; otherwise inside the app frame */
   fullScreen?: boolean;
-  /** no panel: the content stands on the blurred backdrop, as a success screen; the title only names it for readers */
+  /** no panel: the content stands on the blurred backdrop, as a success screen; the title isn't shown */
   bare?: boolean;
   /** the body is plates only (Card, KpiTile, OptionRow...): 12px in, concentric with their 12px corners and the 24px
    *  of the dialog; text and forms keep 16px */
@@ -40,16 +39,13 @@ const ICON_TONE = {
   danger: "border-error/30 bg-error/10 text-error",
 } as const;
 
-/** The panel's glass dialog material: a dialog, a popover. Shape and padding are the caller's. */
-export const GLASS = "glass-dialog";
-
 // undefined: not in a sheet; null: in one whose strip hasn't mounted yet
 const FooterContext = createContext<HTMLElement | null | undefined>(undefined);
 
 /** The panel's dialog footer: a strip under a line, its buttons on the right (Button glass, then glassAccent or
  *  glassDanger). Rendered by the body, so the buttons keep its state; they land outside its DOM, so a form's submit
  *  button names its form (`form` attribute) for Enter to keep working. */
-export function SheetFooter({ children }: { children: ReactNode }) {
+export function DialogFooter({ children }: { children: ReactNode }) {
   const el = useContext(FooterContext);
   // outside a sheet (a body rendered on its own) the buttons stay in place
   if (el === undefined) return children;
@@ -91,7 +87,7 @@ const FOCUSABLE =
   "a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled])";
 
 /** The dashboard's centered modal on every screen, a header with a close button. Closes on backdrop, Esc and the Mini App back button. */
-export function BottomSheet({
+export function Modal({
   open,
   onClose,
   title,
@@ -104,11 +100,9 @@ export function BottomSheet({
   bare,
   cards,
   view = "panel",
-}: BottomSheetProps) {
-  const { t } = useTranslation();
+}: ModalProps) {
   const reduced = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
-  const titleId = useId();
   const [footerEl, setFooterEl] = useState<HTMLDivElement | null>(null);
   // a stable identity: an inline onClose would re-subscribe the back button (show/hide flicker) every render
   const onCloseRef = useRef(onClose);
@@ -179,9 +173,6 @@ export function BottomSheet({
             <motion.div
               key="bare"
               ref={setPanel}
-              role="dialog"
-              aria-modal="true"
-              aria-label={title}
               tabIndex={-1}
               onClick={(event) => event.stopPropagation()}
               onKeyDown={onKeyDown}
@@ -197,16 +188,13 @@ export function BottomSheet({
             key={view}
             ref={setPanel}
             data-dialog
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={titleId}
             tabIndex={-1}
             onClick={(event) => event.stopPropagation()}
             onKeyDown={onKeyDown}
             initial={reduced ? false : { opacity: 0, scale: 0.94, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0, transition: FADE_IN }}
             exit={reduced ? { opacity: 0, transition: FADE_OUT } : { opacity: 0, scale: 0.94, y: 8, transition: FADE_OUT }}
-            className={`flex max-h-[calc(var(--tg-viewport-stable-height,100dvh)*0.85)] w-full ${narrow ? "max-w-sm" : "max-w-2xl"} flex-col rounded-dialog outline-none ${GLASS}`}
+            className={`flex max-h-[calc(var(--tg-viewport-stable-height,100dvh)*0.85)] w-full ${narrow ? "max-w-sm" : "max-w-2xl"} flex-col rounded-dialog outline-none glass-dialog`}
           >
             <div className="flex shrink-0 items-center gap-3 border-b border-white/[0.08] p-4">
               {(Icon || glyph) && (
@@ -214,14 +202,13 @@ export function BottomSheet({
                   {Icon ? <Icon className="size-4" /> : glyph}
                 </div>
               )}
-              <h2 id={titleId} className="min-w-0 flex-1 truncate text-base font-semibold tracking-tight text-foreground">
+              <h2 className="min-w-0 flex-1 truncate text-base font-semibold tracking-tight text-foreground">
                 {title}
               </h2>
               {onClose && (
                 <button
                   type="button"
                   onClick={onClose}
-                  aria-label={t("common.close")}
                   // 36px like the header circle, no edge or fill of its own: the panel DialogHeader's IconButton
                   className="relative flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
                 >
@@ -235,7 +222,7 @@ export function BottomSheet({
                 <FooterContext.Provider value={footerEl}>{children}</FooterContext.Provider>
               </DialogContext.Provider>
             </div>
-            {/* SheetFooter's buttons land here; empty, the strip is gone */}
+            {/* DialogFooter's buttons land here; empty, the strip is gone */}
             <div ref={setFooterEl} className="flex shrink-0 justify-end gap-2 border-t border-white/[0.08] p-4 empty:hidden" />
           </motion.div>
           )}

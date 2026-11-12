@@ -8,13 +8,14 @@ import { durationLabel, gatewayLabel } from "@features/purchase/wizard";
 import { currencySymbol, formatDate, formatMoney } from "@shared/lib/format";
 import { Card } from "@shared/ui/Card";
 import { ErrorCard } from "@shared/ui/ErrorCard";
-import { EventIcon, EventList, EventRow } from "@shared/ui/EventList";
-import { LoadMore } from "@shared/ui/LoadMore";
+import { EventList, EventRow } from "@shared/ui/EventList";
+import { IconCircle } from "@shared/ui/IconCircle";
+import { LoadMoreButton } from "@shared/ui/LoadMoreButton";
 import { PageEmpty } from "@shared/ui/PageEmpty";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 
-import { PaymentDetailsSheet } from "./PaymentDetailsSheet";
+import { PaymentDetailsDialog } from "./PaymentDetailsDialog";
 import { hasDiscount } from "./discount";
 import { STATUS_ICON_TONE } from "./status-tone";
 
@@ -78,7 +79,7 @@ export function PaymentsPage() {
             <EventRow
               key={tx.id}
               onClick={() => setSelected(tx)}
-              icon={<EventIcon glyph={currencySymbol(tx.currency)} tone={STATUS_ICON_TONE[tx.status]} />}
+              icon={<IconCircle glyph={currencySymbol(tx.currency)} tone={STATUS_ICON_TONE[tx.status]} />}
               title={`${tx.plan_name} · ${durationLabel(tx.duration_days, t)}`}
               caption={
                 <>
@@ -94,16 +95,14 @@ export function PaymentsPage() {
                     </s>
                   )}
                   {formatMoney(tx.final_price, tx.currency, i18n.language)}
-                  {/* the circle's colour says it on screen */}
-                  <span className="sr-only">{t(`payments.statuses.${tx.status}`)}</span>
                 </>
               }
             />
           ))}
         </EventList>
       </Card>
-      <LoadMore query={query} />
-      <PaymentDetailsSheet transaction={selected} onClose={() => setSelected(null)} />
+      <LoadMoreButton query={query} />
+      <PaymentDetailsDialog transaction={selected} onClose={() => setSelected(null)} />
     </>
   );
 }

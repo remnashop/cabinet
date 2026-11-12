@@ -8,15 +8,15 @@ import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { ApiError, getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
 import { AlertMark } from "@shared/ui/AlertMark";
-import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
+import { Modal, DialogFooter } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
 import { ButtonLink } from "@shared/ui/ButtonLink";
-import { TextInput } from "@shared/ui/TextInput";
+import { Input } from "@shared/ui/Input";
 import { ErrorCard } from "@shared/ui/ErrorCard";
-import { RippleButton } from "@shared/ui/RippleButton";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { SuccessMessage } from "@shared/ui/SuccessCheck";
 import { FormError } from "@shared/ui/FormError";
+import { Ripple } from "@shared/ui/Ripple";
 import { rewardText } from "@widgets/promo/reward-text";
 import { SubscriptionCard } from "@widgets/subscription-cards/SubscriptionCard";
 
@@ -78,7 +78,7 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
     body = (
       <>
         <SuccessMessage hint={rewardText(result)}>{t("promo.success")}</SuccessMessage>
-        <Button variant="outline" size="lg" className="mt-6 w-full" onClick={close}>
+        <Button variant="glass" size="lg" className="mt-6 w-full" onClick={close}>
           {t("common.continue")}
         </Button>
       </>
@@ -91,14 +91,14 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
           <AlertMark tone="warning" />
           <p className="text-sm text-foreground/80">{t("promo.noTargetTitle")}</p>
         </div>
-        <SheetFooter>
+        <DialogFooter>
           <Button variant="glass" onClick={cancelPick}>
             {t("common.cancel")}
           </Button>
           <ButtonLink to="/purchase" onClick={close} variant="glassAccent">
             {t("home.buy")}
           </ButtonLink>
-        </SheetFooter>
+        </DialogFooter>
       </>
     );
   } else if (picking) {
@@ -117,22 +117,23 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
           )}
           {!targets && !listError && <Skeleton corners="rounded-subscription" className="aspect-[2.6] w-full" />}
           {targets?.map((sub) => (
-            <RippleButton
+            <button
               key={sub.id}
               type="button"
               disabled={activation.isPending}
-              className="relative rounded-home text-left disabled:opacity-50"
+              className="relative rounded-card text-left disabled:opacity-50"
               onClick={() => submit(sub.id)}
             >
               <SubscriptionCard sub={sub} compact />
-            </RippleButton>
+              <Ripple />
+            </button>
           ))}
         </div>
-        <SheetFooter>
+        <DialogFooter>
           <Button variant="glass" onClick={cancelPick}>
             {t("common.cancel")}
           </Button>
-        </SheetFooter>
+        </DialogFooter>
       </>
     );
   } else {
@@ -142,7 +143,7 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
     };
     body = (
       <form id={formId} onSubmit={onSubmit} className="flex flex-col gap-3">
-        <TextInput
+        <Input
           autoFocus
           value={code}
           placeholder={t("promo.placeholder")}
@@ -154,21 +155,21 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
           }}
         />
         {error && <FormError>{error}</FormError>}
-        <SheetFooter>
+        <DialogFooter>
           <Button variant="glass" onClick={close}>
             {t("common.cancel")}
           </Button>
           <Button type="submit" form={formId} variant="glassAccent" disabled={!code.trim() || activation.isPending}>
             {t("promo.activate")}
           </Button>
-        </SheetFooter>
+        </DialogFooter>
       </form>
     );
   }
 
   return (
-    <BottomSheet narrow bare={result !== null} icon={Percent} open={open} onClose={close} title={t("promo.title")}>
+    <Modal narrow bare={result !== null} icon={Percent} open={open} onClose={close} title={t("promo.title")}>
       {body}
-    </BottomSheet>
+    </Modal>
   );
 }

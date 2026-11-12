@@ -45,7 +45,6 @@ function NavTab({ label, to, end, icon: Icon, labeled }: TabProps) {
       <NavLink
         to={to}
         end={end}
-        aria-label={label}
         className={`${TAB} ${isActive ? "text-primary" : "text-muted-foreground"}`}
       >
         <motion.span layout="position" transition={PILL_SPRING} className="flex shrink-0">
@@ -54,7 +53,6 @@ function NavTab({ label, to, end, icon: Icon, labeled }: TabProps) {
         {(labeled || isActive) && (
           <motion.span
             layout="position"
-            aria-hidden
             className={`${LABEL} pl-1.5`}
             initial={labeled ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -76,12 +74,12 @@ function SupportTab({ support, labeled }: { support: ReturnType<typeof useSuppor
     <>
       {/* in the same layout pass as the tabs: it slides over as they resize */}
       <motion.div layout transition={PILL_SPRING} className={TAB_SLOT}>
-        <button type="button" aria-label={t("help.support")} onClick={support.open} className={`${TAB} text-muted-foreground`}>
+        <button type="button" onClick={support.open} className={`${TAB} text-muted-foreground`}>
           <motion.span layout="position" transition={PILL_SPRING} className="flex shrink-0">
             <Headset className="size-[22px]" strokeWidth={2.25} />
           </motion.span>
           {labeled && (
-            <motion.span layout="position" aria-hidden className={`${LABEL} pl-1.5`}>
+            <motion.span layout="position" className={`${LABEL} pl-1.5`}>
               {t("help.support")}
             </motion.span>
           )}
@@ -119,7 +117,7 @@ export function BottomNav() {
       {/* the dialogs' glass: dark and heavily blurred, so a bright button scrolling under it can't drown the tabs */}
       <div ref={barRef} className={`pointer-events-auto relative mx-auto flex w-full max-w-[528px] rounded-full p-1.5 ${GLASS}`}>
         {/* every tab at its natural width with a 12px side padding, the bar's own p-1.5 included */}
-        <div ref={probeRef} aria-hidden className="invisible absolute flex w-max p-1.5">
+        <div ref={probeRef} className="invisible absolute flex w-max p-1.5">
           {labels.map((label) => (
             <div key={label} className="flex items-center px-3">
               <div className="size-[22px]" />

@@ -2,12 +2,12 @@ import { Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { EmailLogin, type EmailCodeFlow } from "@features/auth/ui/EmailLogin";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 
 import { linkApi, type LinkResult } from "./api";
 
 /** Address -> 6-digit code, the same form as sign-in but against the link endpoints. */
-export function LinkEmailSheet({
+export function LinkEmailDialog({
   open,
   onClose,
   onResult,
@@ -26,9 +26,9 @@ export function LinkEmailSheet({
     },
   };
   return (
-    <BottomSheet narrow icon={Mail} open={open} onClose={onClose} title={t("link.emailTitle")}>
+    <Modal narrow icon={Mail} open={open} onClose={onClose} title={t("link.emailTitle")}>
       {/* no domain hint: it's about creating accounts, and this one exists */}
       <EmailLogin flow={flow} emailHint={t("link.emailHint")} onCancel={onClose} />
-    </BottomSheet>
+    </Modal>
   );
 }

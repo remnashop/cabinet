@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { useDevicesQuery, type OwnSubscription } from "@entities/subscription/api";
 import { readStorage, writeStorage } from "@shared/lib/safe-storage";
-import { RippleButton } from "@shared/ui/RippleButton";
+import { Ripple } from "@shared/ui/Ripple";
 import { SubscriptionCard } from "@widgets/subscription-cards/SubscriptionCard";
 
 import { CARD_ASPECT_SHORT } from "./card-aspect";
@@ -162,9 +162,8 @@ export function CardsSlider({
           {subscriptions.map((sub, index) => (
             // alone, the slide fills the track at every width: on desktop it's the half beside the tiles
             <div key={sub.id} data-index={index} className={single ? "w-full shrink-0" : SLIDE}>
-              <RippleButton
+              <button
                 type="button"
-                aria-pressed={sub.id === selectedId}
                 onClick={() => {
                   onSelect(sub.id);
                   setVisible(index);
@@ -176,12 +175,13 @@ export function CardsSlider({
                 }`}
               >
                 <SlideCard sub={sub} noticeApart selected={sub.id === selectedId} />
-              </RippleButton>
+                <Ripple />
+              </button>
             </div>
           ))}
           {!single && (
             <div data-index={subscriptions.length} className={SLIDE}>
-              <RippleButton
+              <button
                 type="button"
                 disabled={!canBuy}
                 onClick={onBuy}
@@ -189,7 +189,8 @@ export function CardsSlider({
               >
                 {canBuy ? <Plus className="size-8 stroke-[1.5] text-primary" /> : <TriangleAlert className="size-6 stroke-[1.5]" />}
                 {canBuy ? t("home.buy") : t("home.limitReached")}
-              </RippleButton>
+                <Ripple />
+              </button>
             </div>
           )}
         </div>
@@ -203,10 +204,6 @@ export function CardsSlider({
             <button
               key={sub?.id ?? "buy"}
               type="button"
-              aria-label={
-                sub ? t("home.slideOf", { index: index + 1, total: subscriptions.length }) : t("home.buy")
-              }
-              aria-current={index === visible}
               onClick={() => {
                 // desktop doesn't scroll, so the dot picks its card itself
                 if (sub) onSelect(sub.id);

@@ -9,14 +9,11 @@ export function CodeInput({
   length,
   onChange,
   invalid,
-  label,
 }: {
   value: string;
   length: number;
   onChange: (value: string) => void;
   invalid?: boolean;
-  /** the field's accessible name: the cells say nothing to a reader */
-  label: string;
 }) {
   const [focused, setFocused] = useState(false);
   // the cell the next digit lands in; none once the code is whole
@@ -27,7 +24,6 @@ export function CodeInput({
         {Array.from({ length }, (_, i) => (
           <span
             key={i}
-            aria-hidden
             className={`flex h-13 items-center justify-center rounded-xl glass-well ring-inset text-xl font-semibold tabular-nums transition-shadow ${
               invalid ? "ring-1 ring-error" : i === active ? "ring-1 ring-primary" : ""
             }`}
@@ -42,7 +38,6 @@ export function CodeInput({
         autoComplete="one-time-code"
         maxLength={length}
         value={value}
-        aria-label={label}
         aria-invalid={invalid}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setFocused(true)}

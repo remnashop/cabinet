@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useSupportLinks } from "@entities/shop/api";
 import { openExternal } from "@shared/telegram";
 import { ActionTile } from "@shared/ui/ActionTile";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 
 /** The choice of how to reach support, Telegram or the browser: opened by useSupport only when the shop set both. */
 export function SupportDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -15,7 +15,7 @@ export function SupportDialog({ open, onClose }: { open: boolean; onClose: () =>
     links.web && { icon: Globe, label: t("help.supportWeb"), url: links.web },
   ].filter((option) => !!option);
   return (
-    <BottomSheet narrow cards icon={Headset} open={open} onClose={onClose} title={t("help.support")}>
+    <Modal narrow cards icon={Headset} open={open} onClose={onClose} title={t("help.support")}>
       <div className="grid grid-cols-2 gap-3">
         {options.map(({ icon, label, url }) => (
           <ActionTile
@@ -30,6 +30,6 @@ export function SupportDialog({ open, onClose }: { open: boolean; onClose: () =>
           />
         ))}
       </div>
-    </BottomSheet>
+    </Modal>
   );
 }

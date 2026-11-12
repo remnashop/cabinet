@@ -2,7 +2,7 @@ import { TriangleAlert, type LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@shared/ui/Button";
-import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
+import { Modal, DialogFooter } from "@shared/ui/Modal";
 
 interface ConfirmSheetProps {
   open: boolean;
@@ -20,7 +20,7 @@ interface ConfirmSheetProps {
 }
 
 /** A yes/no question, the panel's ConfirmDialog: the mark in the header, what it means, cancel and the action in the footer. */
-export function ConfirmSheet({
+export function ConfirmDialog({
   open,
   title,
   text,
@@ -34,7 +34,7 @@ export function ConfirmSheet({
 }: ConfirmSheetProps) {
   const { t } = useTranslation();
   return (
-    <BottomSheet
+    <Modal
       narrow
       // a destructive question always shows the warning sign, as the panel's ConfirmDialog
       icon={danger ? TriangleAlert : icon}
@@ -45,14 +45,14 @@ export function ConfirmSheet({
     >
       <p className="whitespace-pre-line text-sm text-foreground/80">{text}</p>
       {error && <p className="mt-3 text-xs text-error">{error}</p>}
-      <SheetFooter>
+      <DialogFooter>
         <Button variant="glass" onClick={onClose}>
           {t("common.cancel")}
         </Button>
         <Button variant={danger ? "glassDanger" : "glassAccent"} disabled={pending} onClick={onConfirm}>
           {confirmLabel}
         </Button>
-      </SheetFooter>
-    </BottomSheet>
+      </DialogFooter>
+    </Modal>
   );
 }

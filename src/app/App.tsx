@@ -32,7 +32,7 @@ export function App() {
   if (closed) {
     return (
       <FullScreenMessage tone="warning" title={t("maintenance.title")} text={t("maintenance.text")}>
-        <Button variant="solid" size="lg" className="w-full" onClick={() => window.location.reload()}>
+        <Button variant="glassSolid" size="lg" className="w-full" onClick={() => window.location.reload()}>
           {t("common.retry")}
         </Button>
       </FullScreenMessage>
@@ -48,7 +48,7 @@ export function App() {
   if (boot.kind === "error") {
     return (
       <FullScreenMessage tone="error" title={t("auth.bootFailed")} text={getErrorMessage(boot.error, t("errors.generic"))}>
-        <Button variant="solid" size="lg" className="w-full" onClick={run}>
+        <Button variant="glassSolid" size="lg" className="w-full" onClick={run}>
           {t("common.retry")}
         </Button>
       </FullScreenMessage>

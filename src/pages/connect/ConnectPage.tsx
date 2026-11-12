@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router";
 
 import { useConnectGuideQuery } from "@entities/connect-guide/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
 import { ButtonLink } from "@shared/ui/ButtonLink";
 import { Card } from "@shared/ui/Card";
@@ -51,7 +51,7 @@ export function ConnectPage() {
       <>
         {header}
         <PageEmpty warning text={t("connect.notFound")}>
-          <ButtonLink to="/" variant="outline" className="mt-1">
+          <ButtonLink to="/" variant="glass" className="mt-1">
             {t("common.home")}
           </ButtonLink>
         </PageEmpty>
@@ -76,7 +76,7 @@ export function ConnectPage() {
       <>
         {header}
         <Hero title={t("connect.unavailableTitle")} hint={t("connect.guideOffHint")} art={<HeroArt icon={CloudOff} />}>
-          <Button variant="solid" size="lg" onClick={() => void navigate("/")}>
+          <Button variant="glassSolid" size="lg" onClick={() => void navigate("/")}>
             {t("connect.backHome")}
           </Button>
         </Hero>
@@ -92,7 +92,7 @@ export function ConnectPage() {
         subscription={subscription}
         onShowLink={() => setLinkOpen(true)}
       />
-      <BottomSheet
+      <Modal
         narrow
         icon={QrCode}
         open={linkOpen}
@@ -100,7 +100,7 @@ export function ConnectPage() {
         title={t("connect.linkAndQr")}
       >
         <LinkPanel subscription={subscription} dialog />
-      </BottomSheet>
+      </Modal>
     </>
   );
 }

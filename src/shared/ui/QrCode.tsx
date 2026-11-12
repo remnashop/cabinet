@@ -36,8 +36,6 @@ export function QrCode({ value, size = 200 }: { value: string; size?: number | "
   // the URL is a credential: keep it out of the accessible name (it's printed below for copying anyway)
   return (
     <div
-      role="img"
-      aria-label={t("common.qrCode")}
       className="rounded-xl bg-white p-2 [&>svg]:size-full"
       style={style}
       dangerouslySetInnerHTML={{ __html: svg.markup }}

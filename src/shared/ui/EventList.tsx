@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 
-import { useRipple } from "./use-ripple";
+import { Ripple } from "./Ripple";
 
 // the panel's list row: a 32px circle 14px in, on the 60px pill's curve; a title or caption too long for a phone beside
 // its button wraps and the row grows, as the panel Row's description does
@@ -15,26 +15,6 @@ export function EventList({ className = "", children }: { className?: string; ch
     >
       {children}
     </div>
-  );
-}
-
-/**
- * The round icon at the start of a row; or a glyph in its place, e.g. a payment's currency, as the panel's. tone: the
- * circle's fill and ink, e.g. a payment's status (bg-success/15 text-success).
- */
-export function EventIcon({
-  icon: Icon,
-  glyph,
-  tone = "bg-white/[0.06] text-foreground",
-}: {
-  icon?: ComponentType<{ className?: string }>;
-  glyph?: ReactNode;
-  tone?: string;
-}) {
-  return (
-    <span className={`flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${tone}`}>
-      {Icon ? <Icon className="size-4" /> : glyph}
-    </span>
   );
 }
 
@@ -57,10 +37,9 @@ export function EventRow({
   aside?: ReactNode;
   onClick?: () => void;
 }) {
-  const ripple = useRipple();
   const content = (
     <>
-      {onClick && ripple.ripples}
+      {onClick && <Ripple />}
       {icon}
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="line-clamp-2 text-sm font-medium text-foreground [overflow-wrap:anywhere]">{title}</span>
@@ -78,7 +57,6 @@ export function EventRow({
     <button
       type="button"
       onClick={onClick}
-      onPointerDown={ripple.onPointerDown}
       className={`group ${className} hover:bg-white/[0.04]`}
     >
       {content}

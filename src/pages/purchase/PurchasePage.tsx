@@ -15,8 +15,8 @@ import { formatMoney } from "@shared/lib/format";
 import { buttonClass } from "@shared/ui/button-class";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { PageEmpty } from "@shared/ui/PageEmpty";
+import { Ripple } from "@shared/ui/Ripple";
 import { Skeleton } from "@shared/ui/Skeleton";
-import { useRipple } from "@shared/ui/use-ripple";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 import { SupportButton } from "@widgets/support/SupportButton";
 
@@ -33,7 +33,6 @@ const NO_BUTTON =
 function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: boolean }) {
   const { plan, currency, to, current } = props;
   const { t, i18n } = useTranslation();
-  const ripple = useRipple();
   const price = minPrice(plan, currency);
   // no room for one more: the card and its badge muted
   const dimmed = !to && !current;
@@ -45,7 +44,6 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
     <>
       {plan.badge && !dimmed && (
         <span
-          aria-hidden
           className="pointer-events-none absolute inset-y-0 -left-1/2 hidden w-1/2 bg-linear-to-r from-transparent via-white/[0.06] to-transparent motion-safe:block motion-safe:animate-shine"
         />
       )}
@@ -98,25 +96,25 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
       </div>
     </>
   );
-  const frame = "relative block overflow-hidden rounded-home glass-panel p-5 lg:p-4";
+  const frame = "relative block overflow-hidden rounded-card glass-panel p-5 lg:p-4";
   if (!to) {
     return (
-      <div aria-disabled className={`${frame} ${dimmed ? "text-muted-foreground" : "text-foreground"}`}>
+      <div className={`${frame} ${dimmed ? "text-muted-foreground" : "text-foreground"}`}>
         {body}
       </div>
     );
   }
   return (
-    <MotionLink to={to} onPointerDown={ripple.onPointerDown} className={`${frame} text-foreground`}>
+    <MotionLink to={to} className={`${frame} text-foreground`}>
       {body}
-      {ripple.ripples}
+      <Ripple />
     </MotionLink>
   );
 }
 
 function WarningBanner({ title, hint }: { title: string; hint: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-home border border-warning/30 bg-linear-to-r from-warning/[0.12] to-warning/[0.03] p-5 lg:p-4">
+    <div className="flex items-center gap-3 rounded-card border border-warning/30 bg-linear-to-r from-warning/[0.12] to-warning/[0.03] p-5 lg:p-4">
       <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
         <TriangleAlert className="size-5" />
       </span>

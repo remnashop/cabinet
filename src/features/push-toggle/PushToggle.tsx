@@ -8,7 +8,8 @@ import { currentPushEndpoint, detectPushSupport, disablePush, enablePush } from 
 import { isMiniApp } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
-import { EventIcon, EventList, EventRow } from "@shared/ui/EventList";
+import { EventList, EventRow } from "@shared/ui/EventList";
+import { IconCircle } from "@shared/ui/IconCircle";
 import { FormError } from "@shared/ui/FormError";
 
 /** The profile's row: push on this device. "On" is a live subscription plus a granted permission. */
@@ -66,7 +67,7 @@ export function PushToggle() {
       <Card round>
         <EventList>
           <EventRow
-            icon={<EventIcon icon={BellRing} />}
+            icon={<IconCircle icon={BellRing} />}
             title={t("push.title")}
             caption={note ?? (on === null ? undefined : on ? t("push.on") : t("push.off"))}
             aside={

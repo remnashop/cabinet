@@ -7,7 +7,7 @@ import { ApiError } from "@shared/api/http";
 import "@shared/i18n";
 
 import { linkApi } from "./api";
-import { MergeBody } from "./MergeSheet";
+import { MergeBody } from "./MergeDialog";
 
 vi.mock("./api", () => ({ linkApi: { merge: vi.fn() } }));
 

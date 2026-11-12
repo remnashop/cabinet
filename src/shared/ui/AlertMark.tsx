@@ -12,7 +12,7 @@ const TONE = {
 export function AlertMark({ tone }: { tone: keyof typeof TONE }) {
   const { disc, path, stroke } = TONE[tone];
   return (
-    <span className={`flex size-16 shrink-0 items-center justify-center rounded-full border ${disc}`} aria-hidden>
+    <span className={`flex size-16 shrink-0 items-center justify-center rounded-full border ${disc}`}>
       <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth={stroke}>
         {/* pathLength 1: the dash animation draws it whatever the path's real length */}
         <path

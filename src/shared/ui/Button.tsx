@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 
 import { buttonClass, type ButtonSize, type ButtonVariant } from "./button-class";
-import { useRipple } from "./use-ripple";
+import { Ripple } from "./Ripple";
 
 export type { ButtonVariant } from "./button-class";
 
@@ -18,22 +18,16 @@ export function Button({
   size = "md",
   className = "",
   type = "button",
-  onPointerDown,
   children,
   ...props
 }: ButtonProps) {
-  const ripple = useRipple();
   return (
     <motion.button
       type={type}
       className={`${buttonClass(variant, size)} ${className}`}
-      onPointerDown={(event) => {
-        ripple.onPointerDown(event);
-        onPointerDown?.(event);
-      }}
       {...props}
     >
-      {ripple.ripples}
+      <Ripple />
       {children as ReactNode}
     </motion.button>
   );

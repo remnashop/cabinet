@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { ApiError, getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
-import { BottomSheet, SheetFooter } from "@shared/ui/BottomSheet";
+import { Modal, DialogFooter } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
@@ -77,7 +77,7 @@ export function MergeBody({ offer, onClose, onMerged, onExpired }: MergeSheetPro
       </Card>
       <p className="text-xs text-muted-foreground">{t("link.mergeRules")}</p>
       {merge.isError && <FormError>{getErrorMessage(merge.error, t("errors.generic"))}</FormError>}
-      <SheetFooter>
+      <DialogFooter>
         {/* the one Cancel locked in flight: closing drops this body, and with it the answer to a merge for good */}
         <Button variant="glass" disabled={merge.isPending} onClick={onClose}>
           {t("common.cancel")}
@@ -92,7 +92,7 @@ export function MergeBody({ offer, onClose, onMerged, onExpired }: MergeSheetPro
         >
           {t("link.merge")}
         </Button>
-      </SheetFooter>
+      </DialogFooter>
       <p className="text-center text-xs text-muted-foreground">
         {left === 0 ? t("link.mergeExpired") : t("link.mergeCountdown", { count: Math.ceil(left / 60_000) })}
       </p>
@@ -100,14 +100,14 @@ export function MergeBody({ offer, onClose, onMerged, onExpired }: MergeSheetPro
   );
 }
 
-export function MergeSheet(props: MergeSheetProps) {
+export function MergeDialog(props: MergeSheetProps) {
   const { t } = useTranslation();
   // keep the last offer on screen while the sheet slides out
   const [shown, setShown] = useState(props.offer);
   if (props.offer && props.offer !== shown) setShown(props.offer);
   return (
-    <BottomSheet narrow icon={GitMerge} open={props.offer !== null} onClose={props.onClose} title={t("link.mergeTitle")}>
+    <Modal narrow icon={GitMerge} open={props.offer !== null} onClose={props.onClose} title={t("link.mergeTitle")}>
       {shown && <MergeBody key={shown.token} {...props} offer={shown} />}
-    </BottomSheet>
+    </Modal>
   );
 }

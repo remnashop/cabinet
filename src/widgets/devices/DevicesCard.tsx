@@ -14,21 +14,19 @@ import { getErrorMessage } from "@shared/api/http";
 import { formatDate, formatDateTime } from "@shared/lib/format";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
-import { ConfirmSheet } from "@shared/ui/ConfirmSheet";
+import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
 import { ErrorCard } from "@shared/ui/ErrorCard";
-import { EVENT_ROW, EventIcon, EventList, EventRow } from "@shared/ui/EventList";
+import { EVENT_ROW, EventList, EventRow } from "@shared/ui/EventList";
+import { IconCircle } from "@shared/ui/IconCircle";
 import { AndroidIcon, AppleIcon, DevicesIcon, LinuxIcon, TvIcon, WindowsIcon } from "@shared/ui/PlatformIcons";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { FormError } from "@shared/ui/FormError";
 import { Ripple } from "@shared/ui/Ripple";
 
 function DeleteMark() {
-  const { t } = useTranslation();
   return (
     <span className="flex size-8 items-center justify-center rounded-full font-normal text-muted-foreground transition-colors group-hover:bg-error/10 group-hover:text-error">
       <Trash2 className="size-3.5" />
-      {/* the button keeps the device's name and adds what it does */}
-      <span className="sr-only">{t("home.deleteDevice")}</span>
     </span>
   );
 }
@@ -110,7 +108,7 @@ export function DevicesCard({ subscription }: { subscription: OwnSubscription })
           return (
             <EventRow
               key={device.hwid}
-              icon={<EventIcon glyph={<Icon className="size-4" strokeWidth={1.6} />} />}
+              icon={<IconCircle glyph={<Icon className="size-4" strokeWidth={1.6} />} />}
               title={name}
               caption={
                 <>
@@ -141,7 +139,7 @@ export function DevicesCard({ subscription }: { subscription: OwnSubscription })
 
       {failed && <FormError className="mt-2 px-3">{getErrorMessage(failed.error, t("errors.generic"))}</FormError>}
 
-      <ConfirmSheet
+      <ConfirmDialog
         open={confirm !== null}
         title={confirm?.kind === "all" ? t("home.deleteAllTitle") : t("home.deleteDeviceTitle")}
         text={confirm?.kind === "one" ? t("home.deleteDeviceText", { name: confirm.name }) : t("home.deleteAllText")}

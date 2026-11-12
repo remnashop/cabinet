@@ -7,7 +7,7 @@ import { useReissue, type OwnSubscription } from "@entities/subscription/api";
 import { getErrorMessage } from "@shared/api/http";
 import { haptic, openExternal } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
-import { ConfirmSheet } from "@shared/ui/ConfirmSheet";
+import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
 import { QrCode } from "@shared/ui/QrCode";
 import { FormError } from "@shared/ui/FormError";
 
@@ -38,12 +38,12 @@ export function LinkPanel({ subscription, dialog = false }: { subscription: OwnS
           </p>
           {/* stacked on phones: "Открыть в приложении" doesn't fit half a row */}
           <div className="flex w-full flex-col gap-2 sm:flex-row">
-            <Button variant="outline" className="gap-2 sm:flex-1" onClick={() => void copy()}>
+            <Button variant="glass" className="gap-2 sm:flex-1" onClick={() => void copy()}>
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
               {copied ? t("connect.copied") : t("connect.copy")}
             </Button>
             <Button
-              variant="accent"
+              variant="glassAccent"
               className="gap-2 sm:flex-1"
               onClick={() => {
                 haptic();
@@ -57,13 +57,13 @@ export function LinkPanel({ subscription, dialog = false }: { subscription: OwnS
         </>
       )}
       {!dialog && settings.data?.link_reset_enabled && (
-        <Button variant="outline" className="w-full gap-2" onClick={() => setConfirm(true)}>
+        <Button variant="glass" className="w-full gap-2" onClick={() => setConfirm(true)}>
           <RefreshCw className="size-4" />
           {t("connect.reissue")}
         </Button>
       )}
       {reissue.isError && <FormError>{getErrorMessage(reissue.error, t("errors.generic"))}</FormError>}
-      <ConfirmSheet
+      <ConfirmDialog
         open={confirm}
         danger
         title={t("connect.reissueTitle")}

@@ -7,7 +7,7 @@ import { useQuoteQuery, type PaymentMethod, type Plan, type PlanAccess, type Quo
 import { durationLabel } from "@features/purchase/wizard";
 import { formatMoney } from "@shared/lib/format";
 import { PILL_SPRING } from "@shared/lib/motion";
-import { RippleButton } from "@shared/ui/RippleButton";
+import { Ripple } from "@shared/ui/Ripple";
 
 import { PlanLimits } from "./PlanLimits";
 
@@ -36,7 +36,7 @@ export function WizardHead(props: HeadProps) {
   return (
     <div className="mb-5 flex flex-col gap-5">
       <DotStepper {...props} />
-      <div className="relative overflow-hidden rounded-home glass-panel p-5 text-foreground lg:p-4">
+      <div className="relative overflow-hidden rounded-card glass-panel p-5 text-foreground lg:p-4">
         <div className="relative flex items-end justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-2">
             <span className="flex min-w-0 items-center gap-1.5">
@@ -135,12 +135,10 @@ function DotStepper({ step, skipMethod, onStep }: HeadProps) {
         const current = i === step;
         const named = !compact || current;
         return (
-          <RippleButton
+          <button
             key={key}
             type="button"
             disabled={!done}
-            aria-label={t(key)}
-            aria-current={current ? "step" : undefined}
             onClick={() => onStep(i as 0 | 1)}
             className={`relative isolate flex h-9 min-w-0 ${named ? "flex-auto" : "flex-none"} items-center justify-center rounded-full transition-colors ${
               current ? "text-primary" : done ? "text-foreground hover:bg-white/[0.06]" : "text-muted-foreground"
@@ -153,11 +151,12 @@ function DotStepper({ step, skipMethod, onStep }: HeadProps) {
                 transition={PILL_SPRING}
               />
             )}
-            <span aria-hidden className="flex min-w-0 items-center gap-1 px-2 text-sm font-medium lg:gap-1.5 lg:px-4">
+            <span className="flex min-w-0 items-center gap-1 px-2 text-sm font-medium lg:gap-1.5 lg:px-4">
               {done && <Check className="size-3.5 shrink-0" strokeWidth={3} />}
               <span className="truncate">{named ? t(key) : t("purchase.stepNumber", { number: position + 1 })}</span>
             </span>
-          </RippleButton>
+            <Ripple />
+          </button>
         );
       })}
     </div>

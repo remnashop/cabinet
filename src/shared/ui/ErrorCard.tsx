@@ -23,7 +23,7 @@ export function ErrorCard({
       <p className="text-sm text-muted-foreground">
         {text ?? getErrorMessage(error, t("common.loadFailed"))}
       </p>
-      <Button variant="outline" onClick={onRetry}>
+      <Button variant="glass" onClick={onRetry}>
         {t("common.retry")}
       </Button>
     </Card>

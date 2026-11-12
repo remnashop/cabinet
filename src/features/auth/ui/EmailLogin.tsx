@@ -7,11 +7,11 @@ import { legalLocale, useShownLegalLocale } from "@entities/legal/api";
 import { authApi, completeLogin, type CaptchaConfig } from "@features/auth/api";
 import { CaptchaWidget } from "@features/auth/ui/CaptchaWidget";
 import { getErrorMessage } from "@shared/api/http";
-import { SheetFooter } from "@shared/ui/BottomSheet";
+import { DialogFooter } from "@shared/ui/Modal";
 import { CodeInput } from "@shared/ui/CodeInput";
 import { Button } from "@shared/ui/Button";
-import { ConfirmSheet } from "@shared/ui/ConfirmSheet";
-import { TextInput } from "@shared/ui/TextInput";
+import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
+import { Input } from "@shared/ui/Input";
 import { StepTransition } from "@shared/ui/StepTransition";
 import { FormError } from "@shared/ui/FormError";
 
@@ -43,7 +43,7 @@ export function EmailLogin({
   captcha?: CaptchaConfig | null;
   /** over the address only: the code step says where the code went instead */
   emailHint?: string;
-  /** in a dialog: closes it. The buttons then go to its footer (SheetFooter), cancel first, as every dialog's */
+  /** in a dialog: closes it. The buttons then go to its footer (DialogFooter), cancel first, as every dialog's */
   onCancel?: () => void;
 }) {
   const dialog = onCancel !== undefined;
@@ -96,7 +96,7 @@ export function EmailLogin({
       <StepTransition stepKey="email" className="w-full">
         <form id={formId} onSubmit={onSubmit} className="flex w-full flex-col gap-2">
           {emailHint && <p className="pb-1 text-sm text-muted-foreground">{emailHint}</p>}
-          <TextInput
+          <Input
             type="email"
             required
             autoComplete="email"
@@ -116,8 +116,8 @@ export function EmailLogin({
           />
           {invalid && <FormError className="px-3 text-left">{t(invalid)}</FormError>}
           {captcha && <CaptchaWidget config={captcha} round={captchaRound} onToken={setCaptchaToken} />}
-          {/* outside a dialog SheetFooter leaves them in place */}
-          <SheetFooter>
+          {/* outside a dialog DialogFooter leaves them in place */}
+          <DialogFooter>
             {dialog && (
               <Button variant="glass" onClick={onCancel}>
                 {t("common.cancel")}
@@ -126,13 +126,13 @@ export function EmailLogin({
             <Button
               type="submit"
               form={formId}
-              variant={dialog ? "glassAccent" : "accent"}
+              variant="glassAccent"
               className={dialog ? "" : "w-full"}
               disabled={sendCode.isPending || captchaMissing}
             >
               {t("auth.sendCode")}
             </Button>
-          </SheetFooter>
+          </DialogFooter>
           {sendCode.isError && <FormError>{getErrorMessage(sendCode.error, t("errors.generic"))}</FormError>}
         </form>
       </StepTransition>
@@ -143,7 +143,7 @@ export function EmailLogin({
   const resend = (
     <Button
       key="resend"
-      variant={dialog ? "glassAccent" : "outline"}
+      variant={dialog ? "glassAccent" : "glass"}
       className={dialog ? "" : "w-full"}
       disabled={cooldown > 0 || sendCode.isPending || captchaMissing}
       onClick={() => setResendAsk(true)}
@@ -154,7 +154,7 @@ export function EmailLogin({
   const changeEmail = (
     <Button
       key="change"
-      variant={dialog ? "glass" : "outline"}
+      variant="glass"
       className={dialog ? "" : "w-full"}
       onClick={() => {
         setStep("email");
@@ -173,7 +173,6 @@ export function EmailLogin({
           value={code}
           length={CODE_LENGTH}
           invalid={verify.isError}
-          label={t("auth.codePlaceholder")}
           onChange={onCodeChange}
         />
         {error && <FormError>{getErrorMessage(error, t("errors.generic"))}</FormError>}
@@ -184,9 +183,9 @@ export function EmailLogin({
         {dialog && cooldown > 0 && (
           <p className="text-xs text-muted-foreground">{t("auth.resendIn", { seconds: cooldown })}</p>
         )}
-        <SheetFooter>{dialog ? [changeEmail, resend] : [resend, changeEmail]}</SheetFooter>
+        <DialogFooter>{dialog ? [changeEmail, resend] : [resend, changeEmail]}</DialogFooter>
       </div>
-      <ConfirmSheet
+      <ConfirmDialog
         open={resendAsk}
         icon={MailWarning}
         title={t("auth.resendTitle")}

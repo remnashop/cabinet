@@ -6,7 +6,7 @@ import { effectivePrice, savingsPercent, unitPrice } from "@features/purchase/sa
 import { durationLabel, type PurchaseType } from "@features/purchase/wizard";
 import { formatMoney } from "@shared/lib/format";
 import { NotePill } from "@shared/ui/NotePill";
-import { useRipple } from "@shared/ui/use-ripple";
+import { Ripple } from "@shared/ui/Ripple";
 
 import { PromoNote } from "@pages/purchase/DiscountNote";
 
@@ -31,18 +31,16 @@ function DurationTile({
   /** the struck price under the price, on every tile once one of them can't fit both on a line */
   stacked: boolean;
 }) {
-  const ripple = useRipple();
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      onPointerDown={ripple.onPointerDown}
       // an odd one out takes the whole last row; p-5 keeps the saving pill (r 10) concentric in the 32px corner, p-4 near
       // enough in the desktop's 24px one, as the panel's cards
-      className="relative flex flex-col gap-3 overflow-hidden rounded-home glass-panel p-5 lg:p-4 text-left transition-colors last:odd:col-span-2 enabled:hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
+      className="relative flex flex-col gap-3 overflow-hidden rounded-card glass-panel p-5 lg:p-4 text-left transition-colors last:odd:col-span-2 enabled:hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {ripple.ripples}
+      <Ripple />
       <span className="flex min-h-5 items-center justify-between gap-2">
         <span className="text-sm text-muted-foreground">{label}</span>
         {saving}

@@ -106,7 +106,7 @@ export function PlanWizardPage() {
       <>
         {header}
         <PageEmpty warning text={t("purchase.planNotFound")}>
-          <ButtonLink to={exitTo} variant="outline" className="mt-1">
+          <ButtonLink to={exitTo} variant="glass" className="mt-1">
             {type === "RENEW" ? t("common.home") : t("purchase.toCatalog")}
           </ButtonLink>
         </PageEmpty>

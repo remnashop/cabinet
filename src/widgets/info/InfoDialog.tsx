@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useLegalDocumentsQuery, type LegalDocument } from "@entities/legal/api";
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 import { Card } from "@shared/ui/Card";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { InfoRow } from "@shared/ui/InfoRow";
@@ -23,11 +23,11 @@ export function InfoDialog({ open, onClose }: { open: boolean; onClose: () => vo
   };
 
   return reading ? (
-    <BottomSheet fullScreen view="document" open={open} onClose={close} title={reading.title}>
+    <Modal fullScreen view="document" open={open} onClose={close} title={reading.title}>
       <LegalMarkdown>{reading.body}</LegalMarkdown>
-    </BottomSheet>
+    </Modal>
   ) : (
-    <BottomSheet narrow cards fullScreen view="list" icon={Info} open={open} onClose={close} title={t("help.info")}>
+    <Modal narrow cards fullScreen view="list" icon={Info} open={open} onClose={close} title={t("help.info")}>
       {documents.isPending ? (
         <Skeleton className="h-28" />
       ) : documents.isError && !documents.data ? (
@@ -47,6 +47,6 @@ export function InfoDialog({ open, onClose }: { open: boolean; onClose: () => vo
           ))}
         </Card>
       )}
-    </BottomSheet>
+    </Modal>
   );
 }

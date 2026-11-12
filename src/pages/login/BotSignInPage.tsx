@@ -57,7 +57,7 @@ export function BotSignInPage() {
       title={t(exchange.isError ? "auth.bootFailed" : "auth.botLinkExpired")}
       text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : null}
     >
-      <ButtonLink to="/login" variant="outline" size="lg" className="w-full">
+      <ButtonLink to="/login" variant="glass" size="lg" className="w-full">
         {t("auth.backToLogin")}
       </ButtonLink>
     </FullScreenMessage>

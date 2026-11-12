@@ -3,7 +3,7 @@ import { Send } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 import { Spinner } from "@shared/ui/Spinner";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 
@@ -39,11 +39,11 @@ function TelegramLinkBody({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function LinkTelegramSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function LinkTelegramDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   return (
-    <BottomSheet narrow icon={Send} open={open} onClose={onClose} title={t("link.telegramTitle")}>
+    <Modal narrow icon={Send} open={open} onClose={onClose} title={t("link.telegramTitle")}>
       <TelegramLinkBody onClose={onClose} />
-    </BottomSheet>
+    </Modal>
   );
 }

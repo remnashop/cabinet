@@ -11,7 +11,7 @@ const DIGIT = "bg-linear-to-b from-foreground to-foreground/20 bg-clip-text text
 
 function NotFoundArt() {
   return (
-    <div aria-hidden className="relative flex items-center justify-center py-4">
+    <div className="relative flex items-center justify-center py-4">
       <span className="absolute size-40 rounded-full bg-primary/20 blur-3xl motion-safe:animate-breathe" />
       <div className="relative flex items-center gap-3 text-[112px] leading-none font-bold tracking-tighter">
         <span className={DIGIT}>4</span>
@@ -43,7 +43,7 @@ export function NotFoundPage() {
         <h1 className="text-xl font-bold tracking-tight">{t("pages.notFound")}</h1>
         <p className="text-sm text-muted-foreground">{t("pages.notFoundHint")}</p>
       </div>
-      <ButtonLink to="/" replace variant="solid" size="lg" className="mt-2 w-full">
+      <ButtonLink to="/" replace variant="glassSolid" size="lg" className="mt-2 w-full">
         {t("pages.notFoundHome")}
       </ButtonLink>
     </FullScreen>

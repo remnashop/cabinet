@@ -39,7 +39,7 @@ function StatusArt({
   const [glow, ring] = TONE[tone];
   // waiting: room for the rings it sends out (scale 2.3), so they don't run over the title
   return (
-    <div className={`relative flex size-20 items-center justify-center ${waiting ? "my-10" : "mb-2"}`} aria-hidden>
+    <div className={`relative flex size-20 items-center justify-center ${waiting ? "my-10" : "mb-2"}`}>
       <span className={`absolute inset-0 rounded-full blur-2xl motion-safe:animate-breathe ${glow}`} />
       {waiting && (
         <>
@@ -68,7 +68,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
   const { t } = useTranslation();
   const navigate = useNavigate();
   const home = (
-    <Button variant="outline" size="lg" className="w-full" onClick={() => void navigate("/", { replace: true })}>
+    <Button variant="glass" size="lg" className="w-full" onClick={() => void navigate("/", { replace: true })}>
       {t("common.backHome")}
     </Button>
   );
@@ -98,7 +98,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
           t(`payment.paid.${transaction?.purchase_type ?? "NEW"}`, { plan: transaction?.plan_name ?? "" }),
         )}
         <Button
-          variant="solid"
+          variant="glassSolid"
           size="lg"
           className="w-full"
           onClick={() => {
@@ -122,7 +122,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
           t(canceled ? "payment.canceledText" : "payment.failedText"),
         )}
         <div className="flex w-full flex-col gap-2">
-          <Button variant="solid" size="lg" className="w-full" onClick={() => void navigate(transaction ? retryPath(transaction) : "/purchase", { replace: true })}>
+          <Button variant="glassSolid" size="lg" className="w-full" onClick={() => void navigate(transaction ? retryPath(transaction) : "/purchase", { replace: true })}>
             {t("payment.retry")}
           </Button>
           {home}
@@ -146,7 +146,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
       </StatusArt>
       {heading(t("payment.timeoutTitle"), t("payment.timeout"))}
       <div className="flex w-full flex-col gap-2">
-        <Button variant="solid" size="lg" className="w-full" onClick={retry}>
+        <Button variant="glassSolid" size="lg" className="w-full" onClick={retry}>
           {t("payment.checkAgain")}
         </Button>
         {home}

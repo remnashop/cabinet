@@ -1,6 +1,6 @@
 import Markdown from "react-markdown";
 
-import { BottomSheet } from "@shared/ui/BottomSheet";
+import { Modal } from "@shared/ui/Modal";
 
 /** Document text; raw HTML in the Markdown is dropped. */
 export function LegalMarkdown({ children }: { children: string }) {
@@ -19,8 +19,8 @@ export function LegalDocumentDialog({
   onClose: () => void;
 }) {
   return (
-    <BottomSheet fullScreen open={document !== null} onClose={onClose} title={document?.title ?? ""}>
+    <Modal fullScreen open={document !== null} onClose={onClose} title={document?.title ?? ""}>
       {document && <LegalMarkdown>{document.body}</LegalMarkdown>}
-    </BottomSheet>
+    </Modal>
   );
 }
