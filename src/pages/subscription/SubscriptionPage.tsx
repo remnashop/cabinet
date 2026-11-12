@@ -21,7 +21,7 @@ import { Skeleton } from "@shared/ui/Skeleton";
 import { PulseButton } from "@shared/ui/PulseButton";
 import { FormError } from "@shared/ui/FormError";
 import { SuccessMessage } from "@shared/ui/SuccessCheck";
-import { CARD_ASPECT } from "@widgets/subscription-cards/card-aspect";
+import { CARD_ASPECT_SHORT } from "@widgets/subscription-cards/card-aspect";
 import { DevicesCard } from "@widgets/devices/DevicesCard";
 import { HeaderSlot } from "@widgets/page-header/HeaderSlot";
 import { HeaderIcon } from "@widgets/page-header/PageHeader";
@@ -123,12 +123,16 @@ function EmptyState({ onActivated }: { onActivated: () => void }) {
   );
 }
 
+// the page's own rows: the slider (one card on a phone, three across on desktop), the tiles, the devices
 function HomeSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
-      <Skeleton className="h-9 w-48" />
-      <Skeleton round className={`${CARD_ASPECT} w-full max-w-[340px] sm:w-[85%]`} />
-      <div className="grid grid-cols-3 gap-3 lg:grid-cols-4">
+    <div className="flex flex-col gap-5">
+      <div className="grid gap-5 lg:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} corners="rounded-subscription" className={`${CARD_ASPECT_SHORT} w-full ${i ? "max-lg:hidden" : ""}`} />
+        ))}
+      </div>
+      <div className="grid grid-cols-3 gap-5 lg:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
           // the first stands for "connect": a 64px pill on a phone, a tile beside the others on desktop
           <Skeleton
@@ -187,7 +191,14 @@ export function SubscriptionPage() {
     if (next.size !== params.size) setParams(next, { replace: true });
   }, [isHome, subsLoaded, renewLink, linkedFound, params, setParams]);
 
-  if (subscriptions.isPending || settings.isPending) return <HomeSkeleton />;
+  if (subscriptions.isPending || settings.isPending) {
+    return (
+      <>
+        <Header />
+        <HomeSkeleton />
+      </>
+    );
+  }
   if ((subscriptions.isError && !subscriptions.data) || (settings.isError && !settings.data)) {
     return (
       <>

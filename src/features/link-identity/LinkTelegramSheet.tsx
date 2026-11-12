@@ -12,7 +12,7 @@ import { BotLinkActions } from "@features/auth/ui/BotLinkActions";
 import { linkApi } from "./api";
 
 // The bot answers with a button to /link/bot#token=, which finishes the link in the browser it opens.
-function TelegramLinkBody() {
+function TelegramLinkBody({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const request = useMutation({ mutationFn: linkApi.telegramDeeplink });
   const { mutate } = request;
@@ -31,7 +31,7 @@ function TelegramLinkBody() {
     <div className="flex flex-col gap-4">
       <p className="text-sm text-foreground/80">{t("link.botHint")}</p>
       {request.data ? (
-        <BotLinkActions primary="accent" url={request.data.bot_url} renewing={request.isPending} onRenew={() => mutate()} />
+        <BotLinkActions url={request.data.bot_url} renewing={request.isPending} onRenew={() => mutate()} onCancel={onClose} />
       ) : (
         <Spinner />
       )}
@@ -43,7 +43,7 @@ export function LinkTelegramSheet({ open, onClose }: { open: boolean; onClose: (
   const { t } = useTranslation();
   return (
     <BottomSheet narrow icon={Send} open={open} onClose={onClose} title={t("link.telegramTitle")}>
-      <TelegramLinkBody />
+      <TelegramLinkBody onClose={onClose} />
     </BottomSheet>
   );
 }

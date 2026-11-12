@@ -66,7 +66,7 @@ export function InvitedPage() {
                 caption={
                   <>
                     {t("referral.levelN", { level: user.level })}
-                    {user.created_at && ` · ${formatDate(user.created_at, i18n.language)}`}
+                    {` · ${formatDate(user.created_at, i18n.language)}`}
                   </>
                 }
                 aside={<span className={reward ? "text-success" : "text-muted-foreground"}>{reward ?? "—"}</span>}

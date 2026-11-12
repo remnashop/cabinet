@@ -23,6 +23,7 @@ export interface Plan {
   // shown on the plan card
   badge: "POPULAR" | "BEST_VALUE" | null;
   type: string;
+  traffic_limit_strategy: string;
   // whole GB, 0 = unlimited
   traffic_limit: number;
   device_limit: number;
@@ -75,6 +76,8 @@ export interface CheckoutInput {
   legal_locale?: string;
   // the total shown to the customer: the backend refuses the order with PRICE_CHANGED if it moved
   expected_price?: string;
+  // the customer's earlier unpaid order this one replaces: canceled, so it holds neither a slot nor the discount
+  replaces_order_id?: number;
 }
 
 export interface PromocodeActivation {

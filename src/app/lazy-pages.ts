@@ -29,3 +29,7 @@ export const UnsubscribePage = lazy(() =>
   import("@pages/unsubscribe/UnsubscribePage").then((m) => ({ default: m.UnsubscribePage })),
 );
 export const LegalPage = lazy(() => import("@pages/legal/LegalPage").then((m) => ({ default: m.LegalPage })));
+// dev only: the condition is false in a production build, so the page isn't bundled
+export const DebugPage = import.meta.env.DEV
+  ? lazy(() => import("@pages/debug/DebugPage").then((m) => ({ default: m.DebugPage })))
+  : null;

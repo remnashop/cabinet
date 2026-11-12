@@ -26,7 +26,7 @@ export function SuccessCheck() {
 }
 
 /** Ten sparks flying out from under a success disc as it pops in, success and primary in turn; none with reduced motion. */
-export function Sparks() {
+function Sparks() {
   return (
     <span className="pointer-events-none absolute inset-0 hidden motion-safe:block" aria-hidden>
       {Array.from({ length: 10 }, (_, i) => (

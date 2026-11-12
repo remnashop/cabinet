@@ -3,11 +3,11 @@ import type { HTMLAttributes } from "react";
 export type BadgeTone = "success" | "warning" | "error" | "neutral" | "accent";
 
 const TONE_CLASS: Record<BadgeTone, string> = {
-  success: "border-success/30 bg-success/10 text-success",
-  warning: "border-warning/30 bg-warning/10 text-warning",
-  error: "border-error/30 bg-error/10 text-error",
-  neutral: "border-border bg-white/[0.04] text-muted-foreground",
-  accent: "border-primary/40 bg-accent text-primary",
+  success: "bg-success/10 text-success",
+  warning: "bg-warning/10 text-warning",
+  error: "bg-error/10 text-error",
+  neutral: "bg-white/[0.04] text-muted-foreground",
+  accent: "bg-accent text-primary",
 };
 
 const SHAPE_CLASS = {
@@ -21,11 +21,11 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   shape?: keyof typeof SHAPE_CLASS;
 }
 
-/** Status pill: uppercase, bordered, colored by tone; shape="count" for a number. */
+/** Status pill: uppercase, tinted by tone; shape="count" for a number. */
 export function Badge({ tone = "neutral", shape = "pill", className = "", ...props }: BadgeProps) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full border font-semibold ${SHAPE_CLASS[shape]} ${TONE_CLASS[tone]} ${className}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full font-semibold ${SHAPE_CLASS[shape]} ${TONE_CLASS[tone]} ${className}`}
       {...props}
     />
   );

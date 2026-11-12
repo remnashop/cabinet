@@ -59,8 +59,8 @@ export const authApi = {
     apiPost<AccessToken, object>(`${provider(name)}/callback`, { code, state, ...withLegal(legal) }),
   deeplink: () =>
     apiPost<Deeplink, object>("/auth/telegram/deeplink", readAttribution()),
-  botSignin: (token: string) =>
-    apiPost<AccessToken, object>("/auth/telegram/signin", { token }),
+  botSignin: (token: string, legal?: string) =>
+    apiPost<AccessToken, object>("/auth/telegram/signin", { token, ...withLegal(legal) }),
   logout: () => apiPost<null, object>("/auth/logout", {}, undefined, true),
 };
 

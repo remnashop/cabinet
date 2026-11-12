@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { useCatalogQuery, usePaymentMethodsQuery, type PaymentMethod, type Plan } from "@entities/plan/api";
-import { useTrialQuery, type Trial } from "@entities/subscription/api";
+import { useSubscriptionsQuery, useTrialQuery, type Trial } from "@entities/subscription/api";
+import { planTermsChanged } from "@entities/subscription/lib";
 import { startPayment } from "@features/payment/start-payment";
 import { parseWizardParams } from "@features/purchase/wizard";
 import { ButtonLink } from "@shared/ui/ButtonLink";
@@ -27,6 +28,7 @@ function trialPlan(trial: Trial | undefined, planId: number): Plan | undefined {
     description: null,
     badge: null,
     type: "BOTH",
+    traffic_limit_strategy: "NO_RESET",
     traffic_limit: 0,
     device_limit: 0,
     is_trial: true,
@@ -44,11 +46,14 @@ export function PlanWizardPage() {
   const catalog = useCatalogQuery(access);
   const trial = useTrialQuery();
   const methods = usePaymentMethodsQuery();
+  const subscriptions = useSubscriptionsQuery();
   // ?days= (buying again after a failed payment): the duration is taken, the wizard opens on the method
   const [chosenDays, setDays] = useState<number | null>(() => Number(search.get("days")) || null);
   const [chosenStep, setStep] = useState<0 | 1 | 2>(() => (search.get("days") ? 1 : 0));
   const [chosenMethod, setMethod] = useState<PaymentMethod | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  // the order the last "pay" created: a pay after going back replaces it
+  const [lastOrderId, setLastOrderId] = useState<number | null>(null);
 
   // RENEW comes straight from the home card, and the catalog has nothing to renew into; a plan link's page
   // would send the user straight back here, so it leaves for the catalog
@@ -56,6 +61,7 @@ export function PlanWizardPage() {
   const catalogPlan = catalog.data?.items.find((p) => p.id === planId);
   const trialOffer = catalogPlan ? undefined : trialPlan(trial.data, planId);
   const plan = catalogPlan ?? trialOffer;
+  const renewed = type === "RENEW" ? subscriptions.data?.items.find((s) => s.id === subId) : undefined;
   // one method is no choice: it's taken, and the wizard skips its step
   const onlyMethod = methods.data?.items.length === 1 ? methods.data.items[0] : null;
   const method = chosenMethod ?? onlyMethod;
@@ -121,6 +127,10 @@ export function PlanWizardPage() {
         skipMethod={skipMethod}
         onStep={(s) => setStep(Math.max(s, firstStep) as 0 | 1)}
       />
+      {/* a paid renewal moves the subscription to the plan's terms as they are now */}
+      {renewed && planTermsChanged(renewed, plan) && (
+        <p className="-mt-2 mb-5 px-3 text-xs text-warning">{t("purchase.termsChanged")}</p>
+      )}
       <StepTransition stepKey={step}>
         {step === 0 && (
           <DurationStep
@@ -155,7 +165,11 @@ export function PlanWizardPage() {
             access={access}
             typedEmail={email}
             onEmailChange={setEmail}
-            onCreated={(result) => startPayment(result, method.gateway_type, navigate)}
+            replacesOrderId={lastOrderId}
+            onCreated={(result) => {
+              setLastOrderId(result.order_id);
+              return startPayment(result, method.gateway_type, navigate);
+            }}
           />
         )}
       </StepTransition>

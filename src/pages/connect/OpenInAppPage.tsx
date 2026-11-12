@@ -33,7 +33,7 @@ export function OpenInAppPage() {
   if (guide.isError || verify.isError) {
     return (
       <Message tone="error" title={t("connect.openFailed")} text={t("connect.openFailedHint")}>
-        <Button variant="outline" onClick={() => void (guide.isError ? guide.refetch() : verify.refetch())}>
+        <Button variant="outline" size="lg" className="w-full" onClick={() => void (guide.isError ? guide.refetch() : verify.refetch())}>
           {t("common.retry")}
         </Button>
       </Message>
@@ -54,13 +54,15 @@ export function OpenInAppPage() {
       <p className="break-all text-xs text-muted-foreground">
         {t("connect.openSource", { host: new URL(hop.sub).host })}
       </p>
-      <ButtonLink href={hop.link} variant="solid" className="w-full">
-        {t("connect.open")}
-      </ButtonLink>
-      <Button variant="outline" className="w-full gap-2" onClick={() => void copy()}>
-        {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-        {copied ? t("connect.copied") : t("connect.copy")}
-      </Button>
+      <div className="flex w-full flex-col gap-2">
+        <ButtonLink href={hop.link} variant="solid" size="lg">
+          {t("connect.open")}
+        </ButtonLink>
+        <Button variant="outline" size="lg" onClick={() => void copy()}>
+          {copied ? <Check className="size-5" /> : <Copy className="size-5" />}
+          {copied ? t("connect.copied") : t("connect.copy")}
+        </Button>
+      </div>
       <p className="text-xs text-muted-foreground">{t("connect.openNotOpened")}</p>
     </Message>
   );

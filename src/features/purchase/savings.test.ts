@@ -10,6 +10,7 @@ const plan = (durations: [number, Record<string, string>][]): Plan => ({
   description: null,
   badge: null,
   type: "",
+  traffic_limit_strategy: "NO_RESET",
   traffic_limit: 0,
   device_limit: 0,
   is_trial: false,

@@ -273,8 +273,8 @@ html {
   }
 
   *::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
   }
 
   *::-webkit-scrollbar-track {
@@ -290,6 +290,13 @@ html {
     background-color: var(--color-primary);
   }
 }
+/* Autofill paints its own light fill, unreadable in a dark well; the delay keeps it from ever showing. */
+input:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-foreground);
+  caret-color: var(--color-foreground);
+  transition: background-color 9999s;
+}
+
 /* Insets for notches and Telegram's own header/home bar. The --tg-* vars are
    bound by viewport.bindCssVars() inside a Mini App; elsewhere env() applies. */
 :root {
@@ -310,7 +317,7 @@ body {
    mask layers: the fade over everything but the rightmost --scrollbar-size, an opaque one over the scrollbar, so the
    scrollbar doesn't fade too. */
 :root {
-  --scrollbar-size: 10px;
+  --scrollbar-size: 8px;
 }
 .scroll-fade-y {
   -webkit-mask-image:

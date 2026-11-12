@@ -104,7 +104,7 @@ export function DurationStep({
   });
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="px-5 text-xs font-semibold uppercase tracking-wide text-foreground">
+      <h2 className="px-5 lg:px-4 text-xs font-semibold uppercase tracking-wide text-foreground">
         {t(`purchase.chooseDuration.${type}`)}
       </h2>
       <div ref={gridRef} className="grid grid-cols-2 gap-5">

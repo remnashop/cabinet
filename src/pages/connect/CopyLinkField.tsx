@@ -21,7 +21,7 @@ export function CopyLinkField({
       type="button"
       onPointerDown={onPointerDown}
       onClick={() => void copy()}
-      className="group relative isolate flex w-full items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.04] py-2.5 pr-2.5 pl-4 text-left transition-colors hover:bg-white/[0.06]"
+      className="group relative isolate flex w-full items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.04] py-2.5 pr-2.5 pl-5 text-left transition-colors hover:bg-white/[0.06]"
     >
       {ripples}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">

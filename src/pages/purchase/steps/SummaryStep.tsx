@@ -30,6 +30,7 @@ export function SummaryStep({
   access,
   typedEmail,
   onEmailChange,
+  replacesOrderId,
   onCreated,
 }: {
   plan: Plan;
@@ -41,6 +42,7 @@ export function SummaryStep({
   /** owned by the wizard so a step back and forth keeps what was typed */
   typedEmail: string | null;
   onEmailChange: (value: string) => void;
+  replacesOrderId: number | null;
   /** opens the payment; resolves to the order to wait for here (the Mini App), null when the page moved on */
   onCreated: (result: CheckoutResult) => Promise<number | null>;
 }) {
@@ -91,6 +93,7 @@ export function SummaryStep({
         ...(subId !== null && { target_subscription_id: subId }),
         ...(access.plan_code && { plan_code: access.plan_code }),
         ...(email && { customer_email: email }),
+        ...(replacesOrderId !== null && { replaces_order_id: replacesOrderId }),
       },
       { onError: () => (inFlight.current = false) },
     );
@@ -121,8 +124,8 @@ export function SummaryStep({
       }}
     >
       {me.data && !me.data.email && (
-        <Card variant="bare" round>
-          <div className="flex flex-col gap-3 p-[13px]">
+        <Card round>
+          <div className="flex flex-col gap-3">
             <InfoRow
               icon={method.gateway_type === "TELEGRAM_STARS" ? Star : CreditCard}
               label={t("purchase.method")}
@@ -130,7 +133,7 @@ export function SummaryStep({
               bright
             />
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="receipt-email" className="px-[13px] text-xs text-foreground">
+              <label htmlFor="receipt-email" className="px-3 text-xs text-foreground">
                 {t("purchase.email")}
                 {/* a red asterisk when this method can't pay without it, as the panel's Field */}
                 {method.requires_email && <span className="text-error"> *</span>}
@@ -146,7 +149,7 @@ export function SummaryStep({
                 required={method.requires_email}
                 className="w-full"
               />
-              {emailInvalid && <FormError className="px-[13px]">{t("purchase.emailInvalid")}</FormError>}
+              {emailInvalid && <FormError className="px-3">{t("purchase.emailInvalid")}</FormError>}
             </div>
           </div>
         </Card>
@@ -170,6 +173,8 @@ export function SummaryStep({
         </FormError>
       )}
       {stopReason && <FormError>{stopReason}</FormError>}
+      {/* what paying does to the subscription the order is for */}
+      {type !== "NEW" && <p className="px-3 text-xs text-warning">{t(`purchase.typeNotice.${type}`)}</p>}
       <div className="flex flex-col gap-2">
         {awaited !== null ? (
           <AwaitPaymentButton key={awaited} orderId={awaited} onStop={stopWaiting} />

@@ -52,6 +52,7 @@ function Harness(props: {
   type: PurchaseType;
   subId: number | null;
   access: PlanAccess;
+  replacesOrderId: number | null;
   onCreated: () => Promise<number | null>;
 }) {
   const [email, setEmail] = useState<string | null>(null);
@@ -64,13 +65,21 @@ async function render(
   requiresEmail = false,
   onCreated: () => Promise<number | null> = async () => null,
   access: PlanAccess = { plan_code: null, renew_subscription_id: type === "RENEW" ? subId : null },
+  replacesOrderId: number | null = null,
 ) {
   const method: PaymentMethod = { gateway_type: "YOOKASSA", currency: "RUB", requires_email: requiresEmail };
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   await act(async () => {
     root.render(
       <QueryClientProvider client={client}>
-        <Harness method={method} type={type} subId={subId} access={access} onCreated={onCreated} />
+        <Harness
+          method={method}
+          type={type}
+          subId={subId}
+          access={access}
+          replacesOrderId={replacesOrderId}
+          onCreated={onCreated}
+        />
       </QueryClientProvider>,
     );
   });
@@ -116,6 +125,14 @@ describe("SummaryStep", () => {
     expect(checkoutBody()).toMatchObject({ expected_price: "100" });
   });
 
+  it("replaces the order an earlier pay created", async () => {
+    await render("NEW", null, false, undefined, undefined, 5);
+    await until(() => expect(payButton().disabled).toBe(false));
+    await act(async () => payButton().click());
+    await until(() => expect(createCheckout).toHaveBeenCalled());
+    expect(checkoutBody()).toMatchObject({ replaces_order_id: 5 });
+  });
+
   it("sends no target subscription for NEW", async () => {
     await render("NEW", null);
     await until(() => expect(payButton().disabled).toBe(false));
@@ -123,6 +140,7 @@ describe("SummaryStep", () => {
     await until(() => expect(createCheckout).toHaveBeenCalled());
     expect(checkoutBody()).not.toHaveProperty("target_subscription_id");
     expect(checkoutBody()).not.toHaveProperty("plan_code");
+    expect(checkoutBody()).not.toHaveProperty("replaces_order_id");
   });
 
   it("quotes and orders a link plan with its code", async () => {

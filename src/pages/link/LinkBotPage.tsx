@@ -51,7 +51,7 @@ export function LinkBotPage() {
       title={t(exchange.isError ? "link.failed" : "link.botLinkExpired")}
       text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : t("link.botLinkElsewhere")}
     >
-      <ButtonLink to="/profile" variant="outline" className="w-full">
+      <ButtonLink to="/profile" variant="outline" size="lg" className="w-full">
         {t("link.toProfile")}
       </ButtonLink>
     </FullScreenMessage>

@@ -24,30 +24,30 @@ export function LegalPage() {
   const content = (
     <>
       <PageHeader title={t("help.documents")} backTo={authed ? "/" : "/login"} />
-      {documents.isPending && <Skeleton className="h-64" />}
-      {documents.isError && !documents.data && <ErrorCard error={documents.error} onRetry={() => void documents.refetch()} />}
+      {documents.isPending && <Skeleton round className="h-64" />}
+      {documents.isError && !documents.data && <ErrorCard round error={documents.error} onRetry={() => void documents.refetch()} />}
       {documents.isSuccess && !shown.length && <PageEmpty icon={FileText} text={t("legal.empty")} />}
       {shown.map((doc) => (
-        <Card key={doc.kind}>
+        <Card round key={doc.kind}>
           <h2 className="mb-3 text-base font-bold">{doc.title}</h2>
           <LegalMarkdown>{doc.body}</LegalMarkdown>
         </Card>
       ))}
     </>
   );
-  if (authed) return <div className="flex flex-col gap-4">{content}</div>;
+  if (authed) return <div className="flex flex-col gap-5">{content}</div>;
 
   return (
     <>
       {/* the bottom padding clears the 64px back capsule with 16px on both sides, as main's does the nav */}
-      <main className="mx-auto flex max-w-2xl flex-col gap-4 px-4 pt-[calc(var(--safe-top)+16px)] pb-[calc(max(var(--safe-bottom),16px)+80px)]">
+      <main className="mx-auto flex max-w-2xl flex-col gap-5 px-4 pt-[calc(var(--safe-top)+16px)] pb-[calc(max(var(--safe-bottom),16px)+80px)]">
         {content}
       </main>
       <div className="fixed inset-x-0 bottom-0 z-10 mx-auto max-w-2xl px-4 pb-[max(var(--safe-bottom),16px)]">
         <Link
           to="/login"
           replace
-          className="flex h-16 w-full items-center justify-center gap-1.5 rounded-full border border-white/[0.14] bg-white/[0.06] text-sm font-medium text-foreground shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(232,236,251,0.22)] backdrop-blur-md backdrop-saturate-[1.8] transition-colors hover:bg-white/[0.1]"
+          className="flex h-16 w-full items-center justify-center gap-1.5 rounded-full border border-glass-border bg-surface/50 text-sm font-medium text-foreground shadow-2xl backdrop-blur-[28px] backdrop-saturate-150 transition-colors hover:bg-surface/70"
         >
           <ChevronLeft className="size-5" />
           {t("legal.goBack")}

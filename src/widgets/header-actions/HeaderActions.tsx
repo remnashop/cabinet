@@ -181,7 +181,7 @@ export function HeaderActions() {
               className={`${ITEM} text-foreground disabled:opacity-60`}
             >
               <span className="flex-1">{LANGUAGE_NAMES[language]}</span>
-              {language === current && <Check className="size-[15px] text-primary" />}
+              {language === current && <Check className="size-4 text-primary" />}
             </button>
           ))}
           {changeLanguage.isError && (

@@ -28,7 +28,7 @@ export function LinkEmailSheet({
   return (
     <BottomSheet narrow icon={Mail} open={open} onClose={onClose} title={t("link.emailTitle")}>
       {/* no domain hint: it's about creating accounts, and this one exists */}
-      <EmailLogin flow={flow} emailHint={t("link.emailHint")} />
+      <EmailLogin flow={flow} emailHint={t("link.emailHint")} onCancel={onClose} />
     </BottomSheet>
   );
 }

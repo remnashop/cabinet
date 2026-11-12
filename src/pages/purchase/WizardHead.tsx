@@ -49,7 +49,7 @@ export function WizardHead(props: HeadProps) {
             <div className="flex shrink-0 flex-col items-end justify-between gap-2 self-stretch">
               <span className="rounded-full bg-white/[0.12] px-2.5 py-1 text-xs font-semibold">{durationLabel(days, t)}</span>
               {step === 1 && price && (
-                <span className="text-xl font-bold tabular-nums tracking-tight">
+                <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
                   {formatMoney(price.price, price.currency, i18n.language)}
                 </span>
               )}

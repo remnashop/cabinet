@@ -67,7 +67,7 @@ export interface InvitedUser {
   // null: the account is gone
   name: string | null;
   level: number;
-  created_at: string | null;
+  created_at: string;
   // Decimal strings, the rewards this invitee's payments earned, by type
   reward_amounts: Partial<Record<RewardType, string>>;
 }

@@ -59,7 +59,7 @@ export function MethodStep({
   }
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="mb-1 px-3.5 text-xs font-semibold uppercase tracking-wide text-foreground">
+      <h2 className="mb-1 px-5 lg:px-4 text-xs font-semibold uppercase tracking-wide text-foreground">
         {t("purchase.chooseMethod")}
       </h2>
       {methods.data.items.map((m) => {

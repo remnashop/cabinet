@@ -157,8 +157,8 @@ export function RedeemDaysSheet({ open, onClose, bonusDays }: Props) {
               <span className="text-xs text-muted-foreground">{t("referral.available", { count: max })}</span>
             </div>
             <div
-              className={`flex items-center gap-2 rounded-xl border bg-white/[0.03] py-2 pr-2 pl-4 ${
-                valid ? "border-white/[0.08]" : "border-error"
+              className={`flex items-center gap-2 rounded-xl glass-well py-2 pr-2 pl-4 ring-inset transition-shadow focus-within:ring-1 focus-within:ring-primary ${
+                valid ? "" : "ring-1 ring-error focus-within:ring-error"
               }`}
             >
               <label className="flex min-w-0 flex-1 items-baseline gap-1.5">

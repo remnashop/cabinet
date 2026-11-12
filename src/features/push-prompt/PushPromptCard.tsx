@@ -75,7 +75,7 @@ export function PushPromptCard() {
           />
         </EventList>
       </Card>
-      {phase === "failed" && <FormError className="px-[13px]">{t("push.failed")}</FormError>}
+      {phase === "failed" && <FormError className="px-5 lg:px-4">{t("push.failed")}</FormError>}
     </div>
   );
 }

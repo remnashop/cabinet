@@ -33,7 +33,7 @@ export function LoadMore({ query }: { query: InfinitePages }) {
 
   if (!hasNextPage) return null;
   return (
-    <div ref={sentinel} className="mt-4 flex flex-col items-center gap-2">
+    <div ref={sentinel} className="mt-5 flex flex-col items-center gap-2">
       {isFetchNextPageError && <FormError>{t("common.loadFailed")}</FormError>}
       <Button variant="outline" disabled={isFetchingNextPage} onClick={() => void fetchNextPage()}>
         {t("common.more")}

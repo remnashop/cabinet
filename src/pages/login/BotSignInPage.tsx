@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { authApi, completeLogin } from "@features/auth/api";
-import { readBotSignInToken } from "@features/auth/bot-signin-token";
+import { readBotSignInToken, takeBotLegal } from "@features/auth/bot-signin-token";
 import { getErrorMessage } from "@shared/api/http";
 import { getAccessToken } from "@shared/api/tokens";
 import { INTRO_STATE } from "@shared/lib/intro";
@@ -19,7 +19,7 @@ export function BotSignInPage() {
   const started = useRef(false);
 
   const exchange = useMutation({
-    mutationFn: (value: string) => authApi.botSignin(value),
+    mutationFn: (value: string) => authApi.botSignin(value, takeBotLegal()),
     onSuccess: (accessToken) => {
       completeLogin(accessToken);
       void navigate("/", { replace: true, state: INTRO_STATE });
@@ -57,7 +57,7 @@ export function BotSignInPage() {
       title={t(exchange.isError ? "auth.bootFailed" : "auth.botLinkExpired")}
       text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : null}
     >
-      <ButtonLink to="/login" variant="outline" className="w-full">
+      <ButtonLink to="/login" variant="outline" size="lg" className="w-full">
         {t("auth.backToLogin")}
       </ButtonLink>
     </FullScreenMessage>

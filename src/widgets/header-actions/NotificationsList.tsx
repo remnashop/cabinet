@@ -29,6 +29,7 @@ import { formatRelative } from "@shared/lib/format";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { EventIcon, EventList, EventListEmpty, EventRow } from "@shared/ui/EventList";
 import { Skeleton } from "@shared/ui/Skeleton";
+import { DialogContext } from "@shared/ui/surface";
 
 const WARNING = "bg-warning/15 text-warning";
 
@@ -76,13 +77,18 @@ export function NotificationsList({
   const clear = useClearNotifications();
 
   if (!data) {
-    return isError ? (
-      <ErrorCard error={error} onRetry={() => void refetch()} />
-    ) : (
-      <div className="flex flex-col gap-2 p-1.5">
-        <Skeleton className="h-12" />
-        <Skeleton className="h-12" />
-      </div>
+    // the popover is the dialogs' glass: its blocks are their 12px plates, not page cards
+    return (
+      <DialogContext.Provider value>
+        {isError ? (
+          <ErrorCard error={error} onRetry={() => void refetch()} />
+        ) : (
+          <div className="flex flex-col gap-2 p-1.5">
+            <Skeleton className="h-12" />
+            <Skeleton className="h-12" />
+          </div>
+        )}
+      </DialogContext.Provider>
     );
   }
   if (data.items.length === 0) return <EventListEmpty icon={Bell} text={t("header.notificationsEmpty")} />;
@@ -95,7 +101,7 @@ export function NotificationsList({
         <button
           type="button"
           onClick={() => clear.mutate()}
-          className="flex h-[38px] shrink-0 items-center gap-1.5 rounded-full px-3.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-white/[0.07] hover:text-foreground"
+          className="flex h-[38px] shrink-0 items-center gap-1.5 rounded-full px-3.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
         >
           <Trash2 className="size-3.5" />
           {t("header.clear")}

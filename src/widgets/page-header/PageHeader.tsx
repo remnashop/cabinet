@@ -6,6 +6,7 @@ import { Link, matchPath, useLocation, useNavigate } from "react-router";
 import { isMiniApp, useTelegramBackButton } from "@shared/telegram";
 import { NAV_ITEMS } from "@widgets/app-shell/nav-items";
 import { HeaderSlot } from "@widgets/page-header/HeaderSlot";
+import { ICON_CIRCLE_CLASS } from "@shared/ui/button-class";
 import { Ripple } from "@shared/ui/Ripple";
 
 // desktop: the capsule's 36px bordered circle, as the panel header's page icon
@@ -15,7 +16,7 @@ const BACK_CLASS =
 /** The page's icon at the start of the desktop header capsule (the panel Header's IconCircle); a phone has none. */
 export function HeaderIcon({ icon: Icon }: { icon: LucideIcon }) {
   return (
-    <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-glass-border bg-white/[0.05] text-foreground max-lg:hidden">
+    <span className={`${ICON_CIRCLE_CLASS} text-foreground max-lg:hidden`}>
       <Icon className="size-4" />
     </span>
   );

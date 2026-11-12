@@ -65,14 +65,23 @@ interface MockSubscription {
   traffic_limit_strategy: string;
   plan_name: string;
   plan_id: number;
+  plan_traffic_limit: number;
+  plan_device_limit: number;
+  plan_traffic_limit_strategy: string;
   used_traffic: number | null; // bytes
   link_reset_at: string | null;
 }
 
+const soldTerms = (traffic: number, devices: number) => ({
+  plan_traffic_limit: traffic,
+  plan_device_limit: devices,
+  plan_traffic_limit_strategy: "NO_RESET",
+});
 const TEMPLATES = [
-  { plan_name: "Премиум", plan_id: 2, url: "https://sub.example.com/premium" },
-  { plan_name: "Базовый", plan_id: 1, url: "https://sub.example.com/basic" },
-  { plan_name: "Безлимит", plan_id: 3, url: "https://sub.example.com/unlimited" },
+  // sold on the catalog's current terms, so a renewal shows no "terms changed"
+  { plan_name: "Премиум", plan_id: 2, url: "https://sub.example.com/premium", ...soldTerms(100, 3) },
+  { plan_name: "Базовый", plan_id: 1, url: "https://sub.example.com/basic", ...soldTerms(50, 2) },
+  { plan_name: "Безлимит", plan_id: 3, url: "https://sub.example.com/unlimited", ...soldTerms(0, 5) },
 ];
 // the cards' alert demo: one card per look, [days left, % of 100 GB used, status]
 const ALERT_DEMO: [number, number, MockSubscription["status"]][] = [
@@ -173,6 +182,7 @@ const plan = (id: number, name: string, traffic: number, device_limit: number) =
   description: PLAN_TEXT[id]?.description ?? null,
   badge: PLAN_TEXT[id]?.badge ?? null,
   type: "BOTH",
+  traffic_limit_strategy: "NO_RESET",
   traffic_limit: traffic,
   device_limit,
   is_trial: false,
@@ -608,6 +618,7 @@ export const handlers = [
       traffic_limit_strategy: "NO_RESET",
       plan_name: "Пробный",
       plan_id: 0,
+      ...soldTerms(5, 1),
       used_traffic: 0,
       link_reset_at: null,
     };

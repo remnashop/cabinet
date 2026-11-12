@@ -35,3 +35,18 @@ export function readStashedBotLinkToken(now = Date.now()): string | null {
 export function clearStashedBotLinkToken(): void {
   removeStorage(STASH_KEY, "session");
 }
+
+const LEGAL_KEY = "cabinet_bot_legal";
+
+/** The locale of the legal notice shown where the bot link was asked for. localStorage: the bot's
+ *  button opens a new tab of this browser, where sessionStorage starts empty. */
+export function rememberBotLegal(legal?: string): void {
+  if (legal) writeStorage(LEGAL_KEY, legal);
+  else removeStorage(LEGAL_KEY);
+}
+
+export function takeBotLegal(): string | undefined {
+  const legal = readStorage(LEGAL_KEY) || undefined;
+  removeStorage(LEGAL_KEY);
+  return legal;
+}

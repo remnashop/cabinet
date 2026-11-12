@@ -6,30 +6,37 @@ import { useNavigate } from "react-router";
 import { retryPath } from "@features/purchase/wizard";
 import { getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
+import { AlertMark } from "@shared/ui/AlertMark";
 import { Button } from "@shared/ui/Button";
-import { Sparks } from "@shared/ui/SuccessCheck";
+import { SuccessCheck } from "@shared/ui/SuccessCheck";
 
 import type { usePaymentStatus } from "./usePaymentStatus";
 
+// the glow behind the mark and the rings a wait sends out
 const TONE = {
-  primary: ["border-primary/40 bg-primary/12 text-primary", "bg-primary/30", "border-primary/40"],
-  success: ["border-success/40 bg-success/15 text-success", "bg-success/30", "border-success/40"],
-  error: ["border-error/40 bg-error/15 text-error", "bg-error/25", "border-error/40"],
-  muted: ["border-white/[0.14] bg-white/[0.06] text-muted-foreground", "bg-white/10", "border-white/20"],
+  primary: ["bg-primary/30", "border-primary/40"],
+  success: ["bg-success/30", "border-success/40"],
+  error: ["bg-error/25", "border-error/40"],
+  muted: ["bg-white/10", "border-white/20"],
+} as const;
+
+// a wait's and a timeout's disc, around their icon; success and error wear the shared marks
+const DISC = {
+  primary: "border-primary/40 bg-primary/12 text-primary",
+  muted: "border-white/[0.14] bg-white/[0.06] text-muted-foreground",
 } as const;
 
 function StatusArt({
   tone,
   waiting = false,
-  path,
   children,
 }: {
   tone: keyof typeof TONE;
   waiting?: boolean;
-  path?: string;
+  /** the disc's icon, for primary and muted */
   children?: ReactNode;
 }) {
-  const [disc, glow, ring] = TONE[tone];
+  const [glow, ring] = TONE[tone];
   // waiting: room for the rings it sends out (scale 2.3), so they don't run over the title
   return (
     <div className={`relative flex size-20 items-center justify-center ${waiting ? "my-10" : "mb-2"}`} aria-hidden>
@@ -43,30 +50,19 @@ function StatusArt({
           <span className="absolute -inset-1.5 rounded-full border-2 border-transparent border-t-primary motion-safe:animate-spin" />
         </>
       )}
-      {tone === "success" && <Sparks />}
-      <span className={`relative flex size-16 items-center justify-center rounded-full border ${disc} ${path ? (tone === "error" ? "motion-safe:animate-pop-shake" : "motion-safe:animate-pop") : ""}`}>
-        {path ? (
-          <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth={2.25}>
-            {/* pathLength 1: the dash animation draws it whatever the path's real length */}
-            <path
-              d={path}
-              pathLength={1}
-              strokeDasharray={1}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="motion-safe:animate-draw"
-            />
-          </svg>
+      {/* relative: over the glow */}
+      <span className="relative flex">
+        {tone === "success" ? (
+          <SuccessCheck />
+        ) : tone === "error" ? (
+          <AlertMark tone="error" />
         ) : (
-          children
+          <span className={`flex size-16 items-center justify-center rounded-full border ${DISC[tone]}`}>{children}</span>
         )}
       </span>
     </div>
   );
 }
-
-const CHECK = "M20 6 9 17l-5-5";
-const CROSS = "M18 6 6 18M6 6l12 12";
 
 export function PaymentStatusView({ status, transaction, error, retry }: ReturnType<typeof usePaymentStatus>) {
   const { t } = useTranslation();
@@ -96,7 +92,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
   if (status === "paid") {
     return (
       <>
-        <StatusArt tone="success" path={CHECK} />
+        <StatusArt tone="success" />
         {heading(
           t("payment.paidTitle"),
           t(`payment.paid.${transaction?.purchase_type ?? "NEW"}`, { plan: transaction?.plan_name ?? "" }),
@@ -120,7 +116,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
     const canceled = transaction?.status === "CANCELED";
     return (
       <>
-        <StatusArt tone="error" path={CROSS} />
+        <StatusArt tone="error" />
         {heading(
           t(canceled ? "payment.canceledTitle" : "payment.failed"),
           t(canceled ? "payment.canceledText" : "payment.failedText"),
@@ -137,7 +133,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
   if (status === "error") {
     return (
       <>
-        <StatusArt tone="error" path={CROSS} />
+        <StatusArt tone="error" />
         {heading(t("payment.errorTitle"), getErrorMessage(error, t("errors.generic")))}
         {home}
       </>

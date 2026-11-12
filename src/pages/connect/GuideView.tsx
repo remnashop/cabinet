@@ -146,10 +146,10 @@ function PlatformTile({
       onClick={onClick}
       onPointerDown={ripple.onPointerDown}
       // an odd one out on a phone takes the whole last row; three to a row on desktop, it stays one
-      className="relative flex flex-col gap-4 rounded-2xl border border-white/[0.08] bg-linear-160 from-primary/10 to-white/[0.02] to-60% p-4 text-left transition-colors last:odd:col-span-2 hover:bg-white/[0.04] lg:last:odd:col-span-1"
+      className="relative flex flex-col gap-4 rounded-home glass-panel p-5 text-left transition-colors last:odd:col-span-2 hover:bg-white/[0.06] lg:p-4 lg:last:odd:col-span-1"
     >
       {ripple.ripples}
-      <span className="flex size-11 items-center justify-center rounded-xl bg-accent text-primary">
+      <span className="flex size-11 items-center justify-center rounded-full bg-accent text-primary">
         <Mark className="size-6" strokeWidth={1.67} />
       </span>
       <span className="flex flex-col leading-snug">
@@ -403,8 +403,8 @@ export function GuideView({
         title={t("connect.otherTitle")}
         hint={t("connect.otherHint")}
         art={
-          <div className="flex w-full flex-1 flex-col justify-center gap-3">
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+          <div className="flex w-full flex-1 flex-col justify-center gap-5">
+            <div className="grid grid-cols-2 gap-5 lg:grid-cols-3">
               {shown.map(({ id, mark }) => (
                 <PlatformTile
                   key={id}

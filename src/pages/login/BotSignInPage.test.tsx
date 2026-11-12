@@ -75,6 +75,14 @@ describe("BotSignInPage", () => {
     expect(router.state.location.pathname).toBe("/");
   });
 
+  it("sends the legal notice's locale remembered where the link was asked for, once", async () => {
+    window.localStorage.setItem("cabinet_bot_legal", "ru");
+    await render();
+    const [, init] = signinCalls()[0] as [string, RequestInit];
+    expect(JSON.parse(init.body as string)).toEqual({ token: TOKEN, legal_locale: "ru" });
+    expect(window.localStorage.getItem("cabinet_bot_legal")).toBeNull();
+  });
+
   it("names the real reason when the exchange fails", async () => {
     fetchMock.mockImplementation(async () =>
       Response.json({ detail: "blocked", code: "USER_BLOCKED" }, { status: 403 }),

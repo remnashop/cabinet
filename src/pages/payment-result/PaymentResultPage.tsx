@@ -15,10 +15,10 @@ export function PaymentResultPage() {
     return (
       <FullScreenMessage tone="warning" title={t("payment.noOrderTitle")} text={t("payment.noOrderText")}>
         <div className="flex w-full flex-col gap-2">
-          <ButtonLink to="/profile/payments" replace variant="solid" className="w-full">
+          <ButtonLink to="/profile/payments" replace variant="solid" size="lg" className="w-full">
             {t("pages.payments")}
           </ButtonLink>
-          <ButtonLink to="/" replace variant="outline" className="w-full">
+          <ButtonLink to="/" replace variant="outline" size="lg" className="w-full">
             {t("common.home")}
           </ButtonLink>
         </div>

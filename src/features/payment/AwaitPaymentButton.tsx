@@ -25,7 +25,7 @@ export function AwaitPaymentButton({ orderId, onStop }: { orderId: number; onSto
 
   return (
     <Button variant="outline" size="lg" onClick={() => onStop(null)}>
-      <Loader2 className="size-4 motion-safe:animate-spin" />
+      <Loader2 className="size-5 motion-safe:animate-spin" />
       {t("payment.waitingButton")}
     </Button>
   );

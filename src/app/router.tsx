@@ -19,6 +19,7 @@ import {
   SubscriptionPage,
   UnsubscribePage,
   LegalPage,
+  DebugPage,
 } from "@app/lazy-pages";
 import { RouteErrorPage } from "@pages/route-error/RouteErrorPage";
 import { AppShell } from "@widgets/app-shell/AppShell";
@@ -79,6 +80,7 @@ export const router = createBrowserRouter([
           { path: "invite/friends", element: <InvitedPage /> },
           { path: "profile", element: <ProfilePage /> },
           { path: "profile/payments", element: <PaymentsPage /> },
+          ...(DebugPage ? [{ path: "debug", element: <DebugPage /> }] : []),
         ],
       },
       { path: "*", element: <NotFoundPage /> },

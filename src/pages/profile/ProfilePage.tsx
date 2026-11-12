@@ -64,7 +64,7 @@ function Header({ me, onSignOut }: { me: Me; onSignOut: () => void }) {
           copied ? "text-success" : "text-foreground"
         }`}
       >
-        {copied ? <Check className="size-[17px]" /> : <Copy className="size-[17px]" />}
+        {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
       </RippleButton>
       {/* the Mini App signs back in with Telegram's data at once: no sign-out there */}
       {!isMiniApp() && (
@@ -75,7 +75,7 @@ function Header({ me, onSignOut }: { me: Me; onSignOut: () => void }) {
             onClick={onSignOut}
             className={`relative ${ICON_BUTTON_CLASS} text-error hover:bg-error/10 lg:hidden`}
           >
-            <LogOut className="size-[17px]" />
+            <LogOut className="size-4" />
           </RippleButton>
           <Button variant="glassDanger" className="max-lg:hidden" onClick={onSignOut}>
             <LogOut className="size-4" />

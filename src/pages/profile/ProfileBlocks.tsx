@@ -76,7 +76,7 @@ function IdentityAction({
   }
   if (action === "connect") {
     return (
-      <Button variant="secondary" onClick={() => onConnect(identity.kind)}>
+      <Button variant="secondary" size="sm" onClick={() => onConnect(identity.kind)}>
         {t("profile.connect")}
       </Button>
     );
@@ -171,7 +171,7 @@ export function ProfileBlocks({ me, actions, linkError }: { me: Me; actions: Pro
             />
           </EventList>
         </Card>
-        {linkError && <FormError className="px-[13px]">{linkError}</FormError>}
+        {linkError && <FormError className="px-5 lg:px-4">{linkError}</FormError>}
       </div>
       <PushToggle />
     </>

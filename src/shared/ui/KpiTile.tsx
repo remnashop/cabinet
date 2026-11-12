@@ -26,14 +26,15 @@ export function KpiTile({
   return (
     <div className={`flex min-w-0 flex-col gap-1.5 ${shape} ${fill} px-[18px] py-4`}>
       <div className="flex min-w-0 items-center justify-between gap-2">
-        <div className="truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
+        <div className="line-clamp-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
         {action}
       </div>
       <div className={`text-2xl font-bold tabular-nums tracking-tight ${tone === "primary" ? "text-primary" : ""}`}>
         <CountUp text={value} />
         {valueSuffix && <span className="ml-2 text-sm font-medium text-muted-foreground">{valueSuffix}</span>}
       </div>
-      {hint && <div className="-mt-1 truncate text-xs text-muted-foreground">{hint}</div>}
+      {/* mt-auto: hints line up across a grid row where a neighbour runs taller */}
+      {hint && <div className="mt-auto truncate text-xs text-muted-foreground">{hint}</div>}
     </div>
   );
 }

@@ -115,7 +115,7 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
               onRetry={() => void (subscriptions.isError && !subscriptions.data ? subscriptions.refetch() : targetIds.refetch())}
             />
           )}
-          {!targets && !listError && <Skeleton round className="aspect-[2.6] w-full" />}
+          {!targets && !listError && <Skeleton corners="rounded-subscription" className="aspect-[2.6] w-full" />}
           {targets?.map((sub) => (
             <RippleButton
               key={sub.id}

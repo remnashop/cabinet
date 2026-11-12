@@ -36,9 +36,12 @@ const LG_TYPE_CLASS = "gap-2 px-6 text-base font-semibold";
 const SIZE_CLASS = { sm: "h-8", md: "h-9", field: "h-9.5", lg: "h-16" } as const;
 export type ButtonSize = keyof typeof SIZE_CLASS;
 
-/** A 36px glass circle around a 17px icon (the header's bell, copy); the text color is the caller's. */
-export const ICON_BUTTON_CLASS =
-  "flex size-9 shrink-0 items-center justify-center rounded-full border border-glass-border bg-white/[0.05] transition-colors hover:bg-white/[0.06]";
+/** A 36px glass circle around a 16px icon (a section's mark, the header's page icon); the text color is the caller's. */
+export const ICON_CIRCLE_CLASS =
+  "flex size-9 shrink-0 items-center justify-center rounded-full border border-glass-border bg-white/[0.05]";
+
+/** The circle as a button (copy, sign out). */
+export const ICON_BUTTON_CLASS = `${ICON_CIRCLE_CLASS} transition-colors hover:bg-white/[0.08]`;
 
 /** A button's look for an element that has to be something else: an `<a>` whose href the OS must follow. */
 export function buttonClass(variant: ButtonVariant, size: ButtonSize = "md"): string {

@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
+import { useShownLegalLocale } from "@entities/legal/api";
 import { authApi } from "@features/auth/api";
+import { rememberBotLegal } from "@features/auth/bot-signin-token";
 import { BotLinkActions } from "@features/auth/ui/BotLinkActions";
 import { PROVIDER_ICONS } from "@features/auth/ui/provider-icons";
 import { getErrorMessage } from "@shared/api/http";
@@ -12,7 +14,14 @@ import { FormError } from "@shared/ui/FormError";
 // opens, so this tab only hands the user over and waits for nothing.
 export function TelegramBotLogin() {
   const { t } = useTranslation();
-  const request = useMutation({ mutationFn: () => authApi.deeplink() });
+  const legal = useShownLegalLocale();
+  const request = useMutation({
+    mutationFn: () => {
+      // the sign-in itself happens in the tab the bot's button opens: the notice's locale waits for it
+      rememberBotLegal(legal);
+      return authApi.deeplink();
+    },
+  });
 
   if (request.isSuccess) {
     return (

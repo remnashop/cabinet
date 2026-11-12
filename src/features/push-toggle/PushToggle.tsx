@@ -80,7 +80,7 @@ export function PushToggle() {
           />
         </EventList>
       </Card>
-      {problem && <FormError className="px-[13px]">{problem}</FormError>}
+      {problem && <FormError className="px-5 lg:px-4">{problem}</FormError>}
     </div>
   );
 }

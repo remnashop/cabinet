@@ -26,8 +26,10 @@ export function Card({ variant = "page", title, icon: Icon, titleFor, round, cla
   const top = variant === "form" ? (title ? "pt-1.5" : "pt-3.5") : "";
   const Title = titleFor ? "label" : "h3";
   const { shape, fill } = useSurface(round);
+  // a 32px phone block is 20px in; a dialog's plate ignores round and keeps 16px
+  const padding = variant === "page" && shape === "rounded-home" ? "p-5 lg:p-4" : PADDING[variant];
   return (
-    <div className={`${shape} ${fill} ${PADDING[variant]} ${top} ${className}`} {...props}>
+    <div className={`${shape} ${fill} ${padding} ${top} ${className}`} {...props}>
       {title && (
         <Title
           htmlFor={titleFor}

@@ -3,30 +3,49 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { telegramLink } from "@shared/lib/safe-redirect";
+import { SheetFooter } from "@shared/ui/BottomSheet";
 import { Button } from "@shared/ui/Button";
-import type { ButtonVariant } from "@shared/ui/button-class";
 import { ButtonLink } from "@shared/ui/ButtonLink";
 
-/** The bot's start link as a button, then a fresh one: it lives 5 minutes. hint: between the two; primary: the
- *  link's look, accent inside a dialog. */
+/** The bot's start link as a button, then a fresh one: it lives 5 minutes. hint: between the two. onCancel: in a
+ *  dialog, closes it; the link then goes to its footer beside cancel (SheetFooter), the fresh one stays in the body. */
 export function BotLinkActions({
   url,
   renewing,
   onRenew,
   hint,
-  primary = "solid",
+  onCancel,
 }: {
   url: string;
   renewing: boolean;
   onRenew: () => void;
   hint?: ReactNode;
-  primary?: ButtonVariant;
+  onCancel?: () => void;
 }) {
   const { t } = useTranslation();
+  // a link, not window.open: after an await browsers block a scripted popup and iOS won't hand it to the app
+  const link = { href: telegramLink(url), target: "_blank", rel: "noopener noreferrer" };
+  if (onCancel) {
+    return (
+      <>
+        <Button variant="glass" size="sm" className="self-start" disabled={renewing} onClick={onRenew}>
+          {t("auth.newBotLink")}
+        </Button>
+        <SheetFooter>
+          <Button variant="glass" onClick={onCancel}>
+            {t("common.cancel")}
+          </Button>
+          <ButtonLink {...link} variant="glassAccent">
+            <Send className="size-4" />
+            {t("auth.openBot")}
+          </ButtonLink>
+        </SheetFooter>
+      </>
+    );
+  }
   return (
     <div className="flex w-full flex-col gap-2">
-      {/* a link, not window.open: after an await browsers block a scripted popup and iOS won't hand it to the app */}
-      <ButtonLink href={telegramLink(url)} target="_blank" rel="noopener noreferrer" variant={primary} className="w-full">
+      <ButtonLink {...link} variant="solid" className="w-full">
         <Send className="size-4" />
         {t("auth.openBot")}
       </ButtonLink>

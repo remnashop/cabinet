@@ -29,10 +29,10 @@ function InviteCard() {
     // sidebar widens, it is uncovered instead
     <Link
       to="/invite"
-      className="hidden w-[220px] shrink-0 rounded-2xl xl:group-data-expanded/sidebar:block border border-border bg-primary/[0.06] p-3 transition-colors hover:border-primary/45"
+      className="hidden w-[220px] shrink-0 rounded-3xl xl:group-data-expanded/sidebar:block border border-border bg-primary/[0.06] p-3.5 transition-colors hover:border-primary/45"
     >
       <span className="flex items-center gap-2 text-sm font-semibold">
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
           <Gift className="size-4" />
         </span>
         {t("referral.title")}
@@ -52,7 +52,7 @@ const PILL = `${PILL_SHAPE} font-medium text-muted-foreground transition-colors 
 // labels show from xl, and only while the sidebar is expanded
 const LABEL = "hidden whitespace-nowrap xl:group-data-expanded/sidebar:inline";
 const HINT_BUBBLE =
-  "pointer-events-none z-50 w-max max-w-56 -translate-y-1/2 rounded-popover-item border border-white/[0.14] bg-popover px-3 py-2 text-xs text-foreground shadow-[0_24px_48px_-20px_rgba(4,8,20,0.6)] transition-opacity duration-150";
+  "pointer-events-none z-50 w-max max-w-56 -translate-y-1/2 rounded-popover-item glass-dialog px-3 py-2 text-xs text-foreground transition-opacity duration-150";
 
 interface Hint {
   text: string;

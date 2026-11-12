@@ -32,7 +32,7 @@ export function ConnectPage() {
     return (
       <>
         {header}
-        <ErrorCard error={subscriptions.error} onRetry={() => void subscriptions.refetch()} />
+        <ErrorCard round error={subscriptions.error} onRetry={() => void subscriptions.refetch()} />
       </>
     );
   }
@@ -40,7 +40,7 @@ export function ConnectPage() {
     return (
       <>
         {header}
-        <Skeleton className="h-72" />
+        <Skeleton round className="h-72" />
       </>
     );
   }
@@ -64,7 +64,7 @@ export function ConnectPage() {
     return (
       <>
         {header}
-        <Card>
+        <Card round>
           <LinkPanel subscription={subscription} />
         </Card>
       </>

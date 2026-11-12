@@ -117,7 +117,7 @@ export function BottomNav() {
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-10 px-4 pb-[max(var(--safe-bottom),16px)] lg:hidden">
       {/* the dialogs' glass: dark and heavily blurred, so a bright button scrolling under it can't drown the tabs */}
-      <div ref={barRef} className={`pointer-events-auto relative flex w-full rounded-full p-1.5 ${GLASS}`}>
+      <div ref={barRef} className={`pointer-events-auto relative mx-auto flex w-full max-w-[528px] rounded-full p-1.5 ${GLASS}`}>
         {/* every tab at its natural width with a 12px side padding, the bar's own p-1.5 included */}
         <div ref={probeRef} aria-hidden className="invisible absolute flex w-max p-1.5">
           {labels.map((label) => (

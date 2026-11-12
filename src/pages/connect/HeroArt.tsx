@@ -11,8 +11,8 @@ export function HeroArt({ icon: Icon }: { icon: LucideIcon }) {
   return (
     <div className="flex flex-1 items-center justify-center py-6 lg:flex-none">
       <div className="relative flex size-60 items-center justify-center">
-        {/* as wide as the outer ring, so the mask fades the rings without cutting them; fits a 358px phone column */}
-        <div className="pointer-events-none absolute top-1/2 left-1/2 size-[352px] -translate-1/2 mask-[linear-gradient(to_bottom,white,transparent)] select-none">
+        {/* as wide as the outer ring, so the mask fades the rings without cutting them; fits a 358px phone column, scaled down on a narrower one */}
+        <div className="pointer-events-none absolute top-1/2 left-1/2 size-[352px] -translate-1/2 max-[360px]:scale-[0.85] mask-[linear-gradient(to_bottom,white,transparent)] select-none">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <span
               key={i}

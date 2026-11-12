@@ -19,6 +19,7 @@ import type { ReferralProgram } from "@entities/referral/api";
 import { rewardTerms } from "@features/referral/links";
 import { formatNumber } from "@shared/lib/format";
 import { Button } from "@shared/ui/Button";
+import { ICON_CIRCLE_CLASS } from "@shared/ui/button-class";
 import { ActionTile } from "@shared/ui/ActionTile";
 import { Card } from "@shared/ui/Card";
 import { RippleButton } from "@shared/ui/RippleButton";
@@ -45,7 +46,7 @@ export interface InviteData {
 
 function LinkField({ data }: { data: InviteData }) {
   const { t } = useTranslation();
-  if (data.linkPending) return <Skeleton corners="rounded-2xl" className="h-15 w-full" />;
+  if (data.linkPending) return <Skeleton corners="rounded-full" className="h-15 w-full" />;
   if (!data.main) return <p className="text-sm text-muted-foreground">{t("referral.noCode")}</p>;
   return <CopyLinkField url={data.main} caption={t("referral.yourLink")} />;
 }
@@ -137,7 +138,7 @@ function ActionPill({
     <RippleButton
       type="button"
       onClick={onClick}
-      className="relative flex h-16 w-full min-w-0 items-center justify-center gap-2 rounded-home px-6 text-base font-semibold text-foreground/80 transition-colors hover:bg-white/[0.04] glass-panel"
+      className="relative flex h-16 w-full min-w-0 items-center justify-center gap-2 rounded-home px-6 text-base font-semibold text-foreground/80 transition-colors hover:bg-white/[0.06] glass-panel"
     >
       <Icon className="size-5 shrink-0" />
       <span className="truncate">{label}</span>
@@ -228,7 +229,7 @@ function HowFolded({ program }: { program: ReferralProgram }) {
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((shown) => !shown)}
-        className={`relative flex h-16 w-full items-center justify-center gap-2 px-6 text-base font-semibold text-foreground/80 transition-colors hover:bg-white/[0.04] ${
+        className={`relative flex h-16 w-full items-center justify-center gap-2 px-6 text-base font-semibold text-foreground/80 transition-colors hover:bg-white/[0.06] ${
           open ? "rounded-t-home" : "rounded-home"
         }`}
       >
@@ -243,7 +244,7 @@ function HowFolded({ program }: { program: ReferralProgram }) {
         }`}
       >
         <div className="overflow-hidden">
-          <div className="px-4 pb-4">
+          <div className="px-5 pb-5 lg:px-4 lg:pb-4">
             <HowRail program={program} />
           </div>
         </div>
@@ -258,7 +259,7 @@ function InviteCard({ data }: { data: InviteData }) {
     <Card round className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         {/* the panel Section's header: a 36px glass circle, a 16px title over a 12px line */}
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-glass-border bg-white/[0.05] text-foreground">
+        <span className={`${ICON_CIRCLE_CLASS} text-foreground`}>
           <Gift className="size-4" />
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">

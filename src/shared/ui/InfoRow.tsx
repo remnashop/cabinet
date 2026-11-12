@@ -15,13 +15,13 @@ export function InfoRow({ icon: Icon, label, value, onClick, bright }: InfoRowPr
     <>
       <span className={`flex shrink-0 items-center gap-2.5 ${bright ? "text-foreground" : "text-muted-foreground"}`}>
         {Icon && <Icon className="size-[15px]" />}
-        <span className="text-sm">{label}</span>
+        <span className="text-xs">{label}</span>
       </span>
       <span className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-foreground">{value}</span>
     </>
   );
   const base =
-    "flex h-9.5 w-full items-center justify-between gap-3 rounded-full px-2.5 text-left transition-colors hover:bg-white/[0.04]";
+    "flex h-9 w-full items-center justify-between gap-3 rounded-full px-2.5 text-left transition-colors hover:bg-white/[0.04]";
   return onClick ? (
     <button type="button" onClick={onClick} className={base}>
       {content}

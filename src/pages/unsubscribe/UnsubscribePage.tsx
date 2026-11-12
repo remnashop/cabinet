@@ -43,14 +43,16 @@ export function UnsubscribePage() {
 
   return (
     <FullScreenMessage tone={!token ? "warning" : action.isError ? "error" : undefined} title={title} text={text}>
-      {canSubmit && (
-        <Button variant="solid" className="w-full" disabled={action.isPending} onClick={() => action.mutate(token)}>
-          {action.isError ? t("common.retry") : t("unsubscribe.confirm")}
-        </Button>
-      )}
-      <ButtonLink to="/" variant="outline" className="w-full">
-        {t("common.home")}
-      </ButtonLink>
+      <div className="flex w-full flex-col gap-2">
+        {canSubmit && (
+          <Button variant="solid" size="lg" disabled={action.isPending} onClick={() => action.mutate(token)}>
+            {action.isError ? t("common.retry") : t("unsubscribe.confirm")}
+          </Button>
+        )}
+        <ButtonLink to="/" variant="outline" size="lg">
+          {t("common.home")}
+        </ButtonLink>
+      </div>
     </FullScreenMessage>
   );
 }

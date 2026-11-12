@@ -12,6 +12,7 @@ import {
   daysLeft,
   timeLeft,
   trafficAlert,
+  planTermsChanged,
   trafficOut,
   trafficRatio,
   urgency,
@@ -30,6 +31,9 @@ const sub = (overrides: Partial<OwnSubscription> = {}): OwnSubscription => ({
   traffic_limit_strategy: "NO_RESET",
   plan_name: "Plan",
   plan_id: 10,
+  plan_traffic_limit: 100,
+  plan_device_limit: 3,
+  plan_traffic_limit_strategy: "NO_RESET",
   used_traffic: 0,
   device_all_reset_at: null,
   link_reset_at: null,
@@ -43,6 +47,7 @@ const plan = (id: number): Plan => ({
   description: null,
   badge: null,
   type: "",
+  traffic_limit_strategy: "NO_RESET",
   traffic_limit: 0,
   device_limit: 0,
   is_trial: false,
@@ -137,4 +142,11 @@ it("canBuyMore counts an expired subscription, not a trial", () => {
   expect(canBuyMore(3, paid)).toBe(true);
   expect(canBuyMore(2, paid)).toBe(false);
   expect(canBuyMore(2, [sub(), sub({ is_trial: true })])).toBe(true);
+});
+
+it("planTermsChanged: the plan's limits or strategy moved since the purchase", () => {
+  const edited = { ...plan(10), traffic_limit: 100, device_limit: 3 };
+  expect(planTermsChanged(sub(), edited)).toBe(false);
+  expect(planTermsChanged(sub(), { ...edited, device_limit: 5 })).toBe(true);
+  expect(planTermsChanged(sub(), { ...edited, traffic_limit_strategy: "MONTH" })).toBe(true);
 });

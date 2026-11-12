@@ -120,7 +120,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
           {!compact && (
             <div className="mt-auto flex flex-col lg:@min-[400px]/card:mb-6 gap-[clamp(6px,1.7cqw,9px)] lg:gap-1.5">
               <div className="flex items-baseline justify-between gap-2">
-                <span className={`text-[length:clamp(26px,7.3cqw,40px)] font-bold leading-[1.1] tracking-tight lg:text-2xl ${TEXT_TONE[trafficTone]}`}>
+                <span className={`text-[length:clamp(26px,7.3cqw,40px)] shrink-0 whitespace-nowrap font-bold leading-[1.1] tracking-tight lg:text-2xl ${TEXT_TONE[trafficTone]}`}>
                   {sub.effective_traffic_limit === 0
                     ? "∞"
                     : sub.used_traffic === null
@@ -128,7 +128,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
                       : formatBytes(Math.max(0, sub.effective_traffic_limit * GB - sub.used_traffic), locale)}
                 </span>
                 {ratio !== null && sub.used_traffic !== null && (
-                  <span className="min-w-0 truncate text-[length:clamp(13px,3.65cqw,18px)] font-bold lg:text-sm">
+                  <span className="min-w-0 truncate text-[length:clamp(13px,3.65cqw,18px)] font-bold lg:text-xs lg:@min-[340px]/card:text-sm">
                     {t("home.trafficUsed", { value: formatBytes(sub.used_traffic, locale) })}
                   </span>
                 )}

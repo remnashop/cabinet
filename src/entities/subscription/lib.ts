@@ -92,6 +92,15 @@ export function canRenew(sub: OwnSubscription, catalog: Plan[]): boolean {
   return !sub.is_trial && catalog.some((p) => p.id === sub.plan_id);
 }
 
+// the plan was edited since this subscription was bought: a paid renewal moves it to the new terms
+export function planTermsChanged(sub: OwnSubscription, plan: Plan): boolean {
+  return (
+    sub.plan_traffic_limit !== plan.traffic_limit ||
+    sub.plan_device_limit !== plan.device_limit ||
+    sub.plan_traffic_limit_strategy !== plan.traffic_limit_strategy
+  );
+}
+
 // null = no cap. Counted as the backend's checkout does: an expired subscription holds its slot (it's renewed in
 // place), a trial doesn't (a purchase upgrades it)
 export function canBuyMore(maxActive: number | null, items: OwnSubscription[]): boolean {

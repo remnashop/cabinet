@@ -17,7 +17,8 @@ beforeEach(() => {
   issued = 0;
   vi.stubGlobal(
     "fetch",
-    vi.fn(async () => {
+    vi.fn(async (url: string) => {
+      if (!url.endsWith("/auth/telegram/deeplink")) return Response.json({ items: [], total: 0 });
       issued += 1;
       return Response.json({ bot_url: `https://t.me/shop_bot?start=webauth_${issued}`, expires_in: 300 });
     }),
