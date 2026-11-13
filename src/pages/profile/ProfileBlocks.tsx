@@ -82,6 +82,9 @@ function IdentityAction({
       </Button>
     );
   }
+  if (action === "inDashboard") {
+    return <span className="text-right text-xs text-muted-foreground">{t("profile.inDashboard")}</span>;
+  }
   if (action === "connectInBrowser") {
     return <span className="text-right text-xs text-muted-foreground">{t("profile.connectInBrowser")}</span>;
   }
@@ -92,7 +95,8 @@ function IdentityRows({ actions }: { actions: ProfileActions }) {
   const { t } = useTranslation();
   const data = useIdentityRows();
   if (data.state === "error") return <ErrorCard round error={data.error} onRetry={data.retry} />;
-  if (data.state === "loading") return <Skeleton round className="h-40" />;
+  // one row's height; the card eases to the real rows
+  if (data.state === "loading") return <Skeleton round className="h-15" />;
   return (
     <>
       {data.rows.map(({ identity, action }) => (
@@ -118,7 +122,7 @@ function IdentityRows({ actions }: { actions: ProfileActions }) {
 /** linkError: a sign-in method's link or unlink that failed, said under their list */
 export function ProfileBlocks({ me, actions, linkError }: { me: Me; actions: ProfileActions; linkError: string | null }) {
   const { t, i18n } = useTranslation();
-  // the biggest of the three discounts; none shows a dash, not a missing tile
+  // the biggest of the three discounts; none shows 0%, not a missing tile
   const discount = maxDiscount(me);
   return (
     <>
@@ -137,11 +141,10 @@ export function ProfileBlocks({ me, actions, linkError }: { me: Me; actions: Pro
           value={<span className="text-primary">{me.bonus_days}</span>}
           label={t("profile.bonusDaysCount", { count: me.bonus_days })}
           onClick={actions.onRedeemDays}
-          disabled={me.bonus_days === 0}
         />
         <ActionTile
           round
-          value={discount > 0 ? <span className="text-primary">{discount}%</span> : "—"}
+          value={<span className="text-primary">{discount}%</span>}
           label={t("home.discount")}
           onClick={actions.onPromo}
         />

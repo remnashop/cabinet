@@ -62,7 +62,7 @@ export function LinkPanel({ subscription, dialog = false }: { subscription: OwnS
           {t("connect.reissue")}
         </Button>
       )}
-      {reissue.isError && <FormError>{getErrorMessage(reissue.error, t("errors.generic"))}</FormError>}
+      {reissue.isError && <FormError>{getErrorMessage(reissue.error, t("errors.generic"), "connect.reissueCooldown")}</FormError>}
       <ConfirmDialog
         open={confirm}
         danger

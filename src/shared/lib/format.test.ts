@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 
-import { formatBytes, formatDate, formatGb, formatMoney, formatRelative } from "@shared/lib/format";
+import { formatBytes, formatDate, formatGb, formatMoney, formatRelative, formatWait } from "@shared/lib/format";
 
 it("formats money; XTR is a number with a star", () => {
   expect(formatMoney("149.00", "RUB", "ru")).toBe("149\u00a0₽");
@@ -26,4 +26,13 @@ it("formats a past time relative to now, in minutes, hours, then days", () => {
   expect(formatRelative(ago(5), "ru")).toBe("5 минут назад");
   expect(formatRelative(ago(120), "ru")).toBe("2 часа назад");
   expect(formatRelative(ago(60 * 24 * 3), "en")).toBe("3 days ago");
+});
+
+it("says a wait as the bot does: hours and minutes under a day, days and hours past it", () => {
+  const after = (minutes: number) => new Date(Date.now() + minutes * 60_000).toISOString();
+  expect(formatWait(after(65), "en")).toBe("1 hour 5 minutes");
+  expect(formatWait(after(1), "en")).toBe("1 minute");
+  expect(formatWait(after(26 * 60 + 30), "en")).toBe("1 day 2 hours");
+  expect(formatWait(after(-5), "en")).toBe("1 minute");
+  expect(formatWait(after(5), "ru")).toBe("5 минут");
 });

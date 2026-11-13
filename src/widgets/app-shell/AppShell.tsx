@@ -1,12 +1,15 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { Suspense, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useOutlet } from "react-router";
 
 import { pushApi } from "@entities/notification/api";
+import { useMeQuery } from "@entities/session/api";
 import { endSession } from "@features/auth/logout";
 import { LegalReacceptanceGate } from "@features/legal-reacceptance/LegalReacceptanceGate";
 import { clearAccessToken } from "@shared/api/tokens";
+import { isSupportedLanguage } from "@shared/i18n";
 import type { INTRO_STATE } from "@shared/lib/intro";
 import { EASE_SOFT, FADE_IN, FADE_OUT } from "@shared/lib/motion";
 import { healPushSubscription, onServiceWorkerMessage, registerServiceWorker } from "@shared/lib/push";
@@ -49,6 +52,14 @@ export function AppShell() {
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   const [leaving, setLeaving] = useState(false);
   const sidebarCollapsed = useSidebarCollapsed();
+  const { i18n } = useTranslation();
+  const accountLanguage = useMeQuery().data?.language;
+  // the account's language, the bot's too, over this device's guess (a Mac's Telegram reports the system's)
+  useEffect(() => {
+    if (isSupportedLanguage(accountLanguage ?? null) && accountLanguage !== i18n.language) {
+      void i18n.changeLanguage(accountLanguage);
+    }
+  }, [accountLanguage, i18n]);
   // once after sign-in: the worker, then a quiet re-subscribe of an allowed device; best-effort
   useEffect(() => {
     if (isMiniApp()) return;

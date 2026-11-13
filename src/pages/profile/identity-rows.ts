@@ -13,11 +13,19 @@ export function visibleIdentities(items: Identity[], methods: AuthMethods): Iden
   return items.filter((i) => i.linked || enabled[i.kind]);
 }
 
-export type RowAction = "unlink" | "connect" | "unlinkInBrowser" | "connectInBrowser" | "onlyMethod" | null;
+export type RowAction =
+  | "unlink"
+  | "connect"
+  | "unlinkInBrowser"
+  | "connectInBrowser"
+  | "onlyMethod"
+  | "inDashboard"
+  | null;
 
 /** What a row offers; the only linked method none. Inside the Mini App: Telegram stays (initData re-auth every ~15 min would register
  *  a fresh empty account without it), and Google/Yandex block OAuth in embedded WebViews. */
 export function rowAction(identity: Identity, miniApp: boolean, onlyLinked = false): RowAction {
+  if (!identity.editable) return "inDashboard";
   // the backend refuses the last method (LAST_SIGN_IN_METHOD): don't offer it, say why
   if (identity.linked && onlyLinked) return "onlyMethod";
   if (!miniApp) return identity.linked ? "unlink" : "connect";

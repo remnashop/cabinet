@@ -1,6 +1,7 @@
 import { ChevronRight, Clock, Gift, Smartphone, Zap, type LucideIcon } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
+import type { ParseKeys } from "i18next";
 import { Link } from "react-router";
 
 import { BrandMark } from "@entities/appearance/BrandMark";
@@ -185,11 +186,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
               <span className={`text-sm font-bold ${TEXT_TONE[alert ?? "ok"]}`}>
                 {t(`home.notice.${noticeKey(notice, left)}`, { count: left.count, date })}
               </span>
-              {hint && (
-                <span className="text-xs text-muted-foreground">
-                  {t(`home.noticeHint.${hint}${sub.is_trial ? "Trial" : ""}`, { date })}
-                </span>
-              )}
+              {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={date} />}
             </div>
           </div>
         )}
@@ -219,11 +216,7 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
         <span className={`text-sm font-bold ${TEXT_TONE[alert ?? "ok"]}`}>
           {t(`home.notice.${noticeKey(notice, left)}`, { count: left.count, date })}
         </span>
-        {hint && (
-          <span className="text-xs text-muted-foreground">
-            {t(`home.noticeHint.${hint}${sub.is_trial ? "Trial" : ""}`, { date })}
-          </span>
-        )}
+        {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={date} />}
       </div>
       {link && <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground" />}
     </>
@@ -243,6 +236,41 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
  * short: the value abbreviated ("23 ч"), shown instead while the full one would overflow or cut the word off. Its cqw
  * are the pill row's (@container/row: 322px on a 358px card), not the card's.
  */
+/** The short text when the full one doesn't fit on one line: checked before paint, a resize or a new text tries
+ *  the full one again. */
+function useAbbreviated(ref: RefObject<HTMLElement | null>, value: string, short?: string): boolean {
+  const [abbreviated, setAbbreviated] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !short) return;
+    const observer = new ResizeObserver(() => setAbbreviated(false));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref, short, value]);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || !short || abbreviated) return;
+    const cut = (node: Element) => node.scrollWidth > node.clientWidth;
+    if (cut(el) || [...el.children].some(cut)) setAbbreviated(true);
+  }, [ref, abbreviated, short, value]);
+  return abbreviated && short !== undefined;
+}
+
+/** The strip's second line; a long one gives way to its short form ("Renew to regain access") */
+function NoticeHint({ hint, trial, date }: { hint: string; trial: boolean; date: string }) {
+  const { t, i18n } = useTranslation();
+  const ref = useRef<HTMLSpanElement>(null);
+  const key = `home.noticeHint.${hint}${trial ? "Trial" : ""}`;
+  const text = t(key as ParseKeys, { date });
+  const short = i18n.exists(`${key}Short`) ? t(`${key}Short` as ParseKeys, { date }) : undefined;
+  const abbreviated = useAbbreviated(ref, text, short);
+  return (
+    <span ref={ref} className="truncate text-xs text-muted-foreground">
+      {abbreviated ? short : text}
+    </span>
+  );
+}
+
 function Pill({
   icon: Icon,
   label,
@@ -257,21 +285,7 @@ function Pill({
   tone?: string;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [abbreviated, setAbbreviated] = useState(false);
-  // a resize or a new value tries the full one again; the check below, before paint, falls back if it doesn't fit
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !short) return;
-    const observer = new ResizeObserver(() => setAbbreviated(false));
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [short, value]);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el || !short || abbreviated) return;
-    const cut = (node: Element) => node.scrollWidth > node.clientWidth;
-    if (cut(el) || [...el.children].some(cut)) setAbbreviated(true);
-  }, [abbreviated, short, value]);
+  const abbreviated = useAbbreviated(ref, value, short);
   return (
     <span
       ref={ref}

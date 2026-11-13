@@ -129,7 +129,7 @@ function HomeSkeleton() {
     <div className="flex flex-col gap-5">
       <div className="grid gap-5 lg:grid-cols-3">
         {[0, 1, 2].map((i) => (
-          <Skeleton key={i} corners="rounded-subscription" className={`${CARD_ASPECT_SHORT} w-full ${i ? "max-lg:hidden" : ""}`} />
+          <Skeleton key={i} corners="rounded-subscription" className={`${CARD_ASPECT_SHORT} w-full min-w-0 ${i ? "max-lg:hidden" : ""}`} />
         ))}
       </div>
       <div className="grid grid-cols-3 gap-5 lg:grid-cols-4">
@@ -347,7 +347,7 @@ export function SubscriptionPage() {
           {/* right after a purchase or a trial, once per browser */}
           <PushPromptCard />
           <div className="mt-5 lg:flex lg:flex-1 lg:flex-col lg:*:flex-1">
-            <DevicesCard key={selected.id} subscription={selected} />
+            <DevicesCard key={selected.id} subscription={selected} canConnect={!cutOff} />
           </div>
         </div>
       )}

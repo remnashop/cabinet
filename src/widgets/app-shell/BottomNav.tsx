@@ -1,6 +1,6 @@
 import { Headset, type LucideIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useMatch, useResolvedPath } from "react-router";
 
@@ -90,6 +90,33 @@ function SupportTab({ support, labeled }: { support: ReturnType<typeof useSuppor
   );
 }
 
+// inputs that bring up no keyboard
+const NO_KEYBOARD_INPUTS = new Set(["checkbox", "radio", "button", "submit", "reset", "range", "color", "file", "image"]);
+
+function bringsKeyboard(el: Element | null): boolean {
+  if (el instanceof HTMLTextAreaElement) return !el.readOnly;
+  if (el instanceof HTMLInputElement) return !el.readOnly && !NO_KEYBOARD_INPUTS.has(el.type);
+  return el instanceof HTMLElement && el.isContentEditable;
+}
+
+/** A touch screen's keyboard is up: a text field has focus. Read from focus rather than the viewport's height, which
+ *  iOS, Android and Telegram each report differently. */
+function useKeyboardOpen(): boolean {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
+    // after the event: focus moving from one field to the next passes through the body
+    const update = () => queueMicrotask(() => setOpen(bringsKeyboard(document.activeElement)));
+    document.addEventListener("focusin", update);
+    document.addEventListener("focusout", update);
+    return () => {
+      document.removeEventListener("focusin", update);
+      document.removeEventListener("focusout", update);
+    };
+  }, []);
+  return open;
+}
+
 export function BottomNav() {
   const { t } = useTranslation();
   const navItems = useNavItems();
@@ -100,6 +127,8 @@ export function BottomNav() {
   const barRef = useRef<HTMLDivElement>(null);
   const probeRef = useRef<HTMLDivElement>(null);
   const [labeled, setLabeled] = useState(false);
+  // the keyboard would lift the bar over the field being typed in
+  const keyboardOpen = useKeyboardOpen();
   // the probe re-measures on its own resize too: a language switch or a late web font changes the labels' width
   useLayoutEffect(() => {
     const bar = barRef.current!;
@@ -113,7 +142,11 @@ export function BottomNav() {
   }, []);
 
   return (
-    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-10 px-4 pb-[max(var(--safe-bottom),16px)] lg:hidden">
+    <nav
+      className={`pointer-events-none fixed inset-x-0 bottom-0 z-10 px-4 pb-[max(var(--safe-bottom),16px)] transition-[translate,opacity,visibility] duration-200 lg:hidden ${
+        keyboardOpen ? "invisible translate-y-full opacity-0" : ""
+      }`}
+    >
       {/* the dialogs' glass: dark and heavily blurred, so a bright button scrolling under it can't drown the tabs */}
       <div ref={barRef} className={`pointer-events-auto relative mx-auto flex w-full max-w-[528px] rounded-full p-1.5 ${GLASS}`}>
         {/* every tab at its natural width with a 12px side padding, the bar's own p-1.5 included */}

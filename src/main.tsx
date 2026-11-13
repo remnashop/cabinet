@@ -7,6 +7,7 @@ import { App } from "@app/App";
 import { queryClient } from "@app/query-client";
 import { ShaderBackground } from "@app/ShaderBackground";
 import { ApplyAppearance } from "@entities/appearance/ApplyAppearance";
+import { detectPlatform } from "@entities/connect-guide/lib";
 import "@shared/i18n";
 import { captureAttribution } from "@shared/lib/attribution";
 import { getStartParam, initTelegram } from "@shared/telegram";
@@ -23,6 +24,12 @@ async function start(): Promise<void> {
     const { DebugPanel } = await import("./mocks/DebugPanel");
     const host = document.body.appendChild(document.createElement("div"));
     createRoot(host).render(<DebugPanel />);
+  }
+  // iOS zooms in on a field under 16px as it takes focus; maximum-scale stops that, and iOS still lets a pinch zoom
+  // (Android would lose it, so only here)
+  if (detectPlatform(navigator.userAgent, navigator.maxTouchPoints) === "ios") {
+    const viewport = document.querySelector('meta[name="viewport"]');
+    viewport?.setAttribute("content", `${viewport.getAttribute("content")}, maximum-scale=1`);
   }
   initTelegram(CANVAS_COLOR);
   captureAttribution(window.location.search, getStartParam());

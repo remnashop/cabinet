@@ -42,7 +42,7 @@ it("?signout=others opens the confirm, strips the param, and confirming revokes 
   expect(container.querySelector("#loc")!.textContent).toBe("/profile");
   const text = () => document.body.textContent ?? "";
   expect(text()).toContain(i18n.t("signOut.othersTitle"));
-  const confirm = [...document.body.querySelectorAll("button")].find((b) => b.textContent === i18n.t("signOut.others"))!;
+  const confirm = [...document.body.querySelectorAll("button")].find((b) => b.textContent === i18n.t("common.logout"))!;
   await act(async () => confirm.click());
   expect(revoke).toHaveBeenCalledOnce();
   expect(text()).toContain(i18n.t("signOut.othersDone"));
@@ -63,7 +63,7 @@ it("a failed revoke keeps the confirm open and says so inside it", async () => {
       </QueryClientProvider>,
     ),
   );
-  const confirm = [...document.body.querySelectorAll("button")].find((b) => b.textContent === i18n.t("signOut.others"))!;
+  const confirm = [...document.body.querySelectorAll("button")].find((b) => b.textContent === i18n.t("common.logout"))!;
   await act(async () => confirm.click());
   await vi.waitFor(() => expect(document.body.textContent).toContain(i18n.t("errors.generic")));
   const text = document.body.textContent ?? "";

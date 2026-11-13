@@ -1,5 +1,6 @@
 import type { ComponentType, HTMLAttributes, ReactNode } from "react";
 
+import { AnimatedHeight } from "./AnimatedHeight";
 import { useSurface } from "./surface";
 
 const PADDING = {
@@ -29,7 +30,8 @@ export function Card({ variant = "page", title, icon: Icon, titleFor, round, cla
   // a 32px phone block is 20px in; a dialog's plate ignores round and keeps 16px
   const padding = variant === "page" && shape === "rounded-card" ? "p-5 lg:p-4" : PADDING[variant];
   return (
-    <div className={`${shape} ${fill} ${padding} ${top} ${className}`} {...props}>
+    // the height eases as the content changes (a skeleton giving way to rows); padding and layout stay inside
+    <AnimatedHeight className={`${shape} ${fill}`} innerClassName={`${padding} ${top} ${className}`} {...props}>
       {title && (
         <Title
           htmlFor={titleFor}
@@ -42,6 +44,6 @@ export function Card({ variant = "page", title, icon: Icon, titleFor, round, cla
         </Title>
       )}
       {children}
-    </div>
+    </AnimatedHeight>
   );
 }

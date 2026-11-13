@@ -8,6 +8,8 @@ export interface Identity {
   kind: IdentityKind;
   linked: boolean;
   label: string | null;
+  // false for staff's Telegram and email: they change in the dashboard
+  editable: boolean;
 }
 
 export function useIdentitiesQuery() {

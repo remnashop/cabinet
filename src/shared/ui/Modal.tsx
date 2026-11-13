@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 
 import { EASE_SOFT, FADE_IN, FADE_OUT } from "@shared/lib/motion";
 import { useTelegramBackButton } from "@shared/telegram";
+import { AnimatedHeight } from "@shared/ui/AnimatedHeight";
 import { DialogContext } from "@shared/ui/surface";
 import { Ripple } from "@shared/ui/Ripple";
 
@@ -202,7 +203,8 @@ export function Modal({
                   {Icon ? <Icon className="size-4" /> : glyph}
                 </div>
               )}
-              <h2 className="min-w-0 flex-1 truncate text-base font-semibold tracking-tight text-foreground">
+              {/* two lines before it cuts: a long question stays readable on a phone */}
+              <h2 className="line-clamp-2 min-w-0 flex-1 text-base font-semibold tracking-tight text-foreground">
                 {title}
               </h2>
               {onClose && (
@@ -217,11 +219,13 @@ export function Modal({
                 </button>
               )}
             </div>
-            <div className={`min-h-0 flex-1 overflow-y-auto ${cards ? "p-3" : "p-4"}`}>
+            {/* eases to its content (a list loading in, a step switching); past the panel's max height it scrolls.
+                shrink, not flex-1: a zero basis would ignore the eased height */}
+            <AnimatedHeight className="min-h-0 shrink overflow-y-auto" innerClassName={cards ? "p-3" : "p-4"}>
               <DialogContext.Provider value>
                 <FooterContext.Provider value={footerEl}>{children}</FooterContext.Provider>
               </DialogContext.Provider>
-            </div>
+            </AnimatedHeight>
             {/* DialogFooter's buttons land here; empty, the strip is gone */}
             <div ref={setFooterEl} className="flex shrink-0 justify-end gap-2 border-t border-white/[0.08] p-4 empty:hidden" />
           </motion.div>

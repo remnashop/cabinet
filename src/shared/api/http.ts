@@ -3,6 +3,7 @@ import type { ParseKeys } from "i18next";
 import { markServiceClosed } from "@shared/api/maintenance";
 import { clearAccessToken, getAccessToken, setAccessToken, type AccessToken } from "@shared/api/tokens";
 import i18n from "@shared/i18n";
+import { formatWait } from "@shared/lib/format";
 
 // nginx in the cabinet image proxies this to the backend's /api/v1
 export const API_BASE = "/api";
@@ -12,11 +13,14 @@ export class ApiError extends Error {
   status: number;
   // ErrorCode from the backend; translated under apiErrors.*
   code: string | null;
+  // COOLDOWN_ACTIVE: when the action is allowed again (ISO)
+  availableAt: string | null;
 
-  constructor(status: number, message: string, code: string | null = null) {
+  constructor(status: number, message: string, code: string | null = null, availableAt: string | null = null) {
     super(message);
     this.status = status;
     this.code = code;
+    this.availableAt = availableAt;
   }
 }
 
@@ -156,7 +160,11 @@ function errorFor(response: Response, body: unknown): Error {
   }
   const code = extractErrorCode(body);
   if (code === "ACCESS_RESTRICTED") markServiceClosed();
-  return new ApiError(response.status, extractErrorMessage(body), code);
+  const availableAt =
+    body && typeof body === "object" && "available_at" in body && typeof body.available_at === "string"
+      ? body.available_at
+      : null;
+  return new ApiError(response.status, extractErrorMessage(body), code, availableAt);
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -193,10 +201,14 @@ export function apiDelete(path: string): Promise<void> {
   return request<void>(path, { method: "DELETE" });
 }
 
-export function getErrorMessage(err: unknown, fallback: string): string {
+/** cooldownKey: the action's own "you can … again in {{wait}}", as the bot says it, for a COOLDOWN_ACTIVE answer */
+export function getErrorMessage(err: unknown, fallback: string, cooldownKey?: ParseKeys): string {
   // no answer: the device being offline is the likelier reason, and the one the user can fix
   if (err instanceof NetworkError) return i18n.t(navigator.onLine ? "errors.network" : "errors.offline");
   if (!(err instanceof ApiError)) return fallback;
+  if (err.code === "COOLDOWN_ACTIVE" && err.availableAt && cooldownKey) {
+    return i18n.t(cooldownKey, { wait: formatWait(err.availableAt, i18n.language) });
+  }
   const key = `apiErrors.${err.code}`;
   // the backend's own message is English and not for users: a code without a translation reads as the fallback
   return err.code && i18n.exists(key) ? i18n.t(key as ParseKeys) : fallback;

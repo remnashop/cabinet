@@ -6,10 +6,10 @@ import type { AuthMethods } from "@features/auth/api";
 import { rowAction, visibleIdentities } from "./identity-rows";
 
 const items: Identity[] = [
-  { kind: "TELEGRAM", linked: true, label: "@dev" },
-  { kind: "EMAIL", linked: false, label: null },
-  { kind: "GOOGLE", linked: false, label: null },
-  { kind: "YANDEX", linked: true, label: "a@ya.ru" },
+  { kind: "TELEGRAM", linked: true, label: "@dev", editable: true },
+  { kind: "EMAIL", linked: false, label: null, editable: true },
+  { kind: "GOOGLE", linked: false, label: null, editable: true },
+  { kind: "YANDEX", linked: true, label: "a@ya.ru", editable: true },
 ];
 const methods = (over: Partial<AuthMethods>): AuthMethods => ({
   telegram_webapp: false,
@@ -33,7 +33,7 @@ describe("visibleIdentities", () => {
 });
 
 describe("rowAction", () => {
-  const row = (kind: Identity["kind"], linked: boolean): Identity => ({ kind, linked, label: linked ? "x" : null });
+  const row = (kind: Identity["kind"], linked: boolean): Identity => ({ kind, linked, label: linked ? "x" : null, editable: true });
 
   it("offers unlink and connect in a browser", () => {
     for (const kind of ["TELEGRAM", "EMAIL", "GOOGLE", "YANDEX"] as const) {
@@ -60,5 +60,10 @@ describe("rowAction", () => {
     expect(rowAction(row("TELEGRAM", true), true, true)).toBe("onlyMethod");
     // an unlinked one can still be connected
     expect(rowAction(row("GOOGLE", false), false, true)).toBe("connect");
+  });
+
+  it("leaves staff's Telegram and email to the dashboard", () => {
+    expect(rowAction({ ...row("EMAIL", true), editable: false }, false)).toBe("inDashboard");
+    expect(rowAction({ ...row("TELEGRAM", false), editable: false }, true)).toBe("inDashboard");
   });
 });

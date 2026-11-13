@@ -13,7 +13,7 @@ export const LANGUAGE_NAMES: Record<SupportedLanguage, string> = { ru: "Русс
 
 const STORAGE_KEY = "cabinet_language";
 
-function isSupportedLanguage(value: string | null): value is SupportedLanguage {
+export function isSupportedLanguage(value: string | null): value is SupportedLanguage {
   return SUPPORTED_LANGUAGES.includes(value as SupportedLanguage);
 }
 
