@@ -25,7 +25,7 @@ const MAX_BADGE = 9;
 
 
 // the panel's header popover: glass, grows out of its top-right corner toward the trigger
-const POPOVER = "fixed z-[60] origin-top-right rounded-popover p-1.5 glass-dialog";
+const POPOVER = "fixed z-[60] flex origin-top-right flex-col rounded-popover p-1.5 glass-dialog";
 const POPOVER_MOTION = {
   initial: { opacity: 0, scale: 0.85 },
   animate: { opacity: 1, scale: 1, transition: FADE_IN },
@@ -52,10 +52,20 @@ function HeaderPopover({
   className: string;
   children: ReactNode;
 }) {
-  const [position, setPosition] = useState<{ top: number; right: number } | null>(null);
+  const [position, setPosition] = useState<{ top: number; right: number; maxWidth: number; maxHeight: number } | null>(
+    null,
+  );
   useLayoutEffect(() => {
     const rect = open ? anchor()?.getBoundingClientRect() : undefined;
-    if (rect) setPosition({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+    // kept inside a small window (the Mini App): 16px off its left and bottom edges, the bell's feed scrolls inside
+    if (rect)
+      setPosition({
+        top: rect.bottom + 8,
+        // clientWidth: without a classic scrollbar (a Mac with a mouse), which `fixed` doesn't count either
+        right: document.documentElement.clientWidth - rect.right,
+        maxWidth: rect.right - 16,
+        maxHeight: document.documentElement.clientHeight - rect.bottom - 16,
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- measured once per open
   }, [open]);
 
@@ -207,7 +217,7 @@ export function HeaderActions() {
           open={open === "bell"}
           anchor={bellAnchor}
           popoverRef={popoverRef}
-          className="w-[calc(100vw-2rem)] max-w-[400px]"
+          className="w-[400px]"
         >
           <NotificationsList feed={feed} onClose={() => setOpen(null)} onSupport={support.available ? support.open : undefined} />
         </HeaderPopover>

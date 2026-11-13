@@ -97,7 +97,7 @@ export function NotificationsList({
   return (
     <>
       {/* the panel's bell header: its title, and clearing what's listed */}
-      <div className="flex items-center gap-1.5 pb-1.5">
+      <div className="flex shrink-0 items-center gap-1.5 pb-1.5">
         <span className="min-w-0 flex-1 px-2.5 text-sm font-semibold text-foreground">{t("header.notifications")}</span>
         <button
           type="button"
@@ -111,7 +111,7 @@ export function NotificationsList({
       {/* rows keep their height and the list scrolls: a row clips its ripple, so flex would squeeze it */}
       {/* the panel's bell: 8px over the rows to fade the top into; no footer, so the list runs to the popover's edge and
           fades into its 6px inset */}
-      <EventList className="scroll-fade-y -mb-1.5 max-h-[420px] overflow-y-auto pt-2 pb-1.5 [--fade-bottom-size:6px] [--fade-top-size:8px] [&>*]:shrink-0">
+      <EventList className="scroll-fade-y -mb-1.5 max-h-[420px] min-h-0 overflow-y-auto pt-2 pb-1.5 [--fade-bottom-size:6px] [--fade-top-size:8px] [&>*]:shrink-0">
         {data.items.map((item) => (
           <EventRow
             key={item.id}
