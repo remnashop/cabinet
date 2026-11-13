@@ -7,12 +7,14 @@ on:
   push:
     branches:
       - main
+  # the release workflow runs these first: no image is built from a red commit
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
-  group: checks-${{ github.ref }}
+  group: checks-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
