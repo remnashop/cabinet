@@ -9,6 +9,8 @@ export interface CabinetSettings {
   device_all_reset_cooldown_hours: number;
   link_reset_enabled: boolean;
   bot_username: string | null;
+  // the channel the bot requires; null without a bot or the requirement
+  channel_url: string | null;
   // where support is: a Telegram username without "@", an https page; null = not set
   support_telegram: string | null;
   support_url: string | null;

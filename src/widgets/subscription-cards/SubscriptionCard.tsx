@@ -5,6 +5,7 @@ import type { ParseKeys } from "i18next";
 import { Link } from "react-router";
 
 import { BrandMark } from "@entities/appearance/BrandMark";
+import { useCabinetSettingsQuery } from "@entities/shop/api";
 import type { OwnSubscription } from "@entities/subscription/api";
 import type { CardNotice } from "@entities/subscription/lib";
 import {
@@ -18,6 +19,7 @@ import {
   trafficRatio,
 } from "@entities/subscription/lib";
 import { formatBytes, formatDate, formatGb } from "@shared/lib/format";
+import { isMiniApp, openExternal } from "@shared/telegram";
 import { Ripple } from "@shared/ui/Ripple";
 
 // a card needing attention (cardAlert) says so with its texts and the strip; only a selected card that's fine gets a
@@ -40,7 +42,7 @@ const RING_TONE = {
 };
 
 // what the strip asks for under its title: keep access while it lasts, get it back once lost
-const NOTICE_HINT: Record<CardNotice, "keepUntil" | "keep" | "back" | null> = {
+const NOTICE_HINT: Record<CardNotice, "keepUntil" | "keep" | "back" | "channel" | null> = {
   deleted: null,
   disabled: null,
   expiredTraffic: "back",
@@ -52,8 +54,16 @@ const NOTICE_HINT: Record<CardNotice, "keepUntil" | "keep" | "back" | null> = {
 };
 
 // "ends in N days" turns to hours, then minutes, as the time left does
-function noticeKey(notice: CardNotice, left: ReturnType<typeof timeLeft>) {
+function noticeKey(notice: CardNotice, left: ReturnType<typeof timeLeft>, channel: string | null) {
+  if (channel) return "channelPaused";
   return notice === "daysSoon" ? (`${left.unit}Soon` as const) : notice;
+}
+
+/** The required channel's link when the bot paused this trial for leaving it; only in the Mini App, with a bot. */
+function usePausedChannel(sub: OwnSubscription): string | null {
+  const settings = useCabinetSettingsQuery();
+  if (!isMiniApp() || sub.status !== "DISABLED" || !sub.paused_by_channel_leave) return null;
+  return settings.data?.bot_username ? settings.data.channel_url : null;
 }
 
 const GB = 1024 ** 3;
@@ -85,9 +95,10 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
   const daysTone = daysAlert(sub, now) ?? "ok";
   const trafficTone = trafficAlert(sub) ?? "ok";
   const notice = compact ? null : cardNotice(sub, now);
+  const channel = usePausedChannel(sub);
   // a disabled or deleted card says so on its strip but has no alert edge: there is nothing to act on in time
   const alert = notice === "disabled" || notice === "deleted" ? null : cardAlert(sub, now);
-  const hint = notice && NOTICE_HINT[notice];
+  const hint = notice && (channel ? "channel" : NOTICE_HINT[notice]);
   // no access any more (to get back, or disabled, deleted): its texts go grey, the alert's colors stay
   const inactive = hint === "back" || notice === "disabled" || notice === "deleted";
   const date = formatDate(sub.expire_at, locale);
@@ -184,7 +195,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
             <span className={`size-2 shrink-0 rounded-full ${DOT_TONE[alert ?? "ok"]}`} />
             <div className="flex min-w-0 flex-col">
               <span className={`text-sm font-bold ${TEXT_TONE[alert ?? "ok"]}`}>
-                {t(`home.notice.${noticeKey(notice, left)}`, { count: left.count, date })}
+                {t(`home.notice.${noticeKey(notice, left, channel)}`, { count: left.count, date })}
               </span>
               {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={date} />}
             </div>
@@ -200,8 +211,9 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
   const { t, i18n } = useTranslation();
   const [now] = useState(() => new Date());
   const notice = cardNotice(sub, now);
+  const channel = usePausedChannel(sub);
   const alert = notice === "disabled" || notice === "deleted" ? null : cardAlert(sub, now);
-  const hint = notice && NOTICE_HINT[notice];
+  const hint = notice && (channel ? "channel" : NOTICE_HINT[notice]);
   const left = timeLeft(sub.expire_at, now);
   const date = formatDate(sub.expire_at, i18n.language);
 
@@ -214,14 +226,26 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
       <span className={`size-2 shrink-0 rounded-full ${DOT_TONE[alert ?? "ok"]}`} />
       <div className="flex min-w-0 flex-col">
         <span className={`text-sm font-bold ${TEXT_TONE[alert ?? "ok"]}`}>
-          {t(`home.notice.${noticeKey(notice, left)}`, { count: left.count, date })}
+          {t(`home.notice.${noticeKey(notice, left, channel)}`, { count: left.count, date })}
         </span>
         {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={date} />}
       </div>
-      {link && <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground" />}
+      {(link || channel) && <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground" />}
     </>
   );
 
+  if (channel) {
+    return (
+      <button
+        type="button"
+        onClick={() => openExternal(channel)}
+        className={`relative w-full text-left ${className} transition-colors hover:bg-white/[0.06]`}
+      >
+        <Ripple />
+        {content}
+      </button>
+    );
+  }
   return link ? (
     <Link to={link} className={`relative ${className} transition-colors hover:bg-white/[0.06]`}>
       <Ripple />
