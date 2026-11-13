@@ -563,6 +563,7 @@ export const handlers = [
         device_all_reset_enabled: scenario.deviceReset,
         link_reset_enabled: true,
         bot_username: "mock_bot",
+        channel_url: "https://t.me/mock_channel",
         support_telegram: "mock_support",
         support_url: "https://example.com/support",
         payments_enabled: scenario.paymentsEnabled,
@@ -577,7 +578,7 @@ export const handlers = [
   http.get(`${API}/subscriptions/me`, async ({ request }) => {
     const denied = unauthorized(request);
     if (denied) return denied;
-    const items = await Promise.all(subscriptions.map(async (sub) => ({ ...sub, connect_signature: await mockSignature(sub.url) })));
+    const items = await Promise.all(subscriptions.map(async (sub) => ({ ...sub, paused_by_channel_leave: false, connect_signature: await mockSignature(sub.url) })));
     return HttpResponse.json({ items, total: items.length });
   }),
 
@@ -624,7 +625,7 @@ export const handlers = [
     };
     subscriptions = [...subscriptions, created];
     devices[created.id] = [];
-    return HttpResponse.json({ ...created, connect_signature: await mockSignature(created.url) }, { status: 201 });
+    return HttpResponse.json({ ...created, paused_by_channel_leave: false, connect_signature: await mockSignature(created.url) }, { status: 201 });
   }),
 
   http.get(`${API}/subscriptions/me/:id/devices`, ({ request, params }) => {

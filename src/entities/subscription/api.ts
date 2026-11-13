@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiDelete, apiGet, apiPost } from "@shared/api/http";
+import { isMiniApp } from "@shared/telegram";
 
 export type SubscriptionStatus = "ACTIVE" | "LIMITED" | "EXPIRED" | "DISABLED" | "DELETED";
 
@@ -25,6 +26,8 @@ export interface OwnSubscription {
   // the last "delete all devices", what the shop's cooldown counts from
   device_all_reset_at: string | null;
   link_reset_at: string | null;
+  // a trial the bot paused when its owner left the required channel; rejoining resumes it
+  paused_by_channel_leave: boolean;
   // the backend's signature over url: what the connect page's browser hop is vouched for with
   connect_signature: string;
 }
@@ -106,7 +109,7 @@ export function useReissue() {
 export function useActivateTrial() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: () => apiPost<OwnSubscription, object>("/subscriptions/me/actions/activate-trial", {}),
+    mutationFn: () => apiPost<OwnSubscription, object>("/subscriptions/me/actions/activate-trial", { mini_app: isMiniApp() }),
     onSuccess: () =>
       Promise.all([
         client.invalidateQueries({ queryKey: ["subscriptions"] }),

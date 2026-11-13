@@ -165,6 +165,7 @@
     "BONUS_DAYS_PLAN_NOT_ALLOWED": "Bonus days can't be applied to this plan",
     "SUBSCRIPTION_DELETED": "The subscription was deleted",
     "TRIAL_NOT_AVAILABLE": "The trial isn't available",
+    "TRIAL_CHANNEL_REQUIRED": "Join the channel to get the trial",
     "TRIAL_NOT_RENEWABLE": "A trial subscription can't be renewed, choose another plan",
     "SUBSCRIPTION_DISABLED": "This subscription is disabled",
     "TARGET_SUBSCRIPTION_FORBIDDEN": "Subscription not found",
@@ -281,6 +282,7 @@
     "notice": {
       "deleted": "Subscription deleted",
       "disabled": "Subscription disabled",
+      "channelPaused": "Trial paused",
       "expiredTraffic": "Subscription expired, traffic ran out",
       "expired": "Subscription expired on {{date}}",
       "trafficOut": "Traffic ran out",
@@ -300,7 +302,8 @@
       "backShort": "Renew to regain access",
       "keepUntilTrial": "Get a subscription by {{date}} to keep access",
       "keepTrial": "Get a subscription to keep access",
-      "backTrial": "Get a subscription to get access back"
+      "backTrial": "Get a subscription to get access back",
+      "channelTrial": "Rejoin the channel to resume it"
     },
     "left": "Left",
     "days_one": "{{count}} day",

@@ -37,6 +37,7 @@ const sub = (overrides: Partial<OwnSubscription> = {}): OwnSubscription => ({
   used_traffic: 0,
   device_all_reset_at: null,
   link_reset_at: null,
+  paused_by_channel_leave: false,
   connect_signature: "",
   ...overrides,
 });
