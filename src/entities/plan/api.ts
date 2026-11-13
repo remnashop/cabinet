@@ -39,6 +39,8 @@ export interface PaymentMethod {
   gateway_type: string;
   currency: string;
   requires_email: boolean;
+  /** false: the shop sends its own email to the gateway, so the customer's isn't asked; absent on older backends */
+  asks_email?: boolean;
 }
 
 /** What opens a plan the public catalog leaves out: a plan link's code, or the subscription being renewed. */

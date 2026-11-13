@@ -123,7 +123,7 @@ export function SummaryStep({
         if (canPay) pay();
       }}
     >
-      {me.data && !me.data.email && (
+      {me.data && !me.data.email && method.asks_email !== false && (
         <Card round>
           <div className="flex flex-col gap-3">
             <InfoRow
