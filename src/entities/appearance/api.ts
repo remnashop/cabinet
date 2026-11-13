@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { API_BASE, apiGet } from "@shared/api/http";
+import { readStorage, writeStorage } from "@shared/lib/safe-storage";
 
 type AppearanceTarget = "cabinet" | "dashboard";
 
@@ -48,16 +49,32 @@ export function mergeAppearance(
   };
 }
 
+// the last appearance seen: a repeat visit paints the shop's colors before the request answers
+const STORAGE_KEY = "cabinet_appearance";
+
+function storedAppearance(): Appearance | undefined {
+  const raw = readStorage(STORAGE_KEY);
+  if (!raw) return undefined;
+  try {
+    return JSON.parse(raw) as Appearance;
+  } catch {
+    return undefined;
+  }
+}
+
 export function useAppearanceQuery() {
-  return useQuery({
+  return useQuery<Appearance>({
     queryKey: ["appearance"],
     queryFn: async ({ signal }) => {
       const [cabinet, dashboard] = await Promise.all([
         apiGet<AppearanceSettings>("/appearance/cabinet", signal),
         apiGet<AppearanceSettings>("/appearance/dashboard", signal),
       ]);
-      return mergeAppearance(cabinet, dashboard, Date.now());
+      const appearance = mergeAppearance(cabinet, dashboard, Date.now());
+      writeStorage(STORAGE_KEY, JSON.stringify(appearance));
+      return appearance;
     },
+    placeholderData: storedAppearance,
     staleTime: Infinity,
   });
 }

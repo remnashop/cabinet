@@ -156,17 +156,28 @@ function compileProgram(gl: WebGL2RenderingContext): WebGLProgram | null {
   return null;
 }
 
+function applyAccent(uniforms: ShaderUniforms, accentColor: string | null) {
+  const hueDelta = accentColor ? hexToHueDegrees(accentColor) - hexToHueDegrees(DEFAULT_ACCENT_COLOR) : 0;
+  uniforms.uHueRotationMatrix.value.set(buildHueRotationMatrix((hueDelta * Math.PI) / 180));
+}
+
+function applyPalette(uniforms: ShaderUniforms, shaderPalette: string[] | null) {
+  (shaderPalette ?? DEFAULT_SHADER_PALETTE_HEX).forEach((hex, i) =>
+    uniforms.uColourPalette.value.set(hexToRgbNormalized(hex), i * 3),
+  );
+}
+
 /** App-wide noise-gradient background on one full-viewport canvas, mounted once at the app root. */
 export function ShaderBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const uniformsRef = useRef<ShaderUniforms | null>(null);
   // read by the render loop: skips drawing without recreating the WebGL context
-  const enabledRef = useRef(true);
   const { data: appearance } = useAppearanceQuery();
   const accentColor = appearance?.primaryColor ?? null;
   const shaderPalette = appearance?.shaderPalette ?? null;
-  // on while loading, as on the backend
-  const shaderEnabled = appearance?.shaderEnabled ?? true;
+  // off until the shop's colors are known (stored from the last visit or fetched): no flash of the default ones
+  const shaderEnabled = appearance?.shaderEnabled ?? false;
+  const enabledRef = useRef(shaderEnabled);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -205,6 +216,9 @@ export function ShaderBackground() {
       uUvDistortionIntensity: { value: 0.15 },
       uHueRotationMatrix: { value: buildHueRotationMatrix(0) },
     };
+    // the first frame already in the shop's colors; the effects below follow later changes
+    applyAccent(uniforms, accentColor);
+    applyPalette(uniforms, shaderPalette);
 
     let program: WebGLProgram | null = null;
     let locations = {} as Record<keyof ShaderUniforms, WebGLUniformLocation | null>;
@@ -350,24 +364,17 @@ export function ShaderBackground() {
       // No WEBGL_lose_context here: the canvas is reused across StrictMode/HMR
       // remounts, and a force-lost context breaks the next getContext() in Safari.
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one context per mount; colors only seed the first frame
   }, []);
 
   // saved accent or a live preview; updates the running shader's uniforms in place
   useEffect(() => {
-    const uniforms = uniformsRef.current;
-    if (!uniforms) return;
-
-    const hueDelta = accentColor ? hexToHueDegrees(accentColor) - hexToHueDegrees(DEFAULT_ACCENT_COLOR) : 0;
-    uniforms.uHueRotationMatrix.value.set(buildHueRotationMatrix((hueDelta * Math.PI) / 180));
+    if (uniformsRef.current) applyAccent(uniformsRef.current, accentColor);
   }, [accentColor]);
 
   // the accent's hue rotation still applies on top of a custom palette
   useEffect(() => {
-    const uniforms = uniformsRef.current;
-    if (!uniforms) return;
-
-    const hexes = shaderPalette ?? DEFAULT_SHADER_PALETTE_HEX;
-    hexes.forEach((hex, i) => uniforms.uColourPalette.value.set(hexToRgbNormalized(hex), i * 3));
+    if (uniformsRef.current) applyPalette(uniformsRef.current, shaderPalette);
   }, [shaderPalette]);
 
   useEffect(() => {
