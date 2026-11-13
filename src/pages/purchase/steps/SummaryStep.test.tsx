@@ -66,8 +66,14 @@ async function render(
   onCreated: () => Promise<number | null> = async () => null,
   access: PlanAccess = { plan_code: null, renew_subscription_id: type === "RENEW" ? subId : null },
   replacesOrderId: number | null = null,
+  asksEmail = true,
 ) {
-  const method: PaymentMethod = { gateway_type: "YOOKASSA", currency: "RUB", requires_email: requiresEmail };
+  const method: PaymentMethod = {
+    gateway_type: "YOOKASSA",
+    currency: "RUB",
+    requires_email: requiresEmail,
+    asks_email: asksEmail,
+  };
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   await act(async () => {
     root.render(
@@ -102,6 +108,17 @@ afterEach(() => {
 });
 
 describe("SummaryStep", () => {
+  it("hides the email card when the shop sends its own payment email", async () => {
+    await render("NEW", null, false, undefined, undefined, null, false);
+    await until(() => expect(payButton().disabled).toBe(false));
+    expect(container.querySelector("#receipt-email")).toBeNull();
+  });
+
+  it("shows the email card to a customer without one", async () => {
+    await render("NEW", null);
+    await until(() => expect(container.querySelector("#receipt-email")).not.toBeNull());
+  });
+
   it("sends legal_locale and links the offer when it is published", async () => {
     vi.stubGlobal(
       "fetch",

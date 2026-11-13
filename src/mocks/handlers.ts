@@ -682,12 +682,13 @@ export const handlers = [
       unauthorized(request) ??
       HttpResponse.json({
         items: [
-          { gateway_type: "YOOKASSA", currency: "RUB", requires_email: true },
-          { gateway_type: "ROBOKASSA", currency: "RUB", requires_email: false },
+          { gateway_type: "YOOKASSA", currency: "RUB", requires_email: true, asks_email: true },
+          { gateway_type: "ROBOKASSA", currency: "RUB", requires_email: false, asks_email: true },
           {
             gateway_type: "TELEGRAM_STARS",
             currency: "XTR",
             requires_email: false,
+            asks_email: true,
           },
         ],
       }),
