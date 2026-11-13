@@ -108,7 +108,7 @@ export function RedeemDaysDialog({ open, onClose, bonusDays }: Props) {
       icon={CalendarPlus}
       open={open}
       onClose={close}
-      title={t("referral.redeemTitle")}
+      title={bonusDays === 0 && !result ? t("referral.bonusDays") : t("referral.redeemTitle")}
     >
       {result ? (
         <>
@@ -124,6 +124,19 @@ export function RedeemDaysDialog({ open, onClose, bonusDays }: Props) {
           <Button variant="glass" size="lg" className="mt-6 w-full" onClick={close}>
             {t("common.continue")}
           </Button>
+        </>
+      ) : bonusDays === 0 ? (
+        // nothing to apply yet: what the days are and where they come from
+        <>
+          <div className="flex flex-col items-center gap-3 pt-4 text-center">
+            <CalendarPlus className="size-8 text-primary" />
+            <p className="text-sm text-foreground/80">{t("referral.noDaysHint")}</p>
+          </div>
+          <DialogFooter>
+            <Button variant="glass" onClick={close}>
+              {t("common.close")}
+            </Button>
+          </DialogFooter>
         </>
       ) : loaded && targets.length === 0 ? (
         // nothing the days can extend: no question to answer

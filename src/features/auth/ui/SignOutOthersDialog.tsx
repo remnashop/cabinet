@@ -31,7 +31,8 @@ export function SignOutOthersDialog({ open, onClose }: { open: boolean; onClose:
         open={open}
         title={t("signOut.othersTitle")}
         text={t("signOut.othersText")}
-        confirmLabel={t("signOut.others")}
+        // the title already says where: the long label wouldn't fit beside Cancel on a phone
+        confirmLabel={t("common.logout")}
         danger
         icon={MonitorX}
         pending={revoke.isPending}

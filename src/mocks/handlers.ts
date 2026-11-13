@@ -307,10 +307,10 @@ const connectGuide = {
 };
 
 const identities = [
-  { kind: "TELEGRAM", linked: true, label: "@dev" },
-  { kind: "EMAIL", linked: false, label: null },
-  { kind: "GOOGLE", linked: false, label: null },
-  { kind: "YANDEX", linked: false, label: null },
+  { kind: "TELEGRAM", linked: true, label: "@dev", editable: true },
+  { kind: "EMAIL", linked: false, label: null, editable: true },
+  { kind: "GOOGLE", linked: false, label: null, editable: true },
+  { kind: "YANDEX", linked: false, label: null, editable: true },
 ];
 
 const STATUSES = ["PAID", "PAID", "PENDING", "CANCELED", "FAILED", "PAID", "REFUNDED"];
@@ -757,7 +757,7 @@ export const handlers = [
         subscriptions: 2,
         transactions: 5,
         referrals: 1,
-        identities: [{ kind: "YANDEX", linked: true, label: "ivan@yandex.ru" }],
+        identities: [{ kind: "YANDEX", linked: true, label: "ivan@yandex.ru", editable: true }],
       },
     });
   }),

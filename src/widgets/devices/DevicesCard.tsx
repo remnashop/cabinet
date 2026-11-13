@@ -44,7 +44,17 @@ function deviceIcon({ platform, device_model }: { platform: string | null; devic
 
 type Confirm = { kind: "one"; hwid: string; name: string } | { kind: "all" } | null;
 
-export function DevicesCard({ subscription }: { subscription: OwnSubscription }) {
+function AddMark() {
+  return (
+    <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-dashed border-white/20 transition-colors group-hover:border-primary/45 group-hover:text-primary">
+      <Plus className="size-4" />
+    </span>
+  );
+}
+
+/** canConnect: false while the subscription is cut off (no days, no traffic, switched off): the free slots are shown,
+ *  not offered */
+export function DevicesCard({ subscription, canConnect }: { subscription: OwnSubscription; canConnect: boolean }) {
   const { t, i18n } = useTranslation();
   const devices = useDevicesQuery(subscription.id);
   const settings = useCabinetSettingsQuery();
@@ -123,21 +133,29 @@ export function DevicesCard({ subscription }: { subscription: OwnSubscription })
             />
           );
         })}
-        {addLabel && (
+        {addLabel && canConnect && (
           <Link
             to={`/subscription/${subscription.id}/connect`}
             className={`group relative flex ${EVENT_ROW} items-center gap-3 text-muted-foreground hover:bg-white/[0.04] hover:text-foreground`}
           >
             <Ripple />
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-dashed border-white/20 transition-colors group-hover:border-primary/45 group-hover:text-primary">
-              <Plus className="size-4" />
-            </span>
+            <AddMark />
             <span className="text-sm">{addLabel}</span>
           </Link>
         )}
+        {addLabel && !canConnect && (
+          <div className={`flex ${EVENT_ROW} items-center gap-3 text-muted-foreground opacity-60`}>
+            <AddMark />
+            <span className="text-sm">{addLabel}</span>
+          </div>
+        )}
       </EventList>
 
-      {failed && <FormError className="mt-2 px-3">{getErrorMessage(failed.error, t("errors.generic"))}</FormError>}
+      {failed && <FormError className="mt-2 px-3">{getErrorMessage(
+            failed.error,
+            t("errors.generic"),
+            failed === deleteAll ? "home.deleteAllCooldown" : "home.deleteCooldown",
+          )}</FormError>}
 
       <ConfirmDialog
         open={confirm !== null}

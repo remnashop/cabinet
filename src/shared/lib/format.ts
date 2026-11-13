@@ -50,6 +50,22 @@ export function formatDate(iso: string, locale: string): string {
   }).format(new Date(iso));
 }
 
+/** How long until `iso`, as the bot says it: days and hours, or hours and minutes under a day ("1 hour 5 minutes"). */
+export function formatWait(iso: string, locale: string): string {
+  let minutes = Math.max(1, Math.ceil((new Date(iso).getTime() - Date.now()) / 60_000));
+  const days = Math.floor(minutes / 1440);
+  minutes -= days * 1440;
+  const hours = Math.floor(minutes / 60);
+  minutes -= hours * 60;
+  const parts: [Intl.NumberFormatOptions["unit"], number][] = days
+    ? [["day", days], ["hour", hours]]
+    : [["hour", hours], ["minute", minutes]];
+  return parts
+    .filter(([, value]) => value > 0)
+    .map(([unit, value]) => new Intl.NumberFormat(locale, { style: "unit", unit, unitDisplay: "long" }).format(value))
+    .join(" ");
+}
+
 /** The panel's: "5 minutes ago", "2 hours ago", "3 days ago"; under a minute in words, Intl's "this minute" reads oddly. */
 export function formatRelative(iso: string, locale: string): string {
   const minutes = Math.round((new Date(iso).getTime() - Date.now()) / 60_000);

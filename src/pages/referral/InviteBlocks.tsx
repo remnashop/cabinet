@@ -65,13 +65,12 @@ function BalanceTiles({ data }: { data: InviteData }) {
           onClick={points >= 1 ? data.onWithdraw : undefined}
         />
       )}
-      {/* agrees with the number above it; nothing to apply without days */}
+      {/* with no days, it explains what they are */}
       <ActionTile
         round
         value={<span className="text-primary">{data.bonusDays}</span>}
         label={t("profile.bonusDaysCount", { count: data.bonusDays })}
         onClick={data.onRedeemDays}
-        disabled={data.bonusDays === 0}
       />
     </div>
   );
