@@ -11,4 +11,3 @@ docs/
 .vscode/
 *.code-workspace
 .worktrees/
-.agents
