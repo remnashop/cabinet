@@ -1,0 +1,23 @@
+services:
+  remnashop-cabinet:
+    image: ghcr.io/remnashop/remnashop-cabinet:latest
+    container_name: "remnashop-cabinet"
+    hostname: remnashop-cabinet
+    restart: unless-stopped
+    env_file: .env
+    # only on 127.0.0.1: the cabinet trusts X-Forwarded-For from the reverse proxy
+    ports:
+      - 127.0.0.1:5010:80
+    networks:
+      - remnawave-network
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: 5
+
+networks:
+  remnawave-network:
+    name: remnawave-network
+    driver: bridge
+    external: false
