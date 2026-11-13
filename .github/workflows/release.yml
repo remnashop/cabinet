@@ -37,7 +37,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # the image keeps the remnashop-cabinet name the docs install from, not the repo's;
       # a pre-release gets only its own tag: latest stays on the last full release
