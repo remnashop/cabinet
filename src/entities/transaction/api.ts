@@ -8,6 +8,8 @@ export interface Transaction {
   final_price: string;
   // what the discounts were taken off (Decimal string), the plan's own promotion, then the user's discount
   base_price: string;
+  // a change between unlimited plans: the old one's payment, taken off before the discounts
+  change_credit: string;
   plan_discount_percent: number;
   discount_percent: number;
   discount_source: "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";

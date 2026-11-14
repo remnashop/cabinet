@@ -1,6 +1,8 @@
 import type { TFunction } from "i18next";
 
 import type { Plan, PlanAccess } from "@entities/plan/api";
+import type { OwnSubscription } from "@entities/subscription/api";
+import { isUnlimited } from "@entities/subscription/lib";
 import { formatGb } from "@shared/lib/format";
 
 export type PurchaseType = "NEW" | "RENEW" | "CHANGE";
@@ -15,11 +17,32 @@ export function parseWizardParams(search: URLSearchParams): {
   const type = search.get("type");
   const subId = Number(search.get("sub"));
   if ((type === "RENEW" || type === "CHANGE") && Number.isInteger(subId) && subId > 0) {
-    return { type, subId, access: { plan_code: null, renew_subscription_id: type === "RENEW" ? subId : null } };
+    return {
+      type,
+      subId,
+      access: {
+        plan_code: null,
+        renew_subscription_id: type === "RENEW" ? subId : null,
+        change_subscription_id: type === "CHANGE" ? subId : null,
+      },
+    };
   }
   const code = search.get("code");
   const plan_code = code && /^[A-Za-z0-9_-]{1,64}$/.test(code) ? code : null;
-  return { type: "NEW", subId: null, access: { plan_code, renew_subscription_id: null } };
+  return { type: "NEW", subId: null, access: { plan_code, renew_subscription_id: null, change_subscription_id: null } };
+}
+
+/** Which "what happens to your subscription" text the summary shows: a change involving an unlimited subscription
+    credits only from unlimited to unlimited, and never as days. */
+export function typeNoticeKey(
+  type: Exclude<PurchaseType, "NEW">,
+  days: number,
+  target: Pick<OwnSubscription, "expire_at"> | undefined,
+): "RENEW" | "CHANGE" | "CHANGE_CREDIT" | "CHANGE_NO_CARRY" {
+  if (type === "RENEW") return "RENEW";
+  const fromUnlimited = target !== undefined && isUnlimited(target);
+  if (days === 0 && fromUnlimited) return "CHANGE_CREDIT";
+  return days === 0 || fromUnlimited ? "CHANGE_NO_CARRY" : "CHANGE";
 }
 
 /** The wizard's address for buying a plan again, e.g. after a failed payment: same plan, duration and subscription. */
@@ -38,9 +61,10 @@ export function isValidEmail(value: string): boolean {
 
 /** 365 → 1 year, 90 → 3 months, 7 → 7 days. */
 export function durationUnit(days: number): {
-  unit: "years" | "months" | "days";
+  unit: "forever" | "years" | "months" | "days";
   count: number;
 } {
+  if (days === 0) return { unit: "forever", count: 0 };
   if (days % 365 === 0) return { unit: "years", count: days / 365 };
   if (days % 30 === 0) return { unit: "months", count: days / 30 };
   return { unit: "days", count: days };
@@ -63,4 +87,11 @@ export function planLimits(plan: Plan, t: TFunction, locale: string): [traffic: 
 /** A gateway's name from the locale (the bot's gateway-name list); one it doesn't know yet, "Capitalized". */
 export function gatewayLabel(type: string, t: TFunction): string {
   return t(`gateways.${type}`, { defaultValue: type.charAt(0) + type.slice(1).toLowerCase() });
+}
+
+/** ?days= of "buy again": 0 is unlimited, so a missing or broken value is null, never 0. */
+export function parseDaysParam(search: URLSearchParams): number | null {
+  const raw = search.get("days");
+  const days = raw ? Number(raw) : NaN;
+  return Number.isInteger(days) && days >= 0 ? days : null;
 }

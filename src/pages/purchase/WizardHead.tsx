@@ -10,6 +10,7 @@ import { PILL_SPRING } from "@shared/lib/motion";
 import { Ripple } from "@shared/ui/Ripple";
 
 import { PlanLimits } from "./PlanLimits";
+import { receiptAmounts } from "./receipt";
 
 interface HeadProps {
   plan: Plan;
@@ -65,17 +66,14 @@ export function WizardHead(props: HeadProps) {
 function Receipt({ quote }: { quote: Quote }) {
   const { t, i18n } = useTranslation();
   const money = (amount: number | string) => formatMoney(amount, quote.currency, i18n.language);
-  const base = Number(quote.base_price);
-  const final = Number(quote.final_price);
-  // as the backend counts: the promotion off the list price, the user's discount off what's left, the total rounded
-  // once; the user's line takes the remainder, so the lines always add up to the total
-  const promo = (base * quote.plan_discount_percent) / 100;
+  const { base, credit, payable, promo, discount, final } = receiptAmounts(quote);
   const lines: [label: string, amount: string, off: boolean][] = [[t("purchase.receiptPrice"), money(base), false]];
+  if (credit > 0) lines.push([t("purchase.receiptCredit"), `−${money(credit)}`, false]);
   if (quote.plan_discount_percent > 0) {
     lines.push([t("purchase.receiptPromo", { percent: quote.plan_discount_percent }), `−${money(promo)}`, true]);
   }
   if (quote.discount_percent > 0) {
-    lines.push([t("purchase.receiptDiscount", { percent: quote.discount_percent }), `−${money(base - promo - final)}`, true]);
+    lines.push([t("purchase.receiptDiscount", { percent: quote.discount_percent }), `−${money(discount)}`, true]);
   }
   return (
     <div className="relative mt-4 flex flex-col gap-2.5 border-t border-dashed border-white/15 pt-4 text-sm">
@@ -90,12 +88,14 @@ function Receipt({ quote }: { quote: Quote }) {
       <div className="mt-1 flex items-baseline justify-between gap-3 border-t border-dashed border-white/15 pt-3.5">
         <span className="text-xs font-semibold uppercase tracking-wide">{t("purchase.total")}</span>
         <span className="flex items-baseline gap-2">
-          {final < base && <span className="text-xs text-muted-foreground tabular-nums line-through">{money(base)}</span>}
+          {final < payable && (
+            <span className="text-xs text-muted-foreground tabular-nums line-through">{money(payable)}</span>
+          )}
           <span className="text-2xl font-bold leading-tight tabular-nums tracking-tight">{money(final)}</span>
         </span>
       </div>
-      {final < base && (
-        <span className="-mt-1.5 self-end text-xs text-success">{t("purchase.savings", { amount: money(base - final) })}</span>
+      {final < payable && (
+        <span className="-mt-1.5 self-end text-xs text-success">{t("purchase.savings", { amount: money(payable - final) })}</span>
       )}
     </div>
   );

@@ -10,6 +10,7 @@ import {
   cardNotice,
   daysAlert,
   daysLeft,
+  isUnlimited,
   timeLeft,
   trafficAlert,
   planTermsChanged,
@@ -150,4 +151,13 @@ it("planTermsChanged: the plan's limits or strategy moved since the purchase", (
   expect(planTermsChanged(sub(), edited)).toBe(false);
   expect(planTermsChanged(sub(), { ...edited, device_limit: 5 })).toBe(true);
   expect(planTermsChanged(sub(), { ...edited, traffic_limit_strategy: "MONTH" })).toBe(true);
+});
+
+it("an unlimited subscription never reads as expiring and can't be renewed", () => {
+  const forever = sub({ expire_at: "2099-10-17T12:00:00Z" });
+
+  expect(isUnlimited(forever)).toBe(true);
+  expect(urgency(forever, now)).toBe("ok");
+  expect(daysAlert(forever, now)).toBeNull();
+  expect(canRenew(forever, [{ id: forever.plan_id } as Plan])).toBe(false);
 });

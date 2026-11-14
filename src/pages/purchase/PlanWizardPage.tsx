@@ -6,7 +6,7 @@ import { useCatalogQuery, usePaymentMethodsQuery, type PaymentMethod, type Plan 
 import { useSubscriptionsQuery, useTrialQuery, type Trial } from "@entities/subscription/api";
 import { planTermsChanged } from "@entities/subscription/lib";
 import { startPayment } from "@features/payment/start-payment";
-import { parseWizardParams } from "@features/purchase/wizard";
+import { parseDaysParam, parseWizardParams } from "@features/purchase/wizard";
 import { ButtonLink } from "@shared/ui/ButtonLink";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { PageEmpty } from "@shared/ui/PageEmpty";
@@ -48,8 +48,8 @@ export function PlanWizardPage() {
   const methods = usePaymentMethodsQuery();
   const subscriptions = useSubscriptionsQuery();
   // ?days= (buying again after a failed payment): the duration is taken, the wizard opens on the method
-  const [chosenDays, setDays] = useState<number | null>(() => Number(search.get("days")) || null);
-  const [chosenStep, setStep] = useState<0 | 1 | 2>(() => (search.get("days") ? 1 : 0));
+  const [chosenDays, setDays] = useState<number | null>(() => parseDaysParam(search));
+  const [chosenStep, setStep] = useState<0 | 1 | 2>(() => (parseDaysParam(search) === null ? 0 : 1));
   const [chosenMethod, setMethod] = useState<PaymentMethod | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   // the order the last "pay" created: a pay after going back replaces it

@@ -305,6 +305,7 @@
       "backTrial": "Get a subscription to get access back",
       "channelTrial": "Rejoin the channel to resume it"
     },
+    "noExpiry": "No end date",
     "left": "Left",
     "days_one": "{{count}} day",
     "days_other": "{{count}} days",
@@ -393,6 +394,7 @@
     "promoNoteUntil": "A plan promotion is on: −{{percent}}% until {{date}}",
     "discountIncluded": "Including your {{percent}}% discount",
     "receiptPrice": "Plan price",
+    "receiptCredit": "Credit for your current plan",
     "receiptPromo": "Plan promotion · {{percent}}%",
     "receiptDiscount": "Your discount · {{percent}}%",
     "savings": "You save {{amount}}",
@@ -408,6 +410,8 @@
     "termsChanged": "The plan's terms have changed since your purchase. After renewal your subscription moves to the new terms shown above.",
     "typeNotice": {
       "RENEW": "Your current subscription will be extended by the chosen term.",
+      "CHANGE_CREDIT": "Your current subscription will be replaced with the chosen plan. What you paid for your current unlimited subscription is already taken off the price.",
+      "CHANGE_NO_CARRY": "Your current subscription will be replaced with the chosen plan. The unused part of your payment is not carried over.",
       "CHANGE": "Your current subscription will be replaced with the chosen plan. The unused part of your payment is added to the new term."
     },
     "stepNumber": "Step {{number}}",
@@ -415,6 +419,7 @@
     "years_other": "{{count}} years",
     "months_one": "{{count}} month",
     "months_other": "{{count}} months",
+    "forever": "Forever",
     "days_one": "{{count}} day",
     "days_other": "{{count}} days",
     "saving": "−{{percent}}%",
@@ -469,6 +474,7 @@
     "TRAFFIC": "{{count}} GB of traffic added to your subscription",
     "DEVICES_one": "You can connect {{count}} more device",
     "DEVICES_other": "You can connect {{count}} more devices",
+    "SUBSCRIPTION_UNLIMITED": "You've got a subscription with no end date",
     "SUBSCRIPTION_one": "You've got a subscription for {{count}} day",
     "SUBSCRIPTION_other": "You've got a subscription for {{count}} days",
     "PERSONAL_DISCOUNT": "Your permanent discount is now {{count}}%",

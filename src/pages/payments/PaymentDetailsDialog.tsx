@@ -10,7 +10,7 @@ import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
 import { KpiTile } from "@shared/ui/KpiTile";
 
-import { discountParts, hasDiscount } from "./discount";
+import { discountParts, hasDiscount, priceBeforeDiscounts } from "./discount";
 import { STATUS_TONE } from "./status-tone";
 
 export function PaymentDetailsDialog({ transaction, onClose }: { transaction: Transaction | null; onClose: () => void }) {
@@ -32,7 +32,7 @@ export function PaymentDetailsDialog({ transaction, onClose }: { transaction: Tr
             <KpiTile
               label={t("payments.amount")}
               value={formatMoney(tx.final_price, tx.currency, i18n.language)}
-              valueSuffix={discounted && <s>{formatMoney(tx.base_price, tx.currency, i18n.language)}</s>}
+              valueSuffix={discounted && <s>{formatMoney(priceBeforeDiscounts(tx), tx.currency, i18n.language)}</s>}
               hint={<Badge tone={STATUS_TONE[tx.status]}>{t(`payments.statuses.${tx.status}`)}</Badge>}
             />
             <KpiTile

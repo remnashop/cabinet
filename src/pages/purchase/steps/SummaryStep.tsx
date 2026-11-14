@@ -7,9 +7,10 @@ import { createCheckout, useQuoteQuery, type PaymentMethod, type Plan, type Plan
 import { useShownLegalLocale } from "@entities/legal/api";
 import { LegalNotice } from "@entities/legal/LegalNotice";
 import { useMeQuery } from "@entities/session/api";
+import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { AwaitPaymentButton } from "@features/payment/AwaitPaymentButton";
 import { StarsInvoiceError, UnsafePaymentUrlError } from "@features/payment/start-payment";
-import { gatewayLabel, isValidEmail, type PurchaseType } from "@features/purchase/wizard";
+import { gatewayLabel, isValidEmail, typeNoticeKey, type PurchaseType } from "@features/purchase/wizard";
 import { getErrorMessage } from "@shared/api/http";
 import { formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
@@ -49,6 +50,7 @@ export function SummaryStep({
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const me = useMeQuery();
+  const subscriptions = useSubscriptionsQuery();
   // the total always comes from the backend's quote, never from the catalog prices
   const quote = useQuoteQuery({
     plan_id: plan.id,
@@ -174,7 +176,11 @@ export function SummaryStep({
       )}
       {stopReason && <FormError>{stopReason}</FormError>}
       {/* what paying does to the subscription the order is for */}
-      {type !== "NEW" && <p className="px-3 text-xs text-warning">{t(`purchase.typeNotice.${type}`)}</p>}
+      {type !== "NEW" && (
+        <p className="px-3 text-xs text-warning">
+          {t(`purchase.typeNotice.${typeNoticeKey(type, days, subscriptions.data?.items.find((s) => s.id === subId))}`)}
+        </p>
+      )}
       <div className="flex flex-col gap-2">
         {awaited !== null ? (
           <AwaitPaymentButton key={awaited} orderId={awaited} onStop={stopWaiting} />

@@ -12,8 +12,9 @@ import {
   cardAlert,
   cardNotice,
   daysAlert,
-  timeLeft,
+  isUnlimited,
   subscriptionNumber,
+  timeLeft,
   trafficAlert,
   trafficOut,
   trafficRatio,
@@ -172,8 +173,8 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
             <Pill
               icon={Clock}
               label={t("home.left")}
-              value={t(`home.${left.unit}`, { count: left.count })}
-              short={left.unit === "days" ? undefined : t(`home.${left.unit}Short`, { count: left.count })}
+              value={isUnlimited(sub) ? t("home.noExpiry") : t(`home.${left.unit}`, { count: left.count })}
+              short={isUnlimited(sub) || left.unit === "days" ? undefined : t(`home.${left.unit}Short`, { count: left.count })}
               tone={TEXT_TONE[daysTone]}
             />
             {!compact && (

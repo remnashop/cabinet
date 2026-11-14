@@ -16,6 +16,7 @@ describe("rewardText", () => {
     [act("TRAFFIC", 5), "К подписке добавлено 5 ГБ трафика"],
     [act("DEVICES", 3), "Можно подключить ещё 3 устройства"],
     [act("SUBSCRIPTION", null, 30), "Вам выдана подписка на 30 дней"],
+    [act("SUBSCRIPTION", null, 0), "Вам выдана бессрочная подписка"],
     [act("PERSONAL_DISCOUNT", 10), "Ваша постоянная скидка теперь 10%"],
     [act("PURCHASE_DISCOUNT", 10), "Скидка 10% применится к следующей покупке"],
     [act("DURATION", null), null],

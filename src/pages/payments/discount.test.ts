@@ -3,13 +3,14 @@ import { describe, expect, it } from "vitest";
 import type { Transaction } from "@entities/transaction/api";
 import i18n from "@shared/i18n";
 
-import { discountParts, hasDiscount } from "./discount";
+import { discountParts, hasDiscount, priceBeforeDiscounts } from "./discount";
 
 const tx = (over: Partial<Transaction>): Transaction => ({
   id: 1,
   status: "PAID",
   final_price: "149",
   base_price: "149",
+  change_credit: "0",
   plan_discount_percent: 0,
   discount_percent: 0,
   discount_source: "NONE",
@@ -45,5 +46,18 @@ describe("payment discount", () => {
       ["Акция", 20],
       ["Скидка пользователя", 5],
     ]);
+  });
+});
+
+describe("a credited plan change", () => {
+  // the old unlimited plan's payment came off first: that's no discount
+  const credited = tx({ base_price: "5000", change_credit: "3000", final_price: "2000", purchase_type: "CHANGE" });
+
+  it("shows no discount", () => {
+    expect(hasDiscount(credited)).toBe(false);
+  });
+
+  it("takes discounts off what was left to pay", () => {
+    expect(priceBeforeDiscounts(tx({ base_price: "5000", change_credit: "3000", final_price: "1800" }))).toBe(2000);
   });
 });

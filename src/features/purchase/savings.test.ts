@@ -93,3 +93,15 @@ it("unitPrice keeps the cents of a price that has them", () => {
   ]);
   expect(unitPrice(usd, 90, 8.49)).toEqual({ unit: "month", amount: 2.83 });
 });
+
+it("an unlimited duration takes no part in the per-day saving", () => {
+  const forever = plan([
+    [0, { RUB: "5000.00" }],
+    [30, { RUB: "199.00" }],
+    [90, { RUB: "499.00" }],
+  ]);
+
+  expect(savingsPercent(forever, 90, "RUB")).toBe(16);
+  expect(savingsPercent(forever, 0, "RUB")).toBeNull();
+  expect(unitPrice(forever, 0, 5000)).toBeNull();
+});

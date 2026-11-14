@@ -88,7 +88,9 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
               {single ? money(effectivePrice(price)) : t("purchase.from", { price: money(effectivePrice(price)) })}
             </span>
             {single && (
-              <span className="text-xs text-muted-foreground">{t("purchase.per", { period: durationLabel(single.days, t) })}</span>
+              <span className="text-xs text-muted-foreground">
+                {single.days === 0 ? durationLabel(0, t) : t("purchase.per", { period: durationLabel(single.days, t) })}
+              </span>
             )}
           </span>
         )}

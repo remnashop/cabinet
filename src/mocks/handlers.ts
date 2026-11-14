@@ -331,6 +331,7 @@ const historyTransactions = Array.from({ length: 25 }, (_, i) => {
     status: STATUSES[i % STATUSES.length],
     final_price: String(Math.round(base * (1 - planPercent / 100) * (1 - userPercent / 100))),
     base_price: String(base),
+    change_credit: "0",
     plan_discount_percent: planPercent,
     discount_percent: userPercent,
     discount_source: source,
@@ -711,6 +712,7 @@ export const handlers = [
     const promo = PROMO[body.plan_id] ?? 0;
     return HttpResponse.json({
       base_price: price,
+      change_credit: "0",
       plan_discount_percent: promo,
       discount_percent: PERSONAL_DISCOUNT,
       discount_source: "PERSONAL",
@@ -855,6 +857,7 @@ export const handlers = [
       status: order.polls >= 2 ? scenario.paymentOutcome : "PENDING",
       final_price: (Number(price) * (1 - PERSONAL_DISCOUNT / 100)).toFixed(2),
       base_price: price,
+      change_credit: "0",
       plan_discount_percent: 0,
       discount_percent: PERSONAL_DISCOUNT,
       discount_source: PERSONAL_DISCOUNT > 0 ? "PERSONAL" : "NONE",
