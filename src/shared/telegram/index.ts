@@ -47,11 +47,26 @@ export function isMiniApp(): boolean {
 
 export function getInitDataRaw(): string | null {
   if (!active) return null;
+  let sdk: string | undefined;
   try {
-    return retrieveRawInitData() || null;
+    sdk = retrieveRawInitData();
   } catch {
-    return null;
+    sdk = undefined;
   }
+  // a reload without the hash leaves the SDK its sessionStorage copy from the WebView's first launch
+  const launch = new URLSearchParams((window.__tgLaunchHash ?? "").slice(1)).get("tgWebAppData");
+  return freshestInitData(launch, sdk);
+}
+
+const authDate = (initData: string) => Number(new URLSearchParams(initData).get("auth_date")) || 0;
+
+/** The candidate with the latest auth_date; the first one on a tie. */
+export function freshestInitData(...candidates: (string | null | undefined)[]): string | null {
+  let best: string | null = null;
+  for (const candidate of candidates) {
+    if (candidate && (best === null || authDate(candidate) > authDate(best))) best = candidate;
+  }
+  return best;
 }
 
 /** The user's Telegram photo inside the Mini App; null outside it, without one, or off https. */

@@ -1,6 +1,6 @@
 import { expect, it, vi } from "vitest";
 
-import { createBackStack } from "@shared/telegram";
+import { createBackStack, freshestInitData } from "@shared/telegram";
 
 const fakeButton = () => {
   let listener: (() => void) | null = null;
@@ -49,4 +49,13 @@ it("a handler swapped in place keeps its position in the stack", () => {
   press();
   expect(sheet.current).toHaveBeenCalledTimes(1);
   expect(next).not.toHaveBeenCalled();
+});
+
+it("picks the initData with the latest auth_date", () => {
+  const old = "user=a&auth_date=100&hash=x";
+  const fresh = "user=a&auth_date=200&hash=y";
+  expect(freshestInitData(fresh, old)).toBe(fresh);
+  expect(freshestInitData(old, fresh)).toBe(fresh);
+  expect(freshestInitData(null, old)).toBe(old);
+  expect(freshestInitData(undefined, null)).toBeNull();
 });
