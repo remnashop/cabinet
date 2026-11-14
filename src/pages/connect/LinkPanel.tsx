@@ -36,7 +36,7 @@ export function LinkPanel({ subscription, dialog = false }: { subscription: OwnS
           <p ref={linkRef} className="w-full break-all rounded-xl bg-white/[0.04] p-3 font-mono text-xs">
             {subscription.url}
           </p>
-          {/* stacked on phones: "Открыть в приложении" doesn't fit half a row */}
+          {/* stacked on phones: two labels don't fit half a row */}
           <div className="flex w-full flex-col gap-2 sm:flex-row">
             <Button variant="glass" className="gap-2 sm:flex-1" onClick={() => void copy()}>
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
@@ -51,7 +51,7 @@ export function LinkPanel({ subscription, dialog = false }: { subscription: OwnS
               }}
             >
               <ExternalLink className="size-4" />
-              {t("connect.open")}
+              {t("connect.openLink")}
             </Button>
           </div>
         </>

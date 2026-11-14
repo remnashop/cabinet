@@ -24,7 +24,7 @@ export interface Scenario {
   discount: number;
   referral: boolean;
   referralEmpty: boolean; // nobody invited yet
-  connectGuide: boolean; // the dashboard's connect guide on, or the "not available" screen
+  connectGuide: boolean; // the dashboard's connect guide on, or only the link and QR code
   alertDemo: boolean; // seven cards, one per look (calm, orange and red by days and traffic, limited, expired)
   paymentOutcome: MockPaymentOutcome; // what an order turns into from its second poll; PENDING runs into the timeout
   failRequests: MockFailure; // every call but sign-in and the documents fails: a 500 or no answer, for the error cards
