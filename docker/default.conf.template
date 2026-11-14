@@ -34,6 +34,9 @@ server {
         proxy_ssl_server_name on;
         # the secret and every session token travel this hop
         proxy_ssl_verify on;
+        # default 1 stops at the intermediate: Let's Encrypt (leaf, R1x, root) needs 2,
+        # a cross-signed root (ZeroSSL/Sectigo) 3
+        proxy_ssl_verify_depth 3;
         proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
         # overwritten, never passed through: the backend trusts these only with the secret
         proxy_set_header X-Cabinet-Client-IP $remote_addr;
