@@ -474,6 +474,7 @@
     "TRAFFIC": "{{count}} GB of traffic added to your subscription",
     "DEVICES_one": "You can connect {{count}} more device",
     "DEVICES_other": "You can connect {{count}} more devices",
+    "SUBSCRIPTION_UNLIMITED": "You've got a subscription with no end date",
     "SUBSCRIPTION_one": "You've got a subscription for {{count}} day",
     "SUBSCRIPTION_other": "You've got a subscription for {{count}} days",
     "PERSONAL_DISCOUNT": "Your permanent discount is now {{count}}%",

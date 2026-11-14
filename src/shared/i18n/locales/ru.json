@@ -506,6 +506,7 @@
     "DEVICES_few": "Можно подключить ещё {{count}} устройства",
     "DEVICES_many": "Можно подключить ещё {{count}} устройств",
     "DEVICES_other": "Можно подключить ещё {{count}} устройства",
+    "SUBSCRIPTION_UNLIMITED": "Вам выдана бессрочная подписка",
     "SUBSCRIPTION_one": "Вам выдана подписка на {{count}} день",
     "SUBSCRIPTION_few": "Вам выдана подписка на {{count}} дня",
     "SUBSCRIPTION_many": "Вам выдана подписка на {{count}} дней",
