@@ -14,6 +14,7 @@ import { SummaryStep } from "./SummaryStep";
 
 const QUOTE = {
   base_price: "100",
+  change_credit: "0",
   plan_discount_percent: 0,
   discount_percent: 0,
   discount_source: "NONE",

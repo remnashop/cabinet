@@ -16,7 +16,7 @@ import { Skeleton } from "@shared/ui/Skeleton";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 
 import { PaymentDetailsDialog } from "./PaymentDetailsDialog";
-import { hasDiscount } from "./discount";
+import { hasDiscount, priceBeforeDiscounts } from "./discount";
 import { STATUS_ICON_TONE } from "./status-tone";
 
 export function PaymentsPage() {
@@ -91,7 +91,7 @@ export function PaymentsPage() {
                 <>
                   {hasDiscount(tx) && (
                     <s className="text-xs font-normal text-muted-foreground">
-                      {formatMoney(tx.base_price, tx.currency, i18n.language)}
+                      {formatMoney(priceBeforeDiscounts(tx), tx.currency, i18n.language)}
                     </s>
                   )}
                   {formatMoney(tx.final_price, tx.currency, i18n.language)}

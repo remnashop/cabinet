@@ -3,7 +3,15 @@ import { expect, it } from "vitest";
 import { PUBLIC_ACCESS } from "@entities/plan/api";
 import i18n from "@shared/i18n";
 
-import { durationUnit, gatewayLabel, isValidEmail, parseWizardParams, retryPath, typeNoticeKey } from "./wizard";
+import {
+  durationUnit,
+  gatewayLabel,
+  isValidEmail,
+  parseDaysParam,
+  parseWizardParams,
+  retryPath,
+  typeNoticeKey,
+} from "./wizard";
 
 const NEW = { type: "NEW", subId: null, access: PUBLIC_ACCESS };
 
@@ -78,4 +86,12 @@ it("typeNoticeKey says what a change involving an unlimited subscription carries
   expect(typeNoticeKey("CHANGE", 0, forever)).toBe("CHANGE_CREDIT");
   expect(typeNoticeKey("CHANGE", 0, month)).toBe("CHANGE_NO_CARRY");
   expect(typeNoticeKey("CHANGE", 30, forever)).toBe("CHANGE_NO_CARRY");
+});
+
+it("parseDaysParam keeps 0 (unlimited) and drops a missing or broken value", () => {
+  expect(parseDaysParam(new URLSearchParams("?days=0"))).toBe(0);
+  expect(parseDaysParam(new URLSearchParams("?days=30"))).toBe(30);
+  expect(parseDaysParam(new URLSearchParams(""))).toBeNull();
+  expect(parseDaysParam(new URLSearchParams("?days="))).toBeNull();
+  expect(parseDaysParam(new URLSearchParams("?days=abc"))).toBeNull();
 });

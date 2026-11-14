@@ -394,6 +394,7 @@
     "promoNoteUntil": "A plan promotion is on: −{{percent}}% until {{date}}",
     "discountIncluded": "Including your {{percent}}% discount",
     "receiptPrice": "Plan price",
+    "receiptCredit": "Credit for your current plan",
     "receiptPromo": "Plan promotion · {{percent}}%",
     "receiptDiscount": "Your discount · {{percent}}%",
     "savings": "You save {{amount}}",

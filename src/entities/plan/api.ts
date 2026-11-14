@@ -61,6 +61,8 @@ export interface QuoteInput extends PlanAccess {
 
 export interface Quote {
   base_price: string;
+  // a change between unlimited plans: what the old one was paid, off the price before any discount
+  change_credit: string;
   plan_discount_percent: number;
   discount_percent: number;
   discount_source: "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";

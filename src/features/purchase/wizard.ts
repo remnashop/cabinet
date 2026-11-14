@@ -88,3 +88,10 @@ export function planLimits(plan: Plan, t: TFunction, locale: string): [traffic: 
 export function gatewayLabel(type: string, t: TFunction): string {
   return t(`gateways.${type}`, { defaultValue: type.charAt(0) + type.slice(1).toLowerCase() });
 }
+
+/** ?days= of "buy again": 0 is unlimited, so a missing or broken value is null, never 0. */
+export function parseDaysParam(search: URLSearchParams): number | null {
+  const raw = search.get("days");
+  const days = raw ? Number(raw) : NaN;
+  return Number.isInteger(days) && days >= 0 ? days : null;
+}

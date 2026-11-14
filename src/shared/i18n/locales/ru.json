@@ -416,6 +416,7 @@
     "promoNoteUntil": "Действует акция на тариф −{{percent}}% до {{date}}",
     "discountIncluded": "С учётом вашей скидки {{percent}}%",
     "receiptPrice": "Цена тарифа",
+    "receiptCredit": "Зачёт оплаты прежнего тарифа",
     "receiptPromo": "Акция тарифа · {{percent}}%",
     "receiptDiscount": "Ваша скидка · {{percent}}%",
     "savings": "Вы экономите {{amount}}",
