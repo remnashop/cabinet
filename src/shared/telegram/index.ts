@@ -10,6 +10,7 @@ import {
   retrieveLaunchParams,
   retrieveRawInitData,
   shareURL,
+  swipeBehavior,
   viewport,
 } from "@telegram-apps/sdk-react";
 import { useEffect, useRef } from "react";
@@ -37,7 +38,17 @@ export function initTelegram(color: `#${string}`): void {
       // --tg-viewport-* vars: stable height and safe-area insets (styles.css)
       if (viewport.bindCssVars.isAvailable()) viewport.bindCssVars();
       if (viewport.expand.isAvailable()) viewport.expand();
+      // on desktop fullscreen would take over the whole Telegram window
+      const platform = retrieveLaunchParams().tgWebAppPlatform;
+      if ((platform === "ios" || platform === "android") && viewport.requestFullscreen.isAvailable()) {
+        void viewport.requestFullscreen().catch(() => {});
+      }
     });
+  }
+  // a downward scroll at the top would otherwise close or collapse the app
+  if (swipeBehavior.mount.isAvailable()) {
+    swipeBehavior.mount();
+    if (swipeBehavior.disableVertical.isAvailable()) swipeBehavior.disableVertical();
   }
 }
 
