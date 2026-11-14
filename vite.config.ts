@@ -6,10 +6,8 @@ import { defineConfig } from "vitest/config";
 
 const layer = (name: string) => fileURLToPath(new URL(`./src/${name}`, import.meta.url));
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(() => ({
   plugins: [react(), tailwindcss()],
-  // public/ holds only MSW's mock worker: served by the dev server, never shipped
-  publicDir: command === "serve" ? "public" : false,
   resolve: {
     alias: {
       "@app": layer("app"),
