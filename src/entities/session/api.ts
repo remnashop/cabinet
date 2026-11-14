@@ -38,8 +38,9 @@ export function useChangeLanguage(onDone?: () => void) {
     mutationFn: (language: SupportedLanguage) => apiPatch("/users/me", { language }),
     onSuccess: async (_, language) => {
       await i18n.changeLanguage(language);
-      // the answer carries raw discounts: refetch instead of caching it
-      await queryClient.invalidateQueries({ queryKey: ["me"] });
+      // plan names come in the user's language, and the answer carries raw discounts: refetch all,
+      // without holding the menu open until every query is back
+      void queryClient.invalidateQueries();
       onDone?.();
     },
   });
