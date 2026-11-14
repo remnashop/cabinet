@@ -22,7 +22,9 @@ export function minPrice(plan: Plan, currency: string): PlanPrice | null {
 
 /** Per-day saving against the shortest duration priced in the same currency; null when there is none. */
 export function savingsPercent(plan: Plan, days: number, currency: string): number | null {
+  // an unlimited duration (0 days) has no per-day price to compare
   const priced = plan.durations
+    .filter((d) => d.days > 0)
     .map((d) => ({ days: d.days, price: priceIn(d.prices, currency) }))
     .filter((d): d is { days: number; price: number } => d.price !== null);
   const target = priced.find((d) => d.days === days);
@@ -38,8 +40,8 @@ export function savingsPercent(plan: Plan, days: number, currency: string): numb
  * month or more, per day under that. Null for the shortest itself, there is nothing to compare it with.
  */
 export function unitPrice(plan: Plan, days: number, price: number): { unit: "month" | "day"; amount: number } | null {
-  const shortest = Math.min(...plan.durations.map((d) => d.days));
-  if (days <= shortest) return null;
+  const shortest = Math.min(...plan.durations.filter((d) => d.days > 0).map((d) => d.days));
+  if (days === 0 || days <= shortest) return null;
   // whole like the price is (149 ₽ → 133 ₽ a month), to the cent when it has cents ($8.49 → $2.83, not $3)
   const cents = Number.isInteger(price) ? 1 : 100;
   if (shortest >= 30) return { unit: "month", amount: Math.round(((price * 30) / days) * cents) / cents };

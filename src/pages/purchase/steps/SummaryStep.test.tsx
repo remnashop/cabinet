@@ -64,7 +64,7 @@ async function render(
   subId: number | null,
   requiresEmail = false,
   onCreated: () => Promise<number | null> = async () => null,
-  access: PlanAccess = { plan_code: null, renew_subscription_id: type === "RENEW" ? subId : null },
+  access: PlanAccess = { plan_code: null, renew_subscription_id: type === "RENEW" ? subId : null, change_subscription_id: null },
   replacesOrderId: number | null = null,
   asksEmail = true,
 ) {
@@ -161,11 +161,11 @@ describe("SummaryStep", () => {
   });
 
   it("quotes and orders a link plan with its code", async () => {
-    await render("NEW", null, false, undefined, { plan_code: "vip", renew_subscription_id: null });
+    await render("NEW", null, false, undefined, { plan_code: "vip", renew_subscription_id: null, change_subscription_id: null });
     await until(() => expect(payButton().disabled).toBe(false));
     await act(async () => payButton().click());
     await until(() => expect(createCheckout).toHaveBeenCalled());
-    expect(fetchQuote.mock.calls[0][0].queryKey[1]).toMatchObject({ plan_code: "vip", renew_subscription_id: null });
+    expect(fetchQuote.mock.calls[0][0].queryKey[1]).toMatchObject({ plan_code: "vip", renew_subscription_id: null, change_subscription_id: null });
     expect(checkoutBody()).toMatchObject({ plan_code: "vip" });
   });
 

@@ -43,13 +43,15 @@ export interface PaymentMethod {
   asks_email?: boolean;
 }
 
-/** What opens a plan the public catalog leaves out: a plan link's code, or the subscription being renewed. */
+/** What opens a plan the public catalog leaves out: a plan link's code, or the subscription being renewed.
+    change_subscription_id: the subscription a change replaces, which its quote credits when both are unlimited. */
 export interface PlanAccess {
   plan_code: string | null;
   renew_subscription_id: number | null;
+  change_subscription_id: number | null;
 }
 
-export const PUBLIC_ACCESS: PlanAccess = { plan_code: null, renew_subscription_id: null };
+export const PUBLIC_ACCESS: PlanAccess = { plan_code: null, renew_subscription_id: null, change_subscription_id: null };
 
 export interface QuoteInput extends PlanAccess {
   plan_id: number;

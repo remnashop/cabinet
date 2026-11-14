@@ -3,6 +3,12 @@ import type { OwnSubscription } from "@entities/subscription/api";
 
 const DAY_MS = 86_400_000;
 const SOON_DAYS = 3;
+// the backend's unlimited expiry: a date the panel needs, read as "never"
+const UNLIMITED_EXPIRE_YEAR = 2099;
+
+export function isUnlimited(sub: Pick<OwnSubscription, "expire_at">): boolean {
+  return new Date(sub.expire_at).getUTCFullYear() >= UNLIMITED_EXPIRE_YEAR;
+}
 
 // whole days, rounded up, so "0.4 days left" still reads as one day
 export function daysLeft(expireAt: string, now: Date): number {
@@ -21,6 +27,7 @@ export function timeLeft(expireAt: string, now: Date): { unit: "days" | "hours" 
 
 export function urgency(sub: Pick<OwnSubscription, "status" | "expire_at">, now: Date): "ok" | "soon" | "expired" {
   if (sub.status === "EXPIRED" || new Date(sub.expire_at).getTime() <= now.getTime()) return "expired";
+  if (isUnlimited(sub)) return "ok";
   if (daysLeft(sub.expire_at, now) <= SOON_DAYS) return "soon";
   return "ok";
 }
@@ -30,6 +37,7 @@ type Alert = "error" | "warning" | null;
 /** The days' alarm: red with a day or none left, orange within three days. */
 export function daysAlert(sub: Pick<OwnSubscription, "status" | "expire_at">, now: Date): Alert {
   const state = urgency(sub, now);
+  if (state === "ok") return null;
   if (state === "expired" || daysLeft(sub.expire_at, now) <= 1) return "error";
   return state === "soon" ? "warning" : null;
 }
@@ -89,7 +97,8 @@ export function trafficRatio(used: number | null, limitGb: number): number | nul
 
 // trials cannot be renewed, and a plan the backend's renewal catalog lacks has nothing to renew into
 export function canRenew(sub: OwnSubscription, catalog: Plan[]): boolean {
-  return !sub.is_trial && catalog.some((p) => p.id === sub.plan_id);
+  // an unlimited one has nothing to renew; the backend offers it no plan either
+  return !sub.is_trial && !isUnlimited(sub) && catalog.some((p) => p.id === sub.plan_id);
 }
 
 // the plan was edited since this subscription was bought: a paid renewal moves it to the new terms

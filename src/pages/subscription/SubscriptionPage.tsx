@@ -171,7 +171,7 @@ export function SubscriptionPage() {
     items.map((s) => s.id),
   );
   // the plan the selected subscription renews into, as the backend decides (a link plan, one closed to new buyers)
-  const catalog = useCatalogQuery({ plan_code: null, renew_subscription_id: selectedId });
+  const catalog = useCatalogQuery({ plan_code: null, renew_subscription_id: selectedId, change_subscription_id: null });
   const linkedId = Number(params.get("sub")) || null;
   const renewLink = params.get("renew") === "1";
   const subsLoaded = subscriptions.isSuccess;
