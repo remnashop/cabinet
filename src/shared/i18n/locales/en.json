@@ -412,7 +412,8 @@
       "RENEW": "Your current subscription will be extended by the chosen term.",
       "CHANGE_CREDIT": "Your current subscription will be replaced with the chosen plan. What you paid for your current unlimited subscription is already taken off the price.",
       "CHANGE_NO_CARRY": "Your current subscription will be replaced with the chosen plan. The unused part of your payment is not carried over.",
-      "CHANGE": "Your current subscription will be replaced with the chosen plan. The unused part of your payment is added to the new term."
+      "CHANGE_one": "Your current subscription will be replaced with the chosen plan. The unused part of your payment adds {{count}} day to the new term.",
+      "CHANGE_other": "Your current subscription will be replaced with the chosen plan. The unused part of your payment adds {{count}} days to the new term."
     },
     "stepNumber": "Step {{number}}",
     "years_one": "{{count}} year",

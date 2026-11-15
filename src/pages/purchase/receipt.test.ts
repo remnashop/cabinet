@@ -7,6 +7,7 @@ import { receiptAmounts } from "./receipt";
 const quote = (over: Partial<Quote>): Quote => ({
   base_price: "5000",
   change_credit: "0",
+  change_credit_days: 0,
   plan_discount_percent: 0,
   discount_percent: 0,
   discount_source: "NONE",
