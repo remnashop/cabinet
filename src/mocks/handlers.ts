@@ -547,7 +547,8 @@ export const handlers = [
     HttpResponse.json({
       brand_name: null,
       primary_color: null,
-      shader_palette: null,
+      shader_base: null,
+      shader_tones: null,
       shader_enabled: true,
       has_logo: false,
       has_favicon: false,

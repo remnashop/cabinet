@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 
 import { useAppearanceQuery } from "@entities/appearance/api";
-import { buildHueRotationMatrix, DEFAULT_TIME_SCALE, PALETTE, type ShaderUniforms } from "@app/shaderState";
-import { DEFAULT_ACCENT_COLOR, DEFAULT_SHADER_PALETTE_HEX, hexToHueDegrees, hexToRgbNormalized } from "@shared/lib/color";
+import { DEFAULT_TIME_SCALE, type ShaderUniforms } from "@app/shaderState";
+import { hexToRgbNormalized } from "@shared/lib/color";
+import { resolveShaderStops, type ShaderColors } from "@shared/lib/shaderPalette";
 
 const MIN_FRAME_INTERVAL_MS = 1000 / 30;
 const BUFFER_SCALE = 0.5;
@@ -30,12 +31,10 @@ precision highp float;
 uniform float uTime;
 uniform float uTimeSin;
 uniform float uScrollProgress;
-uniform float uOpacity;
-uniform vec3 uColourPalette[4];
+uniform vec3 uStops[4];
 uniform float uUvScale;
 uniform float uUvDistortionIterations;
 uniform float uUvDistortionIntensity;
-uniform mat3 uHueRotationMatrix;
 
 in vec2 vUv;
 out vec4 fragColor;
@@ -116,10 +115,6 @@ float snoise(vec3 v) {
   return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
 }
 
-vec3 cosineGradientColour(in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d) {
-  return clamp(a + b * cos(6.28318 * (c * t + d)), 0.0, 1.0);
-}
-
 void main() {
   vec2 uv = vUv;
   uv.x += uScrollProgress;
@@ -131,9 +126,12 @@ void main() {
   }
 
   float colourInput = snoise(vec3(uv, uTimeSin)) * 0.5 + 0.5;
-  vec3 colour = cosineGradientColour(colourInput, uColourPalette[0], uColourPalette[1], uColourPalette[2], uColourPalette[3]);
-  colour = uHueRotationMatrix * colour;
-  fragColor = vec4(colour * 1.4 * uOpacity, uOpacity);
+  // the four stops spread evenly over the noise, eased between neighbours
+  float s = smoothstep(0.0, 1.0, colourInput) * 3.0;
+  vec3 colour = mix(uStops[0], uStops[1], clamp(s, 0.0, 1.0));
+  colour = mix(colour, uStops[2], clamp(s - 1.0, 0.0, 1.0));
+  colour = mix(colour, uStops[3], clamp(s - 2.0, 0.0, 1.0));
+  fragColor = vec4(colour, 1.0);
 }
 `;
 
@@ -156,16 +154,12 @@ function compileProgram(gl: WebGL2RenderingContext): WebGLProgram | null {
   return null;
 }
 
-function applyAccent(uniforms: ShaderUniforms, accentColor: string | null) {
-  const hueDelta = accentColor ? hexToHueDegrees(accentColor) - hexToHueDegrees(DEFAULT_ACCENT_COLOR) : 0;
-  uniforms.uHueRotationMatrix.value.set(buildHueRotationMatrix((hueDelta * Math.PI) / 180));
+function applyColors(uniforms: ShaderUniforms, accentColor: string | null, colors: ShaderColors) {
+  resolveShaderStops(accentColor, colors).forEach((hex, i) => uniforms.uStops.value.set(hexToRgbNormalized(hex), i * 3));
 }
 
-function applyPalette(uniforms: ShaderUniforms, shaderPalette: string[] | null) {
-  (shaderPalette ?? DEFAULT_SHADER_PALETTE_HEX).forEach((hex, i) =>
-    uniforms.uColourPalette.value.set(hexToRgbNormalized(hex), i * 3),
-  );
-}
+// a stored appearance from before shader colors existed has none
+const FOLLOW_ACCENT: ShaderColors = { base: null, tones: null };
 
 /** App-wide noise-gradient background on one full-viewport canvas, mounted once at the app root. */
 export function ShaderBackground() {
@@ -174,7 +168,7 @@ export function ShaderBackground() {
   // read by the render loop: skips drawing without recreating the WebGL context
   const { data: appearance } = useAppearanceQuery();
   const accentColor = appearance?.primaryColor ?? null;
-  const shaderPalette = appearance?.shaderPalette ?? null;
+  const shaderColors = appearance?.shaderColors ?? FOLLOW_ACCENT;
   // off until the shop's colors are known (stored from the last visit or fetched): no flash of the default ones
   const shaderEnabled = appearance?.shaderEnabled ?? false;
   const enabledRef = useRef(shaderEnabled);
@@ -209,16 +203,13 @@ export function ShaderBackground() {
       uTime: { value: 0 },
       uTimeSin: { value: 0 },
       uScrollProgress: { value: 0 },
-      uOpacity: { value: PALETTE.opacity },
-      uColourPalette: { value: Float32Array.from(PALETTE.colours) },
+      uStops: { value: new Float32Array(12) },
       uUvScale: { value: 1 },
       uUvDistortionIterations: { value: 3 },
       uUvDistortionIntensity: { value: 0.15 },
-      uHueRotationMatrix: { value: buildHueRotationMatrix(0) },
     };
     // the first frame already in the shop's colors; the effects below follow later changes
-    applyAccent(uniforms, accentColor);
-    applyPalette(uniforms, shaderPalette);
+    applyColors(uniforms, accentColor, shaderColors);
 
     let program: WebGLProgram | null = null;
     let locations = {} as Record<keyof ShaderUniforms, WebGLUniformLocation | null>;
@@ -242,12 +233,10 @@ export function ShaderBackground() {
       context.uniform1f(locations.uTime, uniforms.uTime.value);
       context.uniform1f(locations.uTimeSin, uniforms.uTimeSin.value);
       context.uniform1f(locations.uScrollProgress, uniforms.uScrollProgress.value);
-      context.uniform1f(locations.uOpacity, uniforms.uOpacity.value);
-      context.uniform3fv(locations.uColourPalette, uniforms.uColourPalette.value);
+      context.uniform3fv(locations.uStops, uniforms.uStops.value);
       context.uniform1f(locations.uUvScale, uniforms.uUvScale.value);
       context.uniform1f(locations.uUvDistortionIterations, uniforms.uUvDistortionIterations.value);
       context.uniform1f(locations.uUvDistortionIntensity, uniforms.uUvDistortionIntensity.value);
-      context.uniformMatrix3fv(locations.uHueRotationMatrix, true, uniforms.uHueRotationMatrix.value);
       context.drawArrays(context.TRIANGLES, 0, 3);
     }
     renderFrame();
@@ -315,8 +304,7 @@ export function ShaderBackground() {
       elapsed += (dt / 1000) * DEFAULT_TIME_SCALE * eased;
 
       uniforms.uTime.value = elapsed;
-      // Same reason the hue matrix is precomputed in shaderState.ts: one value
-      // per frame, not per fragment.
+      // one value per frame, not per fragment
       uniforms.uTimeSin.value = Math.sin(uniforms.uTime.value);
       if (enabledRef.current) renderFrame();
       if (idle && motion === 0) stop();
@@ -367,15 +355,10 @@ export function ShaderBackground() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one context per mount; colors only seed the first frame
   }, []);
 
-  // saved accent or a live preview; updates the running shader's uniforms in place
+  // a refetched appearance; updates the running shader's uniforms in place
   useEffect(() => {
-    if (uniformsRef.current) applyAccent(uniformsRef.current, accentColor);
-  }, [accentColor]);
-
-  // the accent's hue rotation still applies on top of a custom palette
-  useEffect(() => {
-    if (uniformsRef.current) applyPalette(uniformsRef.current, shaderPalette);
-  }, [shaderPalette]);
+    if (uniformsRef.current) applyColors(uniformsRef.current, accentColor, shaderColors);
+  }, [accentColor, shaderColors]);
 
   useEffect(() => {
     enabledRef.current = shaderEnabled;
