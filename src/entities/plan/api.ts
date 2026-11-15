@@ -63,6 +63,8 @@ export interface Quote {
   base_price: string;
   // a change between unlimited plans: what the old one was paid, off the price before any discount
   change_credit: string;
+  // a change to a fixed-term plan: days added for the unused part of the old one
+  change_credit_days: number;
   plan_discount_percent: number;
   discount_percent: number;
   discount_source: "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";

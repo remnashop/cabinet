@@ -77,15 +77,13 @@ it("durationUnit reads 0 days as forever", () => {
   expect(durationUnit(0)).toEqual({ unit: "forever", count: 0 });
 });
 
-it("typeNoticeKey says what a change involving an unlimited subscription carries over", () => {
-  const forever = { expire_at: "2099-01-01T00:00:00Z" };
-  const month = { expire_at: "2027-01-01T00:00:00Z" };
+it("typeNoticeKey says what a change carries over, from what the quote credits", () => {
+  const quote = (change_credit: string, change_credit_days: number) => ({ change_credit, change_credit_days });
 
-  expect(typeNoticeKey("RENEW", 30, month)).toBe("RENEW");
-  expect(typeNoticeKey("CHANGE", 30, month)).toBe("CHANGE");
-  expect(typeNoticeKey("CHANGE", 0, forever)).toBe("CHANGE_CREDIT");
-  expect(typeNoticeKey("CHANGE", 0, month)).toBe("CHANGE_NO_CARRY");
-  expect(typeNoticeKey("CHANGE", 30, forever)).toBe("CHANGE_NO_CARRY");
+  expect(typeNoticeKey("RENEW", quote("0", 0))).toBe("RENEW");
+  expect(typeNoticeKey("CHANGE", quote("0", 109))).toBe("CHANGE");
+  expect(typeNoticeKey("CHANGE", quote("500.00", 0))).toBe("CHANGE_CREDIT");
+  expect(typeNoticeKey("CHANGE", quote("0", 0))).toBe("CHANGE_NO_CARRY");
 });
 
 it("parseDaysParam keeps 0 (unlimited) and drops a missing or broken value", () => {

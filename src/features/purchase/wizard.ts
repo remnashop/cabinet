@@ -1,8 +1,6 @@
 import type { TFunction } from "i18next";
 
-import type { Plan, PlanAccess } from "@entities/plan/api";
-import type { OwnSubscription } from "@entities/subscription/api";
-import { isUnlimited } from "@entities/subscription/lib";
+import type { Plan, PlanAccess, Quote } from "@entities/plan/api";
 import { formatGb } from "@shared/lib/format";
 
 export type PurchaseType = "NEW" | "RENEW" | "CHANGE";
@@ -32,17 +30,15 @@ export function parseWizardParams(search: URLSearchParams): {
   return { type: "NEW", subId: null, access: { plan_code, renew_subscription_id: null, change_subscription_id: null } };
 }
 
-/** Which "what happens to your subscription" text the summary shows: a change involving an unlimited subscription
-    credits only from unlimited to unlimited, and never as days. */
+/** Which "what happens to your subscription" text the summary shows, from what the quote credits: an unlimited
+    one's payment off the price, or days on a fixed term. */
 export function typeNoticeKey(
   type: Exclude<PurchaseType, "NEW">,
-  days: number,
-  target: Pick<OwnSubscription, "expire_at"> | undefined,
+  quote: Pick<Quote, "change_credit" | "change_credit_days">,
 ): "RENEW" | "CHANGE" | "CHANGE_CREDIT" | "CHANGE_NO_CARRY" {
   if (type === "RENEW") return "RENEW";
-  const fromUnlimited = target !== undefined && isUnlimited(target);
-  if (days === 0 && fromUnlimited) return "CHANGE_CREDIT";
-  return days === 0 || fromUnlimited ? "CHANGE_NO_CARRY" : "CHANGE";
+  if (Number(quote.change_credit) > 0) return "CHANGE_CREDIT";
+  return quote.change_credit_days > 0 ? "CHANGE" : "CHANGE_NO_CARRY";
 }
 
 /** The wizard's address for buying a plan again, e.g. after a failed payment: same plan, duration and subscription. */

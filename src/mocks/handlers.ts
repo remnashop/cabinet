@@ -713,6 +713,7 @@ export const handlers = [
     return HttpResponse.json({
       base_price: price,
       change_credit: "0",
+      change_credit_days: 0,
       plan_discount_percent: promo,
       discount_percent: PERSONAL_DISCOUNT,
       discount_source: "PERSONAL",
