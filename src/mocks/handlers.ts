@@ -31,6 +31,43 @@ function signedIn() {
   return HttpResponse.json(token, { headers: { "Set-Cookie": `cabinet_csrf_token=${MOCK_CSRF}; Path=/` } });
 }
 
+function mockRecurringTerms(days: number) {
+  return {
+    terms_id: "c".repeat(64),
+    summary: `Charges up to 299 RUB every ${days} days, starting a day before expiry.`,
+    text: "Automatic renewal terms\n\nCharges up to 299 RUB for each renewal. Withdraw any time.",
+    amount_limit: "299",
+    currency: "RUB",
+    duration_days: days,
+  };
+}
+
+// auto-renewal per subscription in the mock: off until the customer enables it
+const autoRenew = new Map<number, boolean>();
+
+function autoRenewState(subscriptionId: number) {
+  const enabled = autoRenew.get(subscriptionId) ?? false;
+  return {
+    subscription_id: subscriptionId,
+    terms: enabled ? null : mockRecurringTerms(30),
+    accepted_terms: enabled ? mockRecurringTerms(30) : null,
+    enabled,
+    available: true,
+    customer_disabled: !enabled && autoRenew.has(subscriptionId),
+    can_disable: enabled,
+    paused: false,
+    retrying: false,
+    payment_pending: false,
+    payment_in_flight: false,
+    next_payment_at: enabled ? daysFromNow(29) : null,
+    next_retry_at: null,
+    amount_limit: "299",
+    currency: "RUB",
+    duration_days: 30,
+    last_error: null,
+  };
+}
+
 function apiError(status: number, code: string, detail: string) {
   return HttpResponse.json({ detail, code }, { status });
 }
@@ -684,7 +721,14 @@ export const handlers = [
       unauthorized(request) ??
       HttpResponse.json({
         items: [
-          { gateway_type: "YOOKASSA", currency: "RUB", requires_email: true, asks_email: true },
+          {
+            gateway_type: "YOOKASSA",
+            currency: "RUB",
+            requires_email: true,
+            asks_email: true,
+            recurring_available: true,
+            recurring_required: false,
+          },
           { gateway_type: "ROBOKASSA", currency: "RUB", requires_email: false, asks_email: true },
           {
             gateway_type: "TELEGRAM_STARS",
@@ -696,6 +740,23 @@ export const handlers = [
       }),
   ),
 
+  http.post(`${API}/checkout/recurring-terms`, async ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const body = (await request.json()) as { gateway_type: string; duration_days: number };
+    if (body.gateway_type !== "YOOKASSA") return HttpResponse.json({ terms: null });
+    return HttpResponse.json({ terms: mockRecurringTerms(body.duration_days) });
+  }),
+  http.get(`${API}/subscriptions/me/:id/auto-renew`, ({ request, params }) =>
+    unauthorized(request) ?? HttpResponse.json(autoRenewState(Number(params.id))),
+  ),
+  http.put(`${API}/subscriptions/me/:id/auto-renew`, async ({ request, params }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const body = (await request.json()) as { enabled: boolean };
+    autoRenew.set(Number(params.id), body.enabled);
+    return HttpResponse.json(autoRenewState(Number(params.id)));
+  }),
   http.post(`${API}/checkout/quote`, async ({ request }) => {
     const denied = unauthorized(request);
     if (denied) return denied;

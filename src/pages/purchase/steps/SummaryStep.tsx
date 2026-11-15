@@ -1,9 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
-import { CreditCard, Star } from "lucide-react";
+import { CreditCard, Square, SquareCheck, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { createCheckout, useQuoteQuery, type PaymentMethod, type Plan, type PlanAccess } from "@entities/plan/api";
+import {
+  createCheckout,
+  useQuoteQuery,
+  useRecurringTermsQuery,
+  type CheckoutInput,
+  type PaymentMethod,
+  type Plan,
+  type PlanAccess,
+} from "@entities/plan/api";
 import { useShownLegalLocale } from "@entities/legal/api";
 import { LegalNotice } from "@entities/legal/LegalNotice";
 import { useMeQuery } from "@entities/session/api";
@@ -18,6 +26,8 @@ import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
 import { Input } from "@shared/ui/Input";
 import { FormError } from "@shared/ui/FormError";
+import { LegalDocumentDialog } from "@shared/ui/LegalDocumentDialog";
+import { OptionRow } from "@shared/ui/OptionRow";
 
 type CheckoutResult = Awaited<ReturnType<typeof createCheckout>>;
 
@@ -74,6 +84,25 @@ export function SummaryStep({
 
   const legal = useShownLegalLocale();
 
+  // the selection the order is for; the auto-renewal terms are fingerprinted against it
+  const selection: CheckoutInput = {
+    plan_id: plan.id,
+    duration_days: days,
+    currency: method.currency,
+    purchase_type: type,
+    gateway_type: method.gateway_type,
+    ...(legal && { legal_locale: legal }),
+    ...(subId !== null && { target_subscription_id: subId }),
+    ...(access.plan_code && { plan_code: access.plan_code }),
+  };
+  const recurring = useRecurringTermsQuery(method.recurring_available ? selection : null);
+  const terms = recurring.data?.terms ?? null;
+  // the fingerprint the customer ticked: other terms shown later are not accepted by it
+  const [consentedTo, setConsentedTo] = useState<string | null>(null);
+  const consented = terms !== null && consentedTo === terms.terms_id;
+  const consentRequired = !!method.recurring_required && !!quote.data && Number(quote.data.final_price) > 0;
+  const [termsOpen, setTermsOpen] = useState(false);
+
   // isPending only lands on the next render: two taps in one frame would create two orders
   const inFlight = useRef(false);
   const pay = () => {
@@ -83,17 +112,11 @@ export function SummaryStep({
     setStopReason(null);
     checkout.mutate(
       {
-        plan_id: plan.id,
-        duration_days: days,
-        currency: method.currency,
-        purchase_type: type,
-        gateway_type: method.gateway_type,
+        ...selection,
         ...(quote.data && { expected_price: quote.data.final_price }),
-        ...(legal && { legal_locale: legal }),
-        ...(subId !== null && { target_subscription_id: subId }),
-        ...(access.plan_code && { plan_code: access.plan_code }),
         ...(email && { customer_email: email }),
         ...(replacesOrderId !== null && { replaces_order_id: replacesOrderId }),
+        ...(consented && terms && { recurring_consent: true, recurring_terms_id: terms.terms_id }),
       },
       { onError: () => (inFlight.current = false) },
     );
@@ -111,7 +134,13 @@ export function SummaryStep({
 
   // isSuccess too: the page is leaving for the gateway, a second click would open a second order
   const canPay =
-    awaited === null && !!quote.data && !quote.isFetching && emailOk && !checkout.isPending && !checkout.isSuccess;
+    awaited === null &&
+    !!quote.data &&
+    !quote.isFetching &&
+    emailOk &&
+    (!consentRequired || consented) &&
+    !checkout.isPending &&
+    !checkout.isSuccess;
 
   return (
     // a form: Enter in the email field pays; noValidate keeps the browser's bubble out, the field says it itself
@@ -173,6 +202,29 @@ export function SummaryStep({
         </FormError>
       )}
       {stopReason && <FormError>{stopReason}</FormError>}
+      {terms && (
+        <Card round>
+          <div className="flex flex-col gap-3">
+            <p className="px-1 text-xs text-foreground/80">{terms.summary}</p>
+            <OptionRow round selected={consented} onClick={() => setConsentedTo(consented ? null : terms.terms_id)}>
+              <span className="flex items-center gap-2 text-sm">
+                {consented ? <SquareCheck className="size-4 text-primary" /> : <Square className="size-4" />}
+                {t("purchase.recurring.consent")}
+              </span>
+            </OptionRow>
+            <Button variant="glass" onClick={() => setTermsOpen(true)}>
+              {t("purchase.recurring.terms")}
+            </Button>
+            {consentRequired && !consented && (
+              <p className="px-1 text-xs text-warning">{t("purchase.recurring.required")}</p>
+            )}
+          </div>
+        </Card>
+      )}
+      <LegalDocumentDialog
+        document={termsOpen && terms ? { title: t("purchase.recurring.termsTitle"), body: terms.text } : null}
+        onClose={() => setTermsOpen(false)}
+      />
       {/* what paying does to the subscription the order is for */}
       {type !== "NEW" && quote.data && (
         <p className="px-3 text-xs text-warning">
