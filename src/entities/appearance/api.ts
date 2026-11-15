@@ -3,13 +3,15 @@ import { useTranslation } from "react-i18next";
 
 import { API_BASE, apiGet } from "@shared/api/http";
 import { readStorage, writeStorage } from "@shared/lib/safe-storage";
+import type { ShaderColors } from "@shared/lib/shaderPalette";
 
 type AppearanceTarget = "cabinet" | "dashboard";
 
 interface AppearanceSettings {
   brand_name: string | null;
   primary_color: string | null;
-  shader_palette: string[] | null;
+  shader_base: string | null;
+  shader_tones: (string | null)[] | null;
   shader_enabled: boolean;
   has_logo: boolean;
   has_favicon: boolean;
@@ -18,7 +20,7 @@ interface AppearanceSettings {
 export interface Appearance {
   brandName: string | null;
   primaryColor: string | null;
-  shaderPalette: string[] | null;
+  shaderColors: ShaderColors;
   shaderEnabled: boolean;
   logoUrl: string | null;
   faviconUrl: string | null;
@@ -26,6 +28,10 @@ export interface Appearance {
 
 function imageUrl(target: AppearanceTarget, kind: "logo" | "favicon", updatedAt: number): string {
   return `${API_BASE}/appearance/${target}/${kind}?v=${updatedAt}`;
+}
+
+function shaderColors(settings: AppearanceSettings): ShaderColors {
+  return { base: settings.shader_base, tones: settings.shader_tones };
 }
 
 // what the cabinet leaves unset comes from the dashboard's settings
@@ -42,7 +48,10 @@ export function mergeAppearance(
   return {
     brandName: cabinet.brand_name ?? dashboard.brand_name,
     primaryColor: cabinet.primary_color ?? dashboard.primary_color,
-    shaderPalette: cabinet.shader_palette ?? dashboard.shader_palette,
+    // base and tones as one unit: tones pinned for one base don't fit another
+    shaderColors: shaderColors(
+      cabinet.shader_base !== null || cabinet.shader_tones !== null ? cabinet : dashboard,
+    ),
     shaderEnabled: cabinet.shader_enabled,
     logoUrl: image("logo", "has_logo"),
     faviconUrl: image("favicon", "has_favicon"),

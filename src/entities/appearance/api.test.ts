@@ -5,7 +5,8 @@ import { mergeAppearance } from "@entities/appearance/api";
 const EMPTY = {
   brand_name: null,
   primary_color: null,
-  shader_palette: null,
+  shader_base: null,
+  shader_tones: null,
   shader_enabled: true,
   has_logo: false,
   has_favicon: false,
@@ -29,5 +30,18 @@ describe("mergeAppearance", () => {
 
     expect(result.brandName).toBe("Acme VPN");
     expect(result.logoUrl).toBe("/api/appearance/cabinet/logo?v=1");
+  });
+
+  it("takes the shader's base and tones together from one side", () => {
+    const dashboard = { ...EMPTY, shader_base: "#111111", shader_tones: ["#222222", null, null] };
+
+    expect(mergeAppearance(EMPTY, dashboard, 1).shaderColors).toEqual({
+      base: "#111111",
+      tones: ["#222222", null, null],
+    });
+    expect(mergeAppearance({ ...EMPTY, shader_base: "#333333" }, dashboard, 1).shaderColors).toEqual({
+      base: "#333333",
+      tones: null,
+    });
   });
 });
