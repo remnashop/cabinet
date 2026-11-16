@@ -84,7 +84,6 @@ export function SummaryStep({
 
   const legal = useShownLegalLocale();
 
-  // the selection the order is for; the auto-renewal terms are fingerprinted against it
   const selection: CheckoutInput = {
     plan_id: plan.id,
     duration_days: days,
@@ -97,7 +96,7 @@ export function SummaryStep({
   };
   const recurring = useRecurringTermsQuery(method.recurring_available ? selection : null);
   const terms = recurring.data?.terms ?? null;
-  // the fingerprint the customer ticked: other terms shown later are not accepted by it
+  // a tick accepts only the terms it was given, not ones shown later
   const [consentedTo, setConsentedTo] = useState<string | null>(null);
   const consented = terms !== null && consentedTo === terms.terms_id;
   const consentRequired = !!method.recurring_required && !!quote.data && Number(quote.data.final_price) > 0;
@@ -116,7 +115,7 @@ export function SummaryStep({
         ...(quote.data && { expected_price: quote.data.final_price }),
         ...(email && { customer_email: email }),
         ...(replacesOrderId !== null && { replaces_order_id: replacesOrderId }),
-        ...(consented && terms && { recurring_consent: true, recurring_terms_id: terms.terms_id }),
+        ...(consented && terms && { recurring_terms_id: terms.terms_id }),
       },
       { onError: () => (inFlight.current = false) },
     );

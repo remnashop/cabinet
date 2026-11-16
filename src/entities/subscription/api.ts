@@ -119,7 +119,6 @@ export function useActivateTrial() {
   });
 }
 
-/** Auto-renewal of one subscription as the backend sees it; terms: what enabling would accept now. */
 export interface AutoRenewState {
   subscription_id: number;
   terms: RecurringTerms | null;

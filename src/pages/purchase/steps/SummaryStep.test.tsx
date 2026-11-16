@@ -287,7 +287,7 @@ describe("SummaryStep auto-renewal", () => {
     await act(async () => consentToggle().click());
     await act(async () => payButton().click());
     await until(() => expect(createCheckout).toHaveBeenCalled());
-    expect(checkoutBody()).toMatchObject({ recurring_consent: true, recurring_terms_id: TERMS.terms_id });
+    expect(checkoutBody()).toMatchObject({ recurring_terms_id: TERMS.terms_id });
   });
 
   it("pays without consent when the customer leaves it off", async () => {
@@ -296,7 +296,7 @@ describe("SummaryStep auto-renewal", () => {
     await until(() => expect(payButton().disabled).toBe(false));
     await act(async () => payButton().click());
     await until(() => expect(createCheckout).toHaveBeenCalled());
-    expect(checkoutBody().recurring_consent).toBeFalsy();
+    expect(checkoutBody().recurring_terms_id).toBeUndefined();
   });
 
   it("keeps pay disabled for a recurring-only method until the customer consents", async () => {

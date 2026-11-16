@@ -20,7 +20,6 @@ function statusKey(state: AutoRenewState) {
   return "off" as const;
 }
 
-/** Auto-renewal of one subscription: its state, enabling it with the terms shown, withdrawing it. */
 export function AutoRenewCard({ subscriptionId }: { subscriptionId: number }) {
   const { t, i18n } = useTranslation();
   const state = useAutoRenewQuery(subscriptionId).data;

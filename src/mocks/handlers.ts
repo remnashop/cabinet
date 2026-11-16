@@ -42,7 +42,6 @@ function mockRecurringTerms(days: number) {
   };
 }
 
-// auto-renewal per subscription in the mock: off until the customer enables it
 const autoRenew = new Map<number, boolean>();
 
 function autoRenewState(subscriptionId: number) {
