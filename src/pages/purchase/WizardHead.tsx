@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useQuoteQuery, type PaymentMethod, type Plan, type PlanAccess, type Quote } from "@entities/plan/api";
+import { PlanIcon } from "@entities/plan/PlanIcon";
 import { durationLabel } from "@features/purchase/wizard";
 import { formatMoney } from "@shared/lib/format";
 import { PILL_SPRING } from "@shared/lib/motion";
@@ -41,7 +42,12 @@ export function WizardHead(props: HeadProps) {
         <div className="relative flex items-end justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-2">
             <span className="flex min-w-0 items-center gap-1.5">
-              {plan.is_trial ? <Gift className="size-4 shrink-0" /> : <Zap className="size-4 shrink-0" />}
+              <PlanIcon
+                id={plan.icon_emoji_id}
+                glyph={plan.icon_emoji_fallback}
+                className="size-4 shrink-0"
+                fallback={plan.is_trial ? <Gift className="size-4 shrink-0" /> : <Zap className="size-4 shrink-0" />}
+              />
               <span className="truncate text-base font-bold">{plan.name}</span>
             </span>
             <PlanLimits plan={plan} />

@@ -1,6 +1,7 @@
 import { CalendarDays, CreditCard, Package, Percent, Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { PlanIcon } from "@entities/plan/PlanIcon";
 import type { Transaction } from "@entities/transaction/api";
 import { durationLabel, gatewayLabel } from "@features/purchase/wizard";
 import { formatDateTime, formatMoney } from "@shared/lib/format";
@@ -43,7 +44,16 @@ export function PaymentDetailsDialog({ transaction, onClose }: { transaction: Tr
             />
           </div>
           <Card variant="list">
-            <InfoRow icon={Package} label={t("payments.plan")} value={tx.plan_name} />
+            <InfoRow
+              icon={Package}
+              label={t("payments.plan")}
+              value={
+                <>
+                  <PlanIcon id={tx.plan_icon_emoji_id} glyph={tx.plan_icon_emoji_fallback} className="size-4 shrink-0" fallback={null} />
+                  <span className="truncate">{tx.plan_name}</span>
+                </>
+              }
+            />
             {/* a row a discount: two of them don't fit one row's value */}
             {discountParts(tx, t).map(([label, percent]) => (
               <InfoRow key={label} icon={Percent} label={label} value={<span className="text-success">−{percent}%</span>} />

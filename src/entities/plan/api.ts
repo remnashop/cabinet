@@ -33,6 +33,9 @@ export interface Plan {
   // the promotion running now: 0 and null while there is none
   discount_percent?: number;
   discount_ends_at?: string | null;
+  // a Telegram custom emoji and its plain glyph; absent on older backends
+  icon_emoji_id?: string | null;
+  icon_emoji_fallback?: string | null;
 }
 
 export interface PaymentMethod {

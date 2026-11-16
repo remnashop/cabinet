@@ -17,6 +17,9 @@ export interface Transaction {
   purchase_type: "NEW" | "RENEW" | "CHANGE";
   gateway_type: string;
   plan_name: string;
+  // absent on older backends
+  plan_icon_emoji_id?: string | null;
+  plan_icon_emoji_fallback?: string | null;
   duration_days: number;
   created_at: string | null;
   // what a failed payment's "try again" reopens: the plan, and the subscription a renewal or change was for

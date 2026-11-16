@@ -16,6 +16,9 @@ export interface OwnSubscription {
   effective_device_limit: number;
   traffic_limit_strategy: string;
   plan_name: string;
+  // absent on older backends
+  plan_icon_emoji_id?: string | null;
+  plan_icon_emoji_fallback?: string | null;
   plan_id: number;
   // the terms it was sold with: a paid renewal moves it to the plan's current ones
   plan_traffic_limit: number;
