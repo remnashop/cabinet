@@ -48,7 +48,7 @@ function Header() {
           <div className="truncate text-sm font-bold lg:hidden">{brand}</div>
           {me.data && (
             <div className="truncate text-xs text-muted-foreground lg:text-lg lg:font-semibold lg:tracking-tight lg:text-foreground">
-              {t("home.welcome", { name: me.data.name })}
+              {me.data.name ? t("home.welcome", { name: me.data.name }) : t("home.welcomeNoName")}
             </div>
           )}
         </div>
