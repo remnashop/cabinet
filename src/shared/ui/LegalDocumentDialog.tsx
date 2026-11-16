@@ -11,16 +11,24 @@ export function LegalMarkdown({ children }: { children: string }) {
   );
 }
 
+/** Text kept exactly as stored, line breaks included: what a customer consented to. */
+export function PlainText({ children }: { children: string }) {
+  return <p className="whitespace-pre-line text-sm leading-relaxed">{children}</p>;
+}
+
 export function LegalDocumentDialog({
   document,
   onClose,
+  plain = false,
 }: {
   document: { title: string; body: string } | null;
   onClose: () => void;
+  /** the body is plain text, not Markdown */
+  plain?: boolean;
 }) {
   return (
     <Modal fullScreen open={document !== null} onClose={onClose} title={document?.title ?? ""}>
-      {document && <LegalMarkdown>{document.body}</LegalMarkdown>}
+      {document && (plain ? <PlainText>{document.body}</PlainText> : <LegalMarkdown>{document.body}</LegalMarkdown>)}
     </Modal>
   );
 }

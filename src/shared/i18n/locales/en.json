@@ -183,7 +183,11 @@
     "SUBSCRIPTION_NOT_FOUND": "Subscription not found",
     "USER_NOT_FOUND": "Account not found, please sign in again",
     "PURCHASE_SUPERSEDED": "This purchase is already in progress in another tab or on another device. Refresh the page",
-    "LAST_SIGN_IN_METHOD": "This is your only sign-in method — connect another one first"
+    "LAST_SIGN_IN_METHOD": "This is your only sign-in method — connect another one first",
+    "RECURRING_CONSENT_REQUIRED": "This payment method requires consent to auto-renewal.",
+    "RECURRING_PAYMENT_IN_PROGRESS": "An automatic renewal payment for this subscription is already in progress.",
+    "RECURRING_TERMS_CHANGED": "The auto-renewal terms changed. Review them and confirm again.",
+    "RECURRING_NOT_AVAILABLE": "Auto-renewal isn’t available for this subscription."
   },
   "connect": {
     "reissueCooldown": "You can reissue the connection link again in {{wait}}",
@@ -433,7 +437,13 @@
     "total": "Total",
     "email": "Enter an email to send the receipt to",
     "emailInvalid": "Check the email address",
-    "pay": "Pay {{amount}}"
+    "pay": "Pay {{amount}}",
+    "recurring": {
+      "consent": "Enable auto-renewal",
+      "terms": "Renewal terms",
+      "termsTitle": "Auto-renewal terms",
+      "required": "This payment method works only with auto-renewal: tick it to pay."
+    }
   },
   "payment": {
     "waitingButton": "Waiting for the payment…",
@@ -697,5 +707,23 @@
   "units": {
     "gb": "GB",
     "mb": "MB"
+  },
+  "subscription": {
+    "autoRenew": {
+      "status": {
+        "on": "Auto-renewal is on",
+        "off": "Auto-renewal is off",
+        "paused": "Auto-renewal is paused",
+        "retrying": "Auto-renewal is on, a payment retry is pending",
+        "inFlight": "An automatic payment is being processed"
+      },
+      "inFlightNote": "Disabling stops future charges; this payment may still complete.",
+      "nextPayment": "Next payment: {{when}}",
+      "enable": "Enable auto-renewal",
+      "agree": "I agree, enable",
+      "disable": "Disable auto-renewal",
+      "disableTitle": "Disable auto-renewal?",
+      "disableText": "Future charges stop. Your paid period remains. The saved payment method is deleted 30 days later."
+    }
   }
 }

@@ -44,6 +44,20 @@ export interface PaymentMethod {
   requires_email: boolean;
   /** false: the shop sends its own email to the gateway, so the customer's isn't asked; absent on older backends */
   asks_email?: boolean;
+  /** YooKassa can save the method for auto-renewal; absent on older backends */
+  recurring_available?: boolean;
+  /** the shop sells this method only with auto-renewal: no payment without the customer's consent */
+  recurring_required?: boolean;
+}
+
+/** terms_id fingerprints exactly this text */
+export interface RecurringTerms {
+  terms_id: string;
+  summary: string;
+  text: string;
+  amount_limit: string;
+  currency: string;
+  duration_days: number;
 }
 
 /** What opens a plan the public catalog leaves out: a plan link's code, or the subscription being renewed.
@@ -89,6 +103,10 @@ export interface CheckoutInput {
   expected_price?: string;
   // the customer's earlier unpaid order this one replaces: canceled, so it holds neither a slot nor the discount
   replaces_order_id?: number;
+  // the customer ticked the auto-renewal box; without it no consent is recorded
+  recurring_consent?: boolean;
+  // the fingerprint of the terms the customer consented to
+  recurring_terms_id?: string;
 }
 
 export interface PromocodeActivation {
@@ -143,6 +161,15 @@ export function useQuoteQueries(inputs: QuoteInput[]) {
 
 /** While payments are off: a Telegram message once they're back. */
 export const joinPaymentWaitlist = () => apiPost<null, object>("/checkout/waitlist", {});
+
+export function useRecurringTermsQuery(input: CheckoutInput | null) {
+  return useQuery({
+    queryKey: ["recurring-terms", input],
+    enabled: input !== null,
+    queryFn: ({ signal }) =>
+      apiPost<{ terms: RecurringTerms | null }, CheckoutInput>("/checkout/recurring-terms", input!, signal),
+  });
+}
 
 export function createCheckout(body: CheckoutInput) {
   return apiPost<{ order_id: number; confirmation_url: string | null }, CheckoutInput>("/checkout", body);

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiDelete, apiGet, apiPost } from "@shared/api/http";
+import type { RecurringTerms } from "@entities/plan/api";
+import { apiDelete, apiGet, apiPost, apiPut } from "@shared/api/http";
 import { isMiniApp } from "@shared/telegram";
 
 export type SubscriptionStatus = "ACTIVE" | "LIMITED" | "EXPIRED" | "DISABLED" | "DELETED";
@@ -118,5 +119,44 @@ export function useActivateTrial() {
         client.invalidateQueries({ queryKey: ["subscriptions"] }),
         client.invalidateQueries({ queryKey: ["trial"] }),
       ]),
+  });
+}
+
+export interface AutoRenewState {
+  subscription_id: number;
+  terms: RecurringTerms | null;
+  accepted_terms: RecurringTerms | null;
+  enabled: boolean;
+  available: boolean;
+  customer_disabled: boolean;
+  can_disable: boolean;
+  paused: boolean;
+  retrying: boolean;
+  payment_pending: boolean;
+  payment_in_flight: boolean;
+  next_payment_at: string | null;
+  next_retry_at: string | null;
+  amount_limit: string | null;
+  currency: string | null;
+  duration_days: number | null;
+  last_error: string | null;
+}
+
+const autoRenewKey = (subscriptionId: number) => ["auto-renew", subscriptionId];
+
+export function useAutoRenewQuery(subscriptionId: number) {
+  return useQuery({
+    queryKey: autoRenewKey(subscriptionId),
+    queryFn: ({ signal }) =>
+      apiGet<AutoRenewState>(`/subscriptions/me/${subscriptionId}/auto-renew`, signal),
+  });
+}
+
+export function useSetAutoRenew(subscriptionId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { enabled: boolean; terms_id?: string }) =>
+      apiPut<AutoRenewState, typeof body>(`/subscriptions/me/${subscriptionId}/auto-renew`, body),
+    onSuccess: (state) => queryClient.setQueryData(autoRenewKey(subscriptionId), state),
   });
 }

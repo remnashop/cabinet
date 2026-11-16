@@ -35,6 +35,8 @@ import { LogoArt } from "./EmptyArt";
 import { markPushPromptEligible } from "@features/push-prompt/push-prompt";
 import { PushPromptCard } from "@features/push-prompt/PushPromptCard";
 
+import { AutoRenewCard } from "./AutoRenewCard";
+
 function Header() {
   const { t } = useTranslation();
   const me = useMeQuery();
@@ -346,6 +348,9 @@ export function SubscriptionPage() {
 
           {/* right after a purchase or a trial, once per browser */}
           <PushPromptCard />
+          <div className="mt-5">
+            <AutoRenewCard key={selected.id} subscriptionId={selected.id} />
+          </div>
           <div className="mt-5 lg:flex lg:flex-1 lg:flex-col lg:*:flex-1">
             <DevicesCard key={selected.id} subscription={selected} canConnect={!cutOff} />
           </div>
