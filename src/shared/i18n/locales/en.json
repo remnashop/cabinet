@@ -185,7 +185,9 @@
     "PURCHASE_SUPERSEDED": "This purchase is already in progress in another tab or on another device. Refresh the page",
     "LAST_SIGN_IN_METHOD": "This is your only sign-in method — connect another one first",
     "RECURRING_CONSENT_REQUIRED": "This payment method requires consent to auto-renewal.",
-    "RECURRING_PAYMENT_IN_PROGRESS": "An automatic renewal payment for this subscription is already in progress."
+    "RECURRING_PAYMENT_IN_PROGRESS": "An automatic renewal payment for this subscription is already in progress.",
+    "RECURRING_TERMS_CHANGED": "The auto-renewal terms changed. Review them and confirm again.",
+    "RECURRING_NOT_AVAILABLE": "Auto-renewal isn’t available for this subscription."
   },
   "connect": {
     "reissueCooldown": "You can reissue the connection link again in {{wait}}",

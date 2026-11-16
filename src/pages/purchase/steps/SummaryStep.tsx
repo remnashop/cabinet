@@ -223,6 +223,7 @@ export function SummaryStep({
       <LegalDocumentDialog
         document={termsOpen && terms ? { title: t("purchase.recurring.termsTitle"), body: terms.text } : null}
         onClose={() => setTermsOpen(false)}
+        plain
       />
       {/* what paying does to the subscription the order is for */}
       {type !== "NEW" && quote.data && (

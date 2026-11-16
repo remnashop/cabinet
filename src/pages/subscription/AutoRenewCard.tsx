@@ -9,7 +9,7 @@ import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
 import { FormError } from "@shared/ui/FormError";
-import { LegalMarkdown } from "@shared/ui/LegalDocumentDialog";
+import { PlainText } from "@shared/ui/LegalDocumentDialog";
 import { DialogFooter, Modal } from "@shared/ui/Modal";
 
 function statusKey(state: AutoRenewState) {
@@ -67,7 +67,7 @@ export function AutoRenewCard({ subscriptionId }: { subscriptionId: number }) {
         onClose={close}
       />
       <Modal fullScreen open={confirming === "enable"} onClose={close} title={t("purchase.recurring.termsTitle")}>
-        {state.terms && <LegalMarkdown>{state.terms.text}</LegalMarkdown>}
+        {state.terms && <PlainText>{state.terms.text}</PlainText>}
         <DialogFooter>
           <Button variant="glass" onClick={close}>
             {t("common.cancel")}
