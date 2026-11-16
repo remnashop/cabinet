@@ -30,7 +30,8 @@ export function initTelegram(color: `#${string}`): void {
     miniApp.mountSync();
     // Telegram's header and our background read as one surface
     if (miniApp.setHeaderColor.isAvailable()) miniApp.setHeaderColor(color);
-    if (miniApp.setBackgroundColor.isAvailable()) miniApp.setBackgroundColor(color);
+    if (miniApp.setBackgroundColor.isAvailable())
+      miniApp.setBackgroundColor(color);
     if (miniApp.ready.isAvailable()) miniApp.ready();
   }
   if (viewport.mount.isAvailable()) {
@@ -40,7 +41,10 @@ export function initTelegram(color: `#${string}`): void {
       if (viewport.expand.isAvailable()) viewport.expand();
       // on desktop fullscreen would take over the whole Telegram window
       const platform = retrieveLaunchParams().tgWebAppPlatform;
-      if ((platform === "ios" || platform === "android") && viewport.requestFullscreen.isAvailable()) {
+      if (
+        (platform === "ios" || platform === "android") &&
+        viewport.requestFullscreen.isAvailable()
+      ) {
         void viewport.requestFullscreen().catch(() => {});
       }
     });
@@ -48,7 +52,8 @@ export function initTelegram(color: `#${string}`): void {
   // a downward scroll at the top would otherwise close or collapse the app
   if (swipeBehavior.mount.isAvailable()) {
     swipeBehavior.mount();
-    if (swipeBehavior.disableVertical.isAvailable()) swipeBehavior.disableVertical();
+    if (swipeBehavior.disableVertical.isAvailable())
+      swipeBehavior.disableVertical();
   }
 }
 
@@ -65,17 +70,23 @@ export function getInitDataRaw(): string | null {
     sdk = undefined;
   }
   // a reload without the hash leaves the SDK its sessionStorage copy from the WebView's first launch
-  const launch = new URLSearchParams((window.__tgLaunchHash ?? "").slice(1)).get("tgWebAppData");
+  const launch = new URLSearchParams(
+    (window.__tgLaunchHash ?? "").slice(1),
+  ).get("tgWebAppData");
   return freshestInitData(launch, sdk);
 }
 
-const authDate = (initData: string) => Number(new URLSearchParams(initData).get("auth_date")) || 0;
+const authDate = (initData: string) =>
+  Number(new URLSearchParams(initData).get("auth_date")) || 0;
 
 /** The candidate with the latest auth_date; the first one on a tie. */
-export function freshestInitData(...candidates: (string | null | undefined)[]): string | null {
+export function freshestInitData(
+  ...candidates: (string | null | undefined)[]
+): string | null {
   let best: string | null = null;
   for (const candidate of candidates) {
-    if (candidate && (best === null || authDate(candidate) > authDate(best))) best = candidate;
+    if (candidate && (best === null || authDate(candidate) > authDate(best)))
+      best = candidate;
   }
   return best;
 }
@@ -86,6 +97,16 @@ export function getTelegramPhotoUrl(): string | null {
   try {
     const url = retrieveLaunchParams().tgWebAppData?.user?.photo_url;
     return url && isHttpsUrl(url) ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+/** ios, android, tdesktop, web…; null outside the Mini App. */
+export function getPlatform(): string | null {
+  if (!active) return null;
+  try {
+    return retrieveLaunchParams().tgWebAppPlatform ?? null;
   } catch {
     return null;
   }
@@ -149,14 +170,20 @@ export function useTelegramBackButton(onBack: (() => void) | null): void {
 
 /** Light impact on the main actions; silent outside the Mini App. */
 export function haptic(): void {
-  if (active && hapticFeedback.impactOccurred.isAvailable()) hapticFeedback.impactOccurred("light");
+  if (active && hapticFeedback.impactOccurred.isAvailable())
+    hapticFeedback.impactOccurred("light");
 }
 
 export function openExternal(url: string): void {
   // the URLs come from the backend and the panel; whatever they hold, only https leaves
   if (!isHttpsUrl(url)) return;
   // t.me links belong to Telegram itself; openLink would bounce them through the browser
-  if (active && url.startsWith("https://t.me/") && openTelegramLink.isAvailable()) openTelegramLink(url);
+  if (
+    active &&
+    url.startsWith("https://t.me/") &&
+    openTelegramLink.isAvailable()
+  )
+    openTelegramLink(url);
   else if (active && openLink.isAvailable()) openLink(url);
   else window.location.assign(url);
 }
@@ -164,8 +191,11 @@ export function openExternal(url: string): void {
 export type StarsInvoiceResult = "paid" | "cancelled" | "failed" | "pending";
 
 /** "pending" outside the Mini App: the link opens in a tab and the result is polled instead. */
-export async function openStarsInvoice(url: string): Promise<StarsInvoiceResult> {
-  if (active && invoice.open.isAvailable()) return (await invoice.open(url, "url")) as StarsInvoiceResult;
+export async function openStarsInvoice(
+  url: string,
+): Promise<StarsInvoiceResult> {
+  if (active && invoice.open.isAvailable())
+    return (await invoice.open(url, "url")) as StarsInvoiceResult;
   window.open(url, "_blank", "noopener");
   return "pending";
 }

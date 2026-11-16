@@ -32,7 +32,7 @@ async function start(): Promise<void> {
     viewport?.setAttribute("content", `${viewport.getAttribute("content")}, maximum-scale=1`);
   }
   initTelegram(CANVAS_COLOR);
-  captureAttribution(window.location.search, getStartParam());
+  captureAttribution(window.location.href, document.referrer, getStartParam());
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
