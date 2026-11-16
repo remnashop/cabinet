@@ -5,6 +5,7 @@ import type { ParseKeys } from "i18next";
 import { Link } from "react-router";
 
 import { BrandMark } from "@entities/appearance/BrandMark";
+import { PlanIcon } from "@entities/plan/PlanIcon";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import type { OwnSubscription } from "@entities/subscription/api";
 import type { CardNotice } from "@entities/subscription/lib";
@@ -119,7 +120,12 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
         <div className="relative flex flex-1 flex-col gap-[clamp(12px,3.35cqw,18px)] px-[clamp(18px,5cqw,28px)] py-[clamp(16px,4.5cqw,24px)] lg:gap-3 lg:px-[18px] lg:py-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-1.5 text-[length:clamp(14px,3.9cqw,19px)] font-semibold lg:text-sm">
-              <Icon className="size-[clamp(16px,4.5cqw,22px)] shrink-0 lg:size-4" />
+              <PlanIcon
+                id={sub.plan_icon_emoji_id}
+                glyph={sub.plan_icon_emoji_fallback}
+                className="size-[clamp(16px,4.5cqw,22px)] shrink-0 lg:size-4"
+                fallback={<Icon className="size-[clamp(16px,4.5cqw,22px)] shrink-0 lg:size-4" />}
+              />
               <span className="truncate">{sub.plan_name}</span>
             </div>
             <span className="shrink-0 font-mono text-[length:clamp(12px,3.35cqw,16px)] tracking-[0.12em] text-muted-foreground lg:text-xs">

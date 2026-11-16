@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Link, Navigate, useSearchParams } from "react-router";
 
 import { joinPaymentWaitlist, useCatalogQuery, type Plan } from "@entities/plan/api";
+import { PlanIcon } from "@entities/plan/PlanIcon";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { canBuyMore } from "@entities/subscription/lib";
@@ -53,7 +54,12 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
       <div className={`relative grid h-full grid-cols-[1fr_auto] gap-3 lg:grid-rows-[auto_auto_1fr] lg:gap-x-6 lg:gap-y-2 ${to ? WITH_BUTTON : NO_BUTTON}`}>
         <div className="flex items-center justify-between gap-2 [grid-area:head] lg:justify-start">
           <span className="flex min-w-0 items-center gap-1.5">
-            {plan.is_trial ? <Gift className="size-4 shrink-0" /> : <Zap className="size-4 shrink-0" />}
+            <PlanIcon
+              id={plan.icon_emoji_id}
+              glyph={plan.icon_emoji_fallback}
+              className="size-4 shrink-0"
+              fallback={plan.is_trial ? <Gift className="size-4 shrink-0" /> : <Zap className="size-4 shrink-0" />}
+            />
             <span className="truncate text-base font-bold">{plan.name}</span>
           </span>
           {current ? (
