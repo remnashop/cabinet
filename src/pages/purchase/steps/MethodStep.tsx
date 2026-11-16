@@ -1,4 +1,4 @@
-import { CreditCard, Star } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -9,6 +9,7 @@ import {
   type PlanAccess,
   type Quote,
 } from "@entities/plan/api";
+import { GATEWAY_LOGOS } from "@entities/plan/gateway-logos";
 import { gatewayLabel } from "@features/purchase/wizard";
 import { formatMoney } from "@shared/lib/format";
 import { AlertMark } from "@shared/ui/AlertMark";
@@ -73,9 +74,15 @@ export function MethodStep({
             aside={price ? <MethodPrice price={price} quote={quoteIn(price.currency)} /> : t("purchase.noPrice")}
           >
             <span className="flex min-w-0 items-center gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
-                {m.gateway_type === "TELEGRAM_STARS" ? <Star className="size-4" /> : <CreditCard className="size-4" />}
-              </span>
+              {GATEWAY_LOGOS[m.gateway_type] ? (
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06]">
+                  <img src={GATEWAY_LOGOS[m.gateway_type]} alt="" draggable={false} className="size-[22px] object-contain" />
+                </span>
+              ) : (
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
+                  <CreditCard className="size-4" />
+                </span>
+              )}
               <span className="text-sm font-semibold">{gatewayLabel(m.gateway_type, t)}</span>
             </span>
           </OptionRow>

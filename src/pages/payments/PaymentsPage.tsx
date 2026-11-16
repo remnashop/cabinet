@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMatch, useSearchParams } from "react-router";
 
+import { GATEWAY_LOGOS } from "@entities/plan/gateway-logos";
 import { getTransaction, useTransactionsInfinite, type Transaction } from "@entities/transaction/api";
 import { durationLabel, gatewayLabel } from "@features/purchase/wizard";
 import { currencySymbol, formatDate, formatMoney } from "@shared/lib/format";
@@ -83,6 +84,9 @@ export function PaymentsPage() {
               title={`${tx.plan_name} · ${durationLabel(tx.duration_days, t)}`}
               caption={
                 <>
+                  {GATEWAY_LOGOS[tx.gateway_type] && (
+                    <img src={GATEWAY_LOGOS[tx.gateway_type]} alt="" draggable={false} className="mr-1 inline size-3.5 object-contain align-[-2px]" />
+                  )}
                   {gatewayLabel(tx.gateway_type, t)}
                   {tx.created_at && ` · ${formatDate(tx.created_at, i18n.language)}`}
                 </>

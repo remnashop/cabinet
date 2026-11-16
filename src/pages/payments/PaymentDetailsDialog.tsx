@@ -1,6 +1,7 @@
 import { CalendarDays, CreditCard, Package, Percent, Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { GATEWAY_LOGOS } from "@entities/plan/gateway-logos";
 import { PlanIcon } from "@entities/plan/PlanIcon";
 import type { Transaction } from "@entities/transaction/api";
 import { durationLabel, gatewayLabel } from "@features/purchase/wizard";
@@ -58,7 +59,18 @@ export function PaymentDetailsDialog({ transaction, onClose }: { transaction: Tr
             {discountParts(tx, t).map(([label, percent]) => (
               <InfoRow key={label} icon={Percent} label={label} value={<span className="text-success">−{percent}%</span>} />
             ))}
-            <InfoRow icon={CreditCard} label={t("payments.method")} value={gatewayLabel(tx.gateway_type, t)} />
+            <InfoRow
+              icon={CreditCard}
+              label={t("payments.method")}
+              value={
+                <>
+                  {GATEWAY_LOGOS[tx.gateway_type] && (
+                    <img src={GATEWAY_LOGOS[tx.gateway_type]} alt="" draggable={false} className="size-4 shrink-0 object-contain" />
+                  )}
+                  <span className="truncate">{gatewayLabel(tx.gateway_type, t)}</span>
+                </>
+              }
+            />
             {tx.created_at && (
               <InfoRow icon={CalendarDays} label={t("payments.date")} value={formatDateTime(tx.created_at, i18n.language)} />
             )}
