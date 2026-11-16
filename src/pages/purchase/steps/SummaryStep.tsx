@@ -73,8 +73,12 @@ export function SummaryStep({
   const checkout = useMutation({
     mutationFn: createCheckout,
     onSuccess: async (result) => setAwaited(await onCreated(result)),
-    // an attempt may spend a one-time discount: the next total must come from a fresh quote
-    onSettled: () => void queryClient.invalidateQueries({ queryKey: ["quote"] }),
+    // an attempt may spend a one-time discount: the next total must come from a fresh quote,
+    // and terms refused as changed must be shown again before a new tick
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ["quote"] });
+      void queryClient.invalidateQueries({ queryKey: ["recurring-terms"] });
+    },
   });
   // null until the user types: the field follows me.email even if it loads after mount
   const email = (typedEmail ?? me.data?.email ?? "").trim();
@@ -115,7 +119,7 @@ export function SummaryStep({
         ...(quote.data && { expected_price: quote.data.final_price }),
         ...(email && { customer_email: email }),
         ...(replacesOrderId !== null && { replaces_order_id: replacesOrderId }),
-        ...(consented && terms && { recurring_terms_id: terms.terms_id }),
+        ...(consented && terms && { recurring_consent: true, recurring_terms_id: terms.terms_id }),
       },
       { onError: () => (inFlight.current = false) },
     );

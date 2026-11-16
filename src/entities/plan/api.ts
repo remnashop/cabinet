@@ -100,6 +100,8 @@ export interface CheckoutInput {
   expected_price?: string;
   // the customer's earlier unpaid order this one replaces: canceled, so it holds neither a slot nor the discount
   replaces_order_id?: number;
+  // the customer ticked the auto-renewal box; without it no consent is recorded
+  recurring_consent?: boolean;
   // the fingerprint of the terms the customer consented to
   recurring_terms_id?: string;
 }
