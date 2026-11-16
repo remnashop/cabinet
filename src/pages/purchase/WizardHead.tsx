@@ -114,10 +114,12 @@ function Receipt({ quote }: { quote: Quote }) {
 function DotStepper({ step, skipMethod, onStep }: HeadProps) {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
-  // the step the names were found cut on: another step (fewer ticks) or a resize tries them again; the check below,
-  // before paint, falls back if one is cut
-  const [compactAt, setCompactAt] = useState<number | null>(null);
-  const compact = compactAt === step;
+  // the step and step count the names were found cut on: another step (fewer ticks), the method step dropping out once
+  // the methods load, or a resize tries them again; the check below, before paint, falls back if one is cut
+  const steps = STEPS.map((key, i) => ({ key, i })).filter(({ i }) => !(i === 1 && skipMethod));
+  const fitKey = `${step}/${steps.length}`;
+  const [compactAt, setCompactAt] = useState<string | null>(null);
+  const compact = compactAt === fitKey;
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -127,9 +129,8 @@ function DotStepper({ step, skipMethod, onStep }: HeadProps) {
   }, []);
   useLayoutEffect(() => {
     if (compact || !ref.current) return;
-    if ([...ref.current.querySelectorAll(".truncate")].some((el) => el.scrollWidth > el.clientWidth)) setCompactAt(step);
-  }, [compact, step, t]);
-  const steps = STEPS.map((key, i) => ({ key, i })).filter(({ i }) => !(i === 1 && skipMethod));
+    if ([...ref.current.querySelectorAll(".truncate")].some((el) => el.scrollWidth > el.clientWidth)) setCompactAt(fitKey);
+  }, [compact, fitKey, t]);
   return (
     // the panel's TabBar: a 48px glass capsule with 36px tabs 6px in
     <div
