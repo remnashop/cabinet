@@ -263,13 +263,17 @@ html {
     cursor: text;
   }
 }
-/* App-wide scrollbar styling. `scrollbar-color` covers Firefox; the
-   `::-webkit-scrollbar-*` pseudo-elements cover Chromium/Safari. In the base layer, so a utility
-   (the cards slider's [scrollbar-width:none]) can still hide one. */
+/* App-wide scrollbar: a 10px track with a centered 6px thumb, close to Firefox's `thin`. --scrollbar-size is what
+   paddings and masks subtract for it, measured at startup (main.tsx), since Firefox sizes `thin` itself. The standard
+   properties stay behind a Firefox-only check: Chromium 121+ drops the ::-webkit styles once scrollbar-width/color
+   are set and draws a wider thin bar of its own. In the base layer, so a utility (the cards slider's
+   [scrollbar-width:none]) can still hide one. */
 @layer base {
-  * {
-    scrollbar-color: var(--color-accent) transparent;
-    scrollbar-width: thin;
+  @supports (-moz-appearance: none) {
+    * {
+      scrollbar-color: var(--color-accent) transparent;
+      scrollbar-width: thin;
+    }
   }
 
   *::-webkit-scrollbar {
@@ -281,8 +285,11 @@ html {
     background: transparent;
   }
 
+  /* the transparent border narrows the painted thumb inside the track */
   *::-webkit-scrollbar-thumb {
     background-color: var(--color-accent);
+    background-clip: padding-box;
+    border: 2px solid transparent;
     border-radius: 9999px;
   }
 
@@ -317,7 +324,7 @@ body {
    mask layers: the fade over everything but the rightmost --scrollbar-size, an opaque one over the scrollbar, so the
    scrollbar doesn't fade too. */
 :root {
-  --scrollbar-size: 8px;
+  --scrollbar-size: 10px;
 }
 .scroll-fade-y {
   -webkit-mask-image:

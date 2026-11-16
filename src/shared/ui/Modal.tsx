@@ -36,7 +36,7 @@ interface ModalProps {
 }
 
 const ICON_TONE = {
-  glass: "border-glass-border bg-white/[0.05] text-foreground backdrop-blur-md",
+  glass: "border-glass-border bg-white/[0.05] text-foreground",
   danger: "border-error/30 bg-error/10 text-error",
 } as const;
 
