@@ -18,7 +18,7 @@ import { OptionRow } from "@shared/ui/OptionRow";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { SupportButton } from "@widgets/support/SupportButton";
 
-function NoMethods() {
+export function NoMethods() {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center gap-3 py-16 text-center">

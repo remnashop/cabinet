@@ -139,6 +139,7 @@
     "RENEW_PLAN_MISMATCH": "Эту подписку нельзя продлить на этот тариф — выберите «Изменить»",
     "PAYMENTS_DISABLED": "Оплата временно недоступна",
     "GATEWAY_NOT_AVAILABLE": "Этот способ оплаты недоступен, выберите другой",
+    "GATEWAY_REQUIRED": "Выберите способ оплаты",
     "GATEWAY_CURRENCY_UNSUPPORTED": "Этот способ оплаты не принимает эту валюту",
     "PAYMENT_GATEWAY_ERROR": "Не получилось перейти к оплате. Попробуйте ещё раз через пару минут или выберите другой способ оплаты",
     "CAPTCHA_FAILED": "Проверка не пройдена, попробуйте ещё раз",
@@ -678,7 +679,8 @@
     "SEVERPAY": "SeverPay",
     "LAVA": "Lava",
     "CLOUDPAYMENTS": "CloudPayments",
-    "PAYPEAR": "PayPear"
+    "PAYPEAR": "PayPear",
+    "free": "Бесплатно"
   },
   "payments": {
     "empty": "Платежей пока нет",

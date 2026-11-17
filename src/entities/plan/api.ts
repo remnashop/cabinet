@@ -80,7 +80,8 @@ export interface CheckoutInput {
   duration_days: number;
   currency: string;
   purchase_type: "NEW" | "RENEW" | "CHANGE";
-  gateway_type: string;
+  // omitted only for an order that costs nothing: the backend records it without a gateway
+  gateway_type?: string;
   target_subscription_id?: number;
   plan_code?: string;
   customer_email?: string;

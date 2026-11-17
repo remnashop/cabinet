@@ -18,6 +18,9 @@ import { Card } from "@shared/ui/Card";
 import { InfoRow } from "@shared/ui/InfoRow";
 import { Input } from "@shared/ui/Input";
 import { FormError } from "@shared/ui/FormError";
+import { Skeleton } from "@shared/ui/Skeleton";
+
+import { NoMethods } from "./MethodStep";
 
 type CheckoutResult = Awaited<ReturnType<typeof createCheckout>>;
 
@@ -87,7 +90,7 @@ export function SummaryStep({
         duration_days: days,
         currency: method.currency,
         purchase_type: type,
-        gateway_type: method.gateway_type,
+        ...(method.gateway_type && { gateway_type: method.gateway_type }),
         ...(quote.data && { expected_price: quote.data.final_price }),
         ...(legal && { legal_locale: legal }),
         ...(subId !== null && { target_subscription_id: subId }),
@@ -112,6 +115,10 @@ export function SummaryStep({
   // isSuccess too: the page is leaving for the gateway, a second click would open a second order
   const canPay =
     awaited === null && !!quote.data && !quote.isFetching && emailOk && !checkout.isPending && !checkout.isSuccess;
+
+  // no method to pay with: only a free order goes through, which the quote has to show first
+  if (!method.gateway_type && !quote.data && !quote.isError) return <Skeleton round className="h-64" />;
+  if (!method.gateway_type && quote.data && Number(quote.data.final_price) > 0) return <NoMethods />;
 
   return (
     // a form: Enter in the email field pays; noValidate keeps the browser's bubble out, the field says it itself
