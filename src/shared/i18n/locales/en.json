@@ -83,7 +83,7 @@
     "bootFailed": "Couldn't sign you in",
     "unavailable": "The service is temporarily unavailable",
     "unavailableHint": "Try again later",
-    "miniAppOnly": "The cabinet opens in Telegram",
+    "miniAppOnly": "Available only in Telegram",
     "miniAppOnlyHint": "Open the bot and launch the cabinet from it",
     "providers": {
       "telegram": "Telegram",
