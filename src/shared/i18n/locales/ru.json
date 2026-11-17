@@ -83,7 +83,7 @@
     "sessionExpired": "Сессия истекла, войдите снова",
     "unavailable": "Сервис временно недоступен",
     "unavailableHint": "Попробуйте позже",
-    "miniAppOnly": "Кабинет открывается в Telegram",
+    "miniAppOnly": "Доступно только в Telegram",
     "miniAppOnlyHint": "Откройте бота и запустите кабинет из него",
     "providers": {
       "telegram": "Telegram",
