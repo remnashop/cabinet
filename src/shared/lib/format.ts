@@ -22,6 +22,11 @@ export function formatMoney(amount: string | number, currency: string, locale: s
   }).format(value);
 }
 
+/** A price to pay: nothing to pay reads "Free", not "0 ₽". */
+export function formatPrice(amount: string | number, currency: string, locale: string): string {
+  return Number(amount) === 0 ? i18n.t("gateways.free", { lng: locale }) : formatMoney(amount, currency, locale);
+}
+
 /** Points are a Decimal string ("240.00"): show 240, keep real fractions. */
 export function formatNumber(value: string | number, locale: string): string {
   return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(Number(value));

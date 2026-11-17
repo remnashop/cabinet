@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQuoteQueries, type Plan, type PlanAccess } from "@entities/plan/api";
 import { effectivePrice, savingsPercent, unitPrice } from "@features/purchase/savings";
 import { durationLabel, type PurchaseType } from "@features/purchase/wizard";
-import { formatMoney } from "@shared/lib/format";
+import { formatMoney, formatPrice } from "@shared/lib/format";
 import { NotePill } from "@shared/ui/NotePill";
 import { Ripple } from "@shared/ui/Ripple";
 
@@ -113,7 +113,7 @@ export function DurationStep({
           const usual = quote
             ? Number(quote.final_price) < Number(quote.base_price) && quote.base_price
             : price?.discounted_price && price.price;
-          const perUnit = price && total ? unitPrice(plan, d.days, Number(total)) : null;
+          const perUnit = price && Number(total) > 0 ? unitPrice(plan, d.days, Number(total)) : null;
           return (
             <DurationTile
               key={d.days}
@@ -128,7 +128,7 @@ export function DurationStep({
                   </span>
                 )
               }
-              price={price && total ? formatMoney(total, price.currency, i18n.language) : t("purchase.noPrice")}
+              price={price && total ? formatPrice(total, price.currency, i18n.language) : t("purchase.noPrice")}
               usual={price && usual ? formatMoney(usual, price.currency, i18n.language) : null}
               caption={
                 price && perUnit

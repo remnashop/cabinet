@@ -12,7 +12,7 @@ import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { canBuyMore } from "@entities/subscription/lib";
 import { effectivePrice, minPrice } from "@features/purchase/savings";
 import { durationLabel, parseWizardParams } from "@features/purchase/wizard";
-import { formatMoney } from "@shared/lib/format";
+import { formatPrice } from "@shared/lib/format";
 import { buttonClass } from "@shared/ui/button-class";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { PageEmpty } from "@shared/ui/PageEmpty";
@@ -37,7 +37,7 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
   const price = minPrice(plan, currency);
   // no room for one more: the card and its badge muted
   const dimmed = !to && !current;
-  const money = (amount: string) => formatMoney(amount, currency, i18n.language);
+  const money = (amount: string) => formatPrice(amount, currency, i18n.language);
   // one period in this currency: its exact price and the period, not "from"
   const priced = plan.durations.filter((d) => d.prices.some((p) => p.currency === currency));
   const single = priced.length === 1 ? priced[0] : null;
@@ -91,7 +91,10 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
               </span>
             )}
             <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
-              {single ? money(effectivePrice(price)) : t("purchase.from", { price: money(effectivePrice(price)) })}
+              {/* "from Free" reads wrong: a free period is the cheapest, it says enough */}
+              {single || Number(effectivePrice(price)) === 0
+                ? money(effectivePrice(price))
+                : t("purchase.from", { price: money(effectivePrice(price)) })}
             </span>
             {single && (
               <span className="text-xs text-muted-foreground">

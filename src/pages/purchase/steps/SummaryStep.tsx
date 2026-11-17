@@ -191,7 +191,9 @@ export function SummaryStep({
           <AwaitPaymentButton key={awaited} orderId={awaited} onStop={stopWaiting} />
         ) : (
           <Button type="submit" variant="glassSolid" size="lg" disabled={!canPay}>
-            {t("purchase.pay", { amount: amount ?? "…" })}
+            {quote.data && Number(quote.data.final_price) === 0
+              ? t("purchase.getFree")
+              : t("purchase.pay", { amount: amount ?? "…" })}
           </Button>
         )}
         <LegalNotice kinds={["OFFER"]} message="payNotice" />
