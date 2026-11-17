@@ -64,7 +64,7 @@ export function PaymentDetailsDialog({ transaction, onClose }: { transaction: Tr
               label={t("payments.method")}
               value={
                 <>
-                  {GATEWAY_LOGOS[tx.gateway_type] && (
+                  {tx.gateway_type && GATEWAY_LOGOS[tx.gateway_type] && (
                     <img src={GATEWAY_LOGOS[tx.gateway_type]} alt="" draggable={false} className="size-4 shrink-0 object-contain" />
                   )}
                   <span className="truncate">{gatewayLabel(tx.gateway_type, t)}</span>

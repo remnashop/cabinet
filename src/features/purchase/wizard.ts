@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next";
 
-import type { Plan, PlanAccess, Quote } from "@entities/plan/api";
+import type { PaymentMethod, Plan, PlanAccess, Quote } from "@entities/plan/api";
 import { formatGb } from "@shared/lib/format";
 
 export type PurchaseType = "NEW" | "RENEW" | "CHANGE";
@@ -80,8 +80,16 @@ export function planLimits(plan: Plan, t: TFunction, locale: string): [traffic: 
   ];
 }
 
-/** A gateway's name from the locale (the bot's gateway-name list); one it doesn't know yet, "Capitalized". */
-export function gatewayLabel(type: string, t: TFunction): string {
+/** No method: a free order, or none offered (a Mini App where the shop sells nothing for Stars). The order goes without
+ *  one, and the backend records a free one in the anchor currency itself; a paid one stops at the summary. */
+export function freeOrderMethod(currency: string): PaymentMethod {
+  return { gateway_type: "", currency, requires_email: false, asks_email: false };
+}
+
+/** A gateway's name from the locale (the bot's gateway-name list); one it doesn't know yet, "Capitalized".
+ *  null: a free order, paid through no gateway. */
+export function gatewayLabel(type: string | null, t: TFunction): string {
+  if (!type) return t("gateways.free");
   return t(`gateways.${type}`, { defaultValue: type.charAt(0) + type.slice(1).toLowerCase() });
 }
 

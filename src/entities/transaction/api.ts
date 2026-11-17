@@ -15,7 +15,8 @@ export interface Transaction {
   discount_source: "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";
   currency: string;
   purchase_type: "NEW" | "RENEW" | "CHANGE";
-  gateway_type: string;
+  // null: a free order, paid through no gateway
+  gateway_type: string | null;
   plan_name: string;
   // absent on older backends
   plan_icon_emoji_id?: string | null;

@@ -139,6 +139,7 @@
     "RENEW_PLAN_MISMATCH": "This subscription can't be renewed on this plan — use “Change”",
     "PAYMENTS_DISABLED": "Payments are temporarily unavailable",
     "GATEWAY_NOT_AVAILABLE": "This payment method is unavailable, choose another",
+    "GATEWAY_REQUIRED": "Choose a payment method",
     "GATEWAY_CURRENCY_UNSUPPORTED": "This payment method doesn't accept this currency",
     "PAYMENT_GATEWAY_ERROR": "Couldn't start the payment. Try again in a couple of minutes or choose another payment method",
     "CAPTCHA_FAILED": "The check failed, try again",
@@ -624,7 +625,8 @@
     "SEVERPAY": "SeverPay",
     "LAVA": "Lava",
     "CLOUDPAYMENTS": "CloudPayments",
-    "PAYPEAR": "PayPear"
+    "PAYPEAR": "PayPear",
+    "free": "Free"
   },
   "payments": {
     "empty": "No payments yet",

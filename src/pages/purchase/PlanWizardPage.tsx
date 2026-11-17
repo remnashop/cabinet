@@ -2,11 +2,11 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
-import { useCatalogQuery, usePaymentMethodsQuery, type PaymentMethod, type Plan } from "@entities/plan/api";
+import { useCatalogQuery, usePaymentMethodsQuery, useQuoteQuery, type PaymentMethod, type Plan } from "@entities/plan/api";
 import { useSubscriptionsQuery, useTrialQuery, type Trial } from "@entities/subscription/api";
 import { planTermsChanged } from "@entities/subscription/lib";
 import { startPayment } from "@features/payment/start-payment";
-import { parseDaysParam, parseWizardParams } from "@features/purchase/wizard";
+import { freeOrderMethod, parseDaysParam, parseWizardParams } from "@features/purchase/wizard";
 import { ButtonLink } from "@shared/ui/ButtonLink";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { PageEmpty } from "@shared/ui/PageEmpty";
@@ -62,9 +62,24 @@ export function PlanWizardPage() {
   const trialOffer = catalogPlan ? undefined : trialPlan(trial.data, planId);
   const plan = catalogPlan ?? trialOffer;
   const renewed = type === "RENEW" ? subscriptions.data?.items.find((s) => s.id === subId) : undefined;
-  // one method is no choice: it's taken, and the wizard skips its step
-  const onlyMethod = methods.data?.items.length === 1 ? methods.data.items[0] : null;
-  const method = chosenMethod ?? onlyMethod;
+  // the duration step's own quote (same cache): an order that costs nothing has no method to choose
+  const quotedDays = chosenDays ?? trialOffer?.durations[0].days ?? null;
+  const anchorQuote = useQuoteQuery(
+    quotedDays !== null && catalog.data
+      ? { plan_id: planId, duration_days: quotedDays, currency: catalog.data.anchor_currency, ...access }
+      : null,
+  );
+  const isFree = anchorQuote.data !== undefined && Number(anchorQuote.data.final_price) === 0;
+  // one method is no choice: it's taken, and the wizard skips its step. A free order, or none offered at all (a Mini App
+  // where the shop sells nothing in Telegram), goes on without one; the summary refuses a paid order with none
+  const onlyMethod =
+    catalog.data && (isFree || methods.data?.items.length === 0)
+      ? freeOrderMethod(catalog.data.anchor_currency)
+      : methods.data?.items.length === 1
+        ? methods.data.items[0]
+        : null;
+  // a method picked for a paid duration before going back to a free one doesn't stick
+  const method = isFree ? onlyMethod : (chosenMethod ?? onlyMethod);
   const skipMethod = onlyMethod !== null;
   // a trial has one duration: it's taken, the wizard opens on the method (the summary with the method taken), and back
   // from there leaves for home

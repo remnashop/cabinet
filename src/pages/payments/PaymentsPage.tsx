@@ -84,7 +84,7 @@ export function PaymentsPage() {
               title={`${tx.plan_name} · ${durationLabel(tx.duration_days, t)}`}
               caption={
                 <>
-                  {GATEWAY_LOGOS[tx.gateway_type] && (
+                  {tx.gateway_type && GATEWAY_LOGOS[tx.gateway_type] && (
                     <img src={GATEWAY_LOGOS[tx.gateway_type]} alt="" draggable={false} className="mr-1 inline size-3.5 object-contain align-[-2px]" />
                   )}
                   {gatewayLabel(tx.gateway_type, t)}
