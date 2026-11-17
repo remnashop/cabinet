@@ -22,11 +22,11 @@ export function minPrice(plan: Plan, currency: string): PlanPrice | null {
 
 /** Per-day saving against the shortest duration priced in the same currency; null when there is none. */
 export function savingsPercent(plan: Plan, days: number, currency: string): number | null {
-  // an unlimited duration (0 days) has no per-day price to compare
+  // an unlimited (0 days) or a free duration has no per-day price to compare
   const priced = plan.durations
     .filter((d) => d.days > 0)
     .map((d) => ({ days: d.days, price: priceIn(d.prices, currency) }))
-    .filter((d): d is { days: number; price: number } => d.price !== null);
+    .filter((d): d is { days: number; price: number } => d.price !== null && d.price > 0);
   const target = priced.find((d) => d.days === days);
   if (!target) return null;
   const base = priced.reduce((a, b) => (b.days < a.days ? b : a));

@@ -435,6 +435,7 @@
     "total": "Total",
     "email": "Enter an email to send the receipt to",
     "emailInvalid": "Check the email address",
+    "getFree": "Get it free",
     "pay": "Pay {{amount}}"
   },
   "payment": {

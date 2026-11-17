@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useQuoteQuery, type PaymentMethod, type Plan, type PlanAccess, type Quote } from "@entities/plan/api";
 import { PlanIcon } from "@entities/plan/PlanIcon";
 import { durationLabel } from "@features/purchase/wizard";
-import { formatMoney } from "@shared/lib/format";
+import { formatPrice } from "@shared/lib/format";
 import { PILL_SPRING } from "@shared/lib/motion";
 import { Ripple } from "@shared/ui/Ripple";
 
@@ -57,7 +57,7 @@ export function WizardHead(props: HeadProps) {
               <span className="rounded-full bg-white/[0.12] px-2.5 py-1 text-xs font-semibold">{durationLabel(days, t)}</span>
               {step === 1 && price && (
                 <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
-                  {formatMoney(price.price, price.currency, i18n.language)}
+                  {formatPrice(price.price, price.currency, i18n.language)}
                 </span>
               )}
             </div>
@@ -71,7 +71,7 @@ export function WizardHead(props: HeadProps) {
 
 function Receipt({ quote }: { quote: Quote }) {
   const { t, i18n } = useTranslation();
-  const money = (amount: number | string) => formatMoney(amount, quote.currency, i18n.language);
+  const money = (amount: number | string) => formatPrice(amount, quote.currency, i18n.language);
   const { base, credit, payable, promo, discount, final } = receiptAmounts(quote);
   const lines: [label: string, amount: string, off: boolean][] = [[t("purchase.receiptPrice"), money(base), false]];
   if (credit > 0) lines.push([t("purchase.receiptCredit"), `−${money(credit)}`, false]);
