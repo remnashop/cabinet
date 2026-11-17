@@ -160,7 +160,7 @@ export function Modal({
           // in the frame the glass panel frosts the page itself, so the backdrop only dims (the panel's Modal); over the
           // whole screen the page melts into the shader's glow (the panel's donate dialog), and bare content, with no
           // panel, stands on that too
-          className={`fixed inset-0 z-40 flex items-center justify-center p-4 transition-[background-color,backdrop-filter] duration-300 ${
+          className={`fixed inset-0 z-40 flex items-center justify-center p-4 pt-[calc(var(--safe-top)+16px)] pb-[calc(var(--safe-bottom)+16px)] transition-[background-color,backdrop-filter] duration-300 ${
             bare || fullScreen ? "bg-black/55 backdrop-blur-3xl" : "bg-black/30"
           }`}
           initial={{ opacity: 0 }}
@@ -195,7 +195,7 @@ export function Modal({
             initial={reduced ? false : { opacity: 0, scale: 0.94, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0, transition: FADE_IN }}
             exit={reduced ? { opacity: 0, transition: FADE_OUT } : { opacity: 0, scale: 0.94, y: 8, transition: FADE_OUT }}
-            className={`flex max-h-[calc(var(--tg-viewport-stable-height,100dvh)*0.85)] w-full ${narrow ? "max-w-sm" : "max-w-2xl"} flex-col rounded-dialog outline-none glass-dialog`}
+            className={`flex max-h-[min(calc(var(--tg-viewport-stable-height,100dvh)*0.85),100%)] w-full ${narrow ? "max-w-sm" : "max-w-2xl"} flex-col rounded-dialog outline-none glass-dialog`}
           >
             <div className="flex shrink-0 items-center gap-3 border-b border-white/[0.08] p-4">
               {(Icon || glyph) && (
