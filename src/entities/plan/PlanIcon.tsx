@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 
-import { API_BASE } from "@shared/api/http";
+import { emojiThumbnailUrl } from "./api";
 
 interface PlanIconProps {
   id: string | null | undefined;
@@ -21,7 +21,7 @@ export function PlanIcon({ id, glyph, className, fallback }: PlanIconProps) {
   }
   return (
     <img
-      src={`${API_BASE}/emoji-packs/thumbnails/${encodeURIComponent(id)}`}
+      src={emojiThumbnailUrl(id)}
       alt={glyph ?? ""}
       draggable={false}
       onError={() => setFailed(true)}

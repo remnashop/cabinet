@@ -1,7 +1,9 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 
-import { apiGet, apiPost } from "@shared/api/http";
+import { API_BASE, apiGet, apiPost } from "@shared/api/http";
 import { isMiniApp } from "@shared/telegram";
+
+export const emojiThumbnailUrl = (id: string) => `${API_BASE}/emoji-packs/thumbnails/${encodeURIComponent(id)}`;
 
 export interface PlanPrice {
   currency: string;
@@ -20,6 +22,8 @@ export interface Plan {
   id: number;
   name: string;
   description: string | null;
+  // the description with Telegram's [glyph](emoji:id) markup kept; absent on older backends
+  description_markup?: string | null;
   // shown on the plan card
   badge: "POPULAR" | "BEST_VALUE" | null;
   type: string;
