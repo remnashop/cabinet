@@ -11,7 +11,7 @@ import { PlanDescription } from "@entities/plan/PlanDescription";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { canBuyMore } from "@entities/subscription/lib";
-import { effectivePrice, minPrice } from "@features/purchase/savings";
+import { bestMonthlyRate, effectivePrice, minPrice } from "@features/purchase/savings";
 import { durationLabel, parseWizardParams } from "@features/purchase/wizard";
 import { formatPrice } from "@shared/lib/format";
 import { buttonClass } from "@shared/ui/button-class";
@@ -42,6 +42,8 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
   // one period in this currency: its exact price and the period, not "from"
   const priced = plan.durations.filter((d) => d.prices.some((p) => p.currency === currency));
   const single = priced.length === 1 ? priced[0] : null;
+  // several periods: the lowest rate per month, the way long periods compare; a free period keeps "Free"
+  const rate = !single && price !== null && Number(effectivePrice(price)) > 0 ? bestMonthlyRate(plan, currency) : null;
   const body = (
     <>
       {plan.badge && !dimmed && (
@@ -85,7 +87,22 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
           </p>
         )}
         <PlanLimits plan={plan} className="self-end [grid-area:feat] lg:flex-row lg:gap-4" />
-        {price !== null && (
+        {rate !== null ? (
+          <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
+            {rate.original !== null && (
+              <span className="flex items-center gap-1.5 text-xs">
+                <span className="text-muted-foreground line-through">{money(String(rate.original))}</span>
+                <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
+                  −{plan.discount_percent}%
+                </span>
+              </span>
+            )}
+            <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
+              {t("purchase.fromPerMonth", { price: money(String(rate.amount)) })}
+            </span>
+            <span className="text-xs text-muted-foreground">{t("purchase.billedFor", { period: durationLabel(rate.days, t) })}</span>
+          </span>
+        ) : price !== null && (
           <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
             {price.discounted_price && (
               <span className="flex items-center gap-1.5 text-xs">

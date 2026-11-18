@@ -382,6 +382,8 @@
     "catalog": "Тарифы",
     "changeTitle": "Смена тарифа",
     "from": "от {{price}}",
+    "fromPerMonth": "от {{price}}/мес",
+    "billedFor": "при оплате за {{period}}",
     "per": "за {{period}}",
     "titles": {
       "NEW": "Покупка",

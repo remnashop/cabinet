@@ -362,6 +362,8 @@
     "catalog": "Plans",
     "changeTitle": "Change plan",
     "from": "from {{price}}",
+    "fromPerMonth": "from {{price}}/mo",
+    "billedFor": "billed for {{period}}",
     "per": "for {{period}}",
     "titles": {
       "NEW": "Purchase",
