@@ -52,29 +52,24 @@ export function PushPromptCard() {
     <div className="mt-5 flex flex-col gap-2">
       <Card round>
         <EventList>
-          <EventRow
-            icon={<IconCircle icon={BellRing} />}
-            title={t("pushPrompt.title")}
-            caption={t("pushPrompt.text")}
-            aside={
-              <>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    recordPushPrompt("dismissed");
-                    setPhase("closed");
-                  }}
-                >
-                  {t("pushPrompt.later")}
-                </Button>
-                <Button variant="glassAccent" size="sm" disabled={phase === "busy"} onClick={() => void enable()}>
-                  {t("push.enable")}
-                </Button>
-              </>
-            }
-          />
+          <EventRow icon={<IconCircle icon={BellRing} />} title={t("pushPrompt.title")} caption={t("pushPrompt.text")} wrap />
         </EventList>
+        {/* under the text, not beside it: two buttons beside it leave a phone's title a few letters wide */}
+        <div className="flex justify-end gap-1.5 px-3.5 pb-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              recordPushPrompt("dismissed");
+              setPhase("closed");
+            }}
+          >
+            {t("pushPrompt.later")}
+          </Button>
+          <Button variant="glassAccent" size="sm" disabled={phase === "busy"} onClick={() => void enable()}>
+            {t("push.enable")}
+          </Button>
+        </div>
       </Card>
       {phase === "failed" && <FormError className="px-5 lg:px-4">{t("push.failed")}</FormError>}
     </div>
