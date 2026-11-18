@@ -32,7 +32,8 @@ export function EventRow({
   caption?: ReactNode;
   /** a third line under the caption (a time) */
   meta?: ReactNode;
-  /** the caption wraps to three lines instead of one, for a text that must be read whole (a notification) */
+  /** the caption wraps to three lines instead of one, for a text that must be read whole (a notification); its line
+   *  breaks are kept */
   wrap?: boolean;
   aside?: ReactNode;
   onClick?: () => void;
@@ -43,7 +44,7 @@ export function EventRow({
       {icon}
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="line-clamp-2 text-sm font-medium text-foreground [overflow-wrap:anywhere]">{title}</span>
-        {caption && <span className={`${wrap ? "line-clamp-3" : "line-clamp-2"} text-xs text-muted-foreground [overflow-wrap:anywhere]`}>{caption}</span>}
+        {caption && <span className={`${wrap ? "line-clamp-3 whitespace-pre-line" : "line-clamp-2"} text-xs text-muted-foreground [overflow-wrap:anywhere]`}>{caption}</span>}
         {meta && <span className="truncate text-xs text-muted-foreground/70">{meta}</span>}
       </span>
       {aside && <span className="flex shrink-0 items-center gap-1.5 self-center text-sm font-semibold">{aside}</span>}
