@@ -153,7 +153,7 @@ export function CardsSlider({
 
   return (
     <div>
-      <div className="relative">
+      <div className="@container relative">
         <div
           ref={trackRef}
           className="relative -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-0.5 [scrollbar-width:none] lg:-mx-2.5 lg:-my-2.5 lg:gap-5 lg:p-2.5 [&::-webkit-scrollbar]:hidden"
@@ -195,10 +195,11 @@ export function CardsSlider({
           )}
         </div>
 
-        {/* 24px tap targets around 6px dots, centred on the header's line (the track's 2px, the border, the 16px padding,
-            half of the 20px line); the row lets taps through to the card between them */}
+        {/* 24px tap targets around 4px dots, centred in the card's bottom padding under the pills (the track's 2px, the
+            border, half of SubscriptionCard's padding, the same cqw: on a phone the wrapper is the card's width); over the
+            header they covered a long plan name. The row lets taps through to the card around them */}
         <div
-          className={`pointer-events-none absolute inset-x-0 top-[17px] flex justify-center lg:hidden ${single ? "hidden" : ""}`}
+          className={`pointer-events-none absolute inset-x-0 bottom-[calc(3px+clamp(16px,4.5cqw,24px)/2-12px)] flex justify-center lg:hidden ${single ? "hidden" : ""}`}
         >
           {[...subscriptions, null].map((sub, index) => (
             <button
@@ -214,7 +215,7 @@ export function CardsSlider({
               className="pointer-events-auto flex h-6 min-w-6 items-center justify-center px-[3px]"
             >
               <span
-                className={`block h-1.5 rounded-full transition-all ${index === visible ? "w-[18px] bg-primary" : "w-1.5 bg-foreground/20"}`}
+                className={`block h-1 rounded-full transition-all ${index === visible ? "w-[18px] bg-primary" : "w-1 bg-foreground/20"}`}
               />
             </button>
           ))}

@@ -118,9 +118,10 @@ export function AppShell() {
           </div>
         </header>
         {/* the scrollbar is always there (overflow-y: scroll, not scrollbar-gutter: Safari reserves the native width for an
-            empty gutter) and its width (--scrollbar-size) comes out of the right padding: 20px either side */}
+            empty gutter) and its width (--scrollbar-size) comes out of the right padding: 20px either side. No sideways
+            scroll: Firefox's 11px thin scrollbar leaves 9px, less than the cards slider's 10px bleed */}
         <main
-          className={`mx-auto w-full max-w-[560px] min-w-0 px-4 pb-[calc(max(var(--safe-bottom),16px)+80px)] lg:max-w-none lg:flex-1 lg:overflow-y-scroll lg:pl-5 lg:pr-[calc(1.25rem-var(--scrollbar-size))] lg:pt-0 lg:pb-5 ${wide ? "lg:flex lg:flex-col" : ""}`}
+          className={`mx-auto w-full max-w-[560px] min-w-0 px-4 pb-[calc(max(var(--safe-bottom),16px)+80px)] lg:max-w-none lg:flex-1 lg:overflow-x-hidden lg:overflow-y-scroll lg:pl-5 lg:pr-[calc(1.25rem-var(--scrollbar-size))] lg:pt-0 lg:pb-5 ${wide ? "lg:flex lg:flex-col" : ""}`}
         >
           <HeaderSlotContext.Provider value={headerSlot}>
             <AnimatedOutlet className={wide ? "lg:flex lg:flex-1 lg:flex-col" : undefined} />
