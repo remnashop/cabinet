@@ -564,6 +564,7 @@ export const handlers = [
         device_single_reset_enabled: scenario.deviceReset,
         device_all_reset_enabled: scenario.deviceReset,
         link_reset_enabled: true,
+        referral_reset_enabled: true,
         bot_username: "mock_bot",
         channel_url: "https://t.me/mock_channel",
         support_telegram: "mock_support",
@@ -963,6 +964,13 @@ export const handlers = [
     const index = pushSubscriptions.findIndex((s) => s.id === Number(params.id));
     if (index < 0) return apiError(404, "NOT_FOUND", "Not found");
     pushSubscriptions.splice(index, 1);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.post(`${API}/referrals/me/actions/reset-code`, ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    referral.referral_code = Math.random().toString(36).slice(2, 10).toUpperCase();
     return new HttpResponse(null, { status: 204 });
   }),
 

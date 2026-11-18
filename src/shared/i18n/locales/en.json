@@ -496,6 +496,11 @@
     "noCode": "Your referral link isn't available yet",
     "yourLink": "Your invite link",
     "redeemShort": "Apply days",
+    "resetCode": "New link",
+    "resetCodeTitle": "Create a new link?",
+    "resetCodeWarning": "The old invite link will stop working",
+    "resetCodeConfirm": "Create",
+    "resetCodeCooldown": "You can create a new link again in {{wait}}",
     "how": {
       "title": "How does it work?",
       "share": "Share your link",
