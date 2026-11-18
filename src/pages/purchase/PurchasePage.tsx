@@ -7,6 +7,7 @@ import { Link, Navigate, useSearchParams } from "react-router";
 
 import { joinPaymentWaitlist, useCatalogQuery, type Plan } from "@entities/plan/api";
 import { PlanIcon } from "@entities/plan/PlanIcon";
+import { PlanDescription } from "@entities/plan/PlanDescription";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { canBuyMore } from "@entities/subscription/lib";
@@ -78,7 +79,11 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
             )
           )}
         </div>
-        {plan.description && <p className="text-xs text-muted-foreground [grid-area:desc]">{plan.description}</p>}
+        {plan.description && (
+          <p className="text-xs text-muted-foreground [grid-area:desc]">
+            <PlanDescription markup={plan.description_markup ?? plan.description} />
+          </p>
+        )}
         <PlanLimits plan={plan} className="self-end [grid-area:feat] lg:flex-row lg:gap-4" />
         {price !== null && (
           <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
