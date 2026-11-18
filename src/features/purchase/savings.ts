@@ -47,3 +47,27 @@ export function unitPrice(plan: Plan, days: number, price: number): { unit: "mon
   if (shortest >= 30) return { unit: "month", amount: Math.round(((price * 30) / days) * cents) / cents };
   return { unit: "day", amount: Math.round((price / days) * 100) / 100 };
 }
+
+/**
+ * The plan's lowest price per month over its periods of a month or more, the promotion's while one runs; `original`
+ * is the same period's rate before it. Null when no paid period is a month or longer.
+ */
+export function bestMonthlyRate(
+  plan: Plan,
+  currency: string,
+): { amount: number; original: number | null; days: number } | null {
+  let best: { amount: number; original: number | null; days: number } | null = null;
+  for (const d of plan.durations) {
+    const found = d.prices.find((p) => p.currency === currency);
+    const price = found ? Number(effectivePrice(found)) : 0;
+    if (!found || d.days < 30 || price <= 0) continue;
+    // whole when the list price is (a promotion's 2239.20 ₽ a year is 184 ₽, not 184.04 ₽), to the cent otherwise
+    const cents = Number.isInteger(Number(found.price)) ? 1 : 100;
+    const rate = (value: number) => Math.round(((value * 30) / d.days) * cents) / cents;
+    const amount = rate(price);
+    if (best === null || amount < best.amount) {
+      best = { amount, original: found.discounted_price ? rate(Number(found.price)) : null, days: d.days };
+    }
+  }
+  return best;
+}
