@@ -61,6 +61,9 @@ server {
     # SPA: every route is index.html, never cached so a deploy is picked up
     location / {
         gzip on;
+        # index.html pulls the link-preview tags from the API, see its <head>
+        ssi on;
+        ssi_silent_errors on;
         include /etc/nginx/snippets/security-headers.conf;
         add_header Cache-Control "no-cache";
         try_files $uri /index.html;

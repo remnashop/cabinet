@@ -6,7 +6,9 @@
     <meta name="color-scheme" content="dark" />
     <link rel="icon" href="/api/appearance/cabinet/tab-icon" />
     <link rel="manifest" href="/api/appearance/cabinet/manifest.webmanifest" />
-    <title>Remnashop</title>
+    <!-- nginx (SSI) swaps in the shop's name and logo for link previews; vite dev shows the block as is -->
+    <!--# block name="default_head" --><title>Remnashop</title><!--# endblock -->
+    <!--# include virtual="/api/appearance/cabinet/link-preview" stub="default_head" -->
     <script src="/telegram-launch.js"></script>
   </head>
   <body>
