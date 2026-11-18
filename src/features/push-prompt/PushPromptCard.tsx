@@ -7,7 +7,6 @@ import { detectPushSupport, enablePush } from "@shared/lib/push";
 import { isMiniApp } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
-import { EventList, EventRow } from "@shared/ui/EventList";
 import { IconCircle } from "@shared/ui/IconCircle";
 import { FormError } from "@shared/ui/FormError";
 
@@ -51,24 +50,31 @@ export function PushPromptCard() {
   return (
     <div className="mt-5 flex flex-col gap-2">
       <Card round>
-        <EventList>
-          <EventRow icon={<IconCircle icon={BellRing} />} title={t("pushPrompt.title")} caption={t("pushPrompt.text")} wrap />
-        </EventList>
-        {/* under the text, not beside it: two buttons beside it leave a phone's title a few letters wide */}
-        <div className="flex justify-end gap-1.5 px-3.5 pb-3">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              recordPushPrompt("dismissed");
-              setPhase("closed");
-            }}
-          >
-            {t("pushPrompt.later")}
-          </Button>
-          <Button variant="glassAccent" size="sm" disabled={phase === "busy"} onClick={() => void enable()}>
-            {t("push.enable")}
-          </Button>
+        {/* the card's own 20px padding; a list row inside it would add its own on top */}
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <IconCircle icon={BellRing} />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-sm font-medium text-foreground">{t("pushPrompt.title")}</span>
+              <span className="text-xs text-muted-foreground">{t("pushPrompt.text")}</span>
+            </span>
+          </div>
+          {/* on a phone under the text, the full width: beside it they left the title a few letters wide */}
+          <div className="grid grid-cols-2 gap-1.5 lg:flex">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                recordPushPrompt("dismissed");
+                setPhase("closed");
+              }}
+            >
+              {t("pushPrompt.later")}
+            </Button>
+            <Button variant="glassAccent" size="sm" disabled={phase === "busy"} onClick={() => void enable()}>
+              {t("push.enable")}
+            </Button>
+          </div>
         </div>
       </Card>
       {phase === "failed" && <FormError className="px-5 lg:px-4">{t("push.failed")}</FormError>}
