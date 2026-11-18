@@ -6,6 +6,7 @@ import {
   CreditCard,
   Gift,
   QrCode,
+  RefreshCw,
   Share2,
   User,
   UserPlus,
@@ -38,6 +39,8 @@ export interface InviteData {
   /** the downline's size per level, "1" → 5 */
   countsByLevel: Record<string, number>;
   onQr: () => void;
+  /** asks before a new link; undefined while the shop doesn't allow it */
+  onResetCode?: () => void;
   onRedeemDays: () => void;
   /** the support dialog, points are exchanged there; undefined without a support contact */
   onWithdraw?: () => void;
@@ -272,6 +275,12 @@ function InviteCard({ data }: { data: InviteData }) {
         <QrCode className="size-4" />
         {t("referral.openQr")}
       </Button>
+      {data.onResetCode && data.main && (
+        <Button variant="glass" onClick={data.onResetCode}>
+          <RefreshCw className="size-4" />
+          {t("referral.resetCode")}
+        </Button>
+      )}
     </Card>
   );
 }

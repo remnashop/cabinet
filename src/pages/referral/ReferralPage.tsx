@@ -1,12 +1,14 @@
-import { QrCode as QrCodeIcon } from "lucide-react";
+import { QrCode as QrCodeIcon, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, useNavigate } from "react-router";
 
-import { invitedCount, useReferralQuery } from "@entities/referral/api";
+import { invitedCount, useReferralQuery, useResetReferralCode } from "@entities/referral/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { inviteLinks } from "@features/referral/links";
+import { getErrorMessage } from "@shared/api/http";
 import { isMiniApp } from "@shared/telegram";
+import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
 import { Modal } from "@shared/ui/Modal";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { QrCode } from "@shared/ui/QrCode";
@@ -23,8 +25,9 @@ export function ReferralPage() {
   const navigate = useNavigate();
   const referral = useReferralQuery();
   const settings = useCabinetSettingsQuery();
-  const [sheet, setSheet] = useState<"qr" | "days" | null>(null);
+  const [sheet, setSheet] = useState<"qr" | "days" | "reset" | null>(null);
   const support = useSupport();
+  const resetCode = useResetReferralCode();
   const close = () => setSheet(null);
 
   const header = <PageHeader title={t("pages.referral")} backTo="/" navItem />;
@@ -77,6 +80,12 @@ export function ReferralPage() {
             bonusDays: referral.data.bonus_days,
             countsByLevel: counts,
             onQr: () => setSheet("qr"),
+            onResetCode: settings.data?.referral_reset_enabled
+              ? () => {
+                  resetCode.reset();
+                  setSheet("reset");
+                }
+              : undefined,
             onRedeemDays: () => setSheet("days"),
             onWithdraw: support.available ? support.open : undefined,
             onInvited: () => void navigate("/invite/friends"),
@@ -86,6 +95,21 @@ export function ReferralPage() {
 
       <RedeemDaysDialog open={sheet === "days"} onClose={close} bonusDays={referral.data.bonus_days} />
       {support.dialog}
+
+      <ConfirmDialog
+        open={sheet === "reset"}
+        danger
+        title={t("referral.resetCodeTitle")}
+        text={t("referral.resetCodeWarning")}
+        confirmLabel={t("referral.resetCodeConfirm")}
+        icon={RefreshCw}
+        pending={resetCode.isPending}
+        error={
+          resetCode.isError ? getErrorMessage(resetCode.error, t("errors.generic"), "referral.resetCodeCooldown") : null
+        }
+        onClose={close}
+        onConfirm={() => resetCode.mutate(undefined, { onSuccess: close })}
+      />
 
       <Modal
         narrow
