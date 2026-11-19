@@ -14,7 +14,7 @@ import { FormError } from "@shared/ui/FormError";
 import { isMiniApp } from "@shared/telegram";
 
 import { linkApi } from "./api";
-import { MergeDialog } from "./MergeDialog";
+import { MergeBody } from "./MergeDialog";
 import type { MergeOffer } from "./useLinkResult";
 
 /** The shop requires an email: blocks the cabinet until the customer links one; only sign-out leaves it. */
@@ -48,34 +48,41 @@ export function RequiredEmailGate() {
     },
   };
 
-  return (
-    <>
-      <Modal narrow fullScreen icon={Mail} open title={t("link.requiredTitle")}>
-        <div className="flex flex-col gap-3">
-          <EmailLogin flow={flow} emailHint={t("link.requiredHint")} />
-          {error && <FormError>{error}</FormError>}
-        </div>
-        {/* the Mini App would sign straight back in and land here again: no sign-out there */}
-        {!isMiniApp() && (
-          <DialogFooter>
-            <Button variant="glass" onClick={() => void logout().then(() => queryClient.clear())}>
-              {t("common.logout")}
-            </Button>
-          </DialogFooter>
-        )}
+  // the merge offer replaces the form in place: a separate dialog would open under this full-screen one
+  if (merge) {
+    return (
+      <Modal narrow fullScreen icon={Mail} open title={t("link.mergeTitle")}>
+        <MergeBody
+          key={merge.token}
+          offer={merge}
+          onClose={() => setMerge(null)}
+          onMerged={() => {
+            setMerge(null);
+            void refetch();
+          }}
+          onExpired={(message) => {
+            setMerge(null);
+            setError(message);
+          }}
+        />
       </Modal>
-      <MergeDialog
-        offer={merge}
-        onClose={() => setMerge(null)}
-        onMerged={() => {
-          setMerge(null);
-          void refetch();
-        }}
-        onExpired={(message) => {
-          setMerge(null);
-          setError(message);
-        }}
-      />
-    </>
+    );
+  }
+
+  return (
+    <Modal narrow fullScreen icon={Mail} open title={t("link.requiredTitle")}>
+      <div className="flex flex-col gap-3">
+        <EmailLogin flow={flow} emailHint={t("link.requiredHint")} />
+        {error && <FormError>{error}</FormError>}
+      </div>
+      {/* the Mini App would sign straight back in and land here again: no sign-out there */}
+      {!isMiniApp() && (
+        <DialogFooter>
+          <Button variant="glass" onClick={() => void logout().then(() => queryClient.clear())}>
+            {t("common.logout")}
+          </Button>
+        </DialogFooter>
+      )}
+    </Modal>
   );
 }

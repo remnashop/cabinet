@@ -122,6 +122,10 @@ describe("RequiredEmailGate", () => {
         other: { subscriptions: 1, transactions: 0, referrals: 0, identities: [] },
       };
     });
+    // the app's portal for ordinary dialogs, which the full-screen gate covers
+    const dialogRoot = document.createElement("div");
+    dialogRoot.id = "dialog-root";
+    document.body.appendChild(dialogRoot);
     await render();
 
     await type(document.body.querySelector<HTMLInputElement>("input[type=email]")!, "a@b.c");
@@ -136,6 +140,9 @@ describe("RequiredEmailGate", () => {
     await settle();
 
     expect(api.apiPost).toHaveBeenCalledWith("/users/me/identities/email/verify", { email: "a@b.c", code: "123456" });
-    expect(document.body.textContent).toContain(i18n.t("link.mergeTitle"));
+    // the merge offer shows inside the gate, not in a dialog underneath it
+    expect(document.body.textContent).toContain(i18n.t("link.mergeText"));
+    expect(dialogRoot.textContent).toBe("");
+    dialogRoot.remove();
   });
 });
