@@ -662,7 +662,7 @@
   "link": {
     "emailTitle": "Connect email",
     "requiredTitle": "Add your email",
-    "requiredHint": "We’ll use it to reach you if Telegram is unavailable.",
+    "requiredHint": "An email keeps you from losing access if Telegram becomes unavailable.",
     "emailHint": "We'll send a confirmation code to this address",
     "telegramTitle": "Connect Telegram",
     "botHint": "Open the bot and tap the button — it brings you back here",

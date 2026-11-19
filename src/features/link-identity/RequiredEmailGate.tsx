@@ -8,8 +8,7 @@ import { useMeQuery } from "@entities/session/api";
 import { useAuthMethodsQuery } from "@features/auth/api";
 import { logout } from "@features/auth/logout";
 import { EmailLogin, type EmailCodeFlow } from "@features/auth/ui/EmailLogin";
-import { DialogFooter, Modal } from "@shared/ui/Modal";
-import { Button } from "@shared/ui/Button";
+import { Modal } from "@shared/ui/Modal";
 import { FormError } from "@shared/ui/FormError";
 import { isMiniApp } from "@shared/telegram";
 
@@ -72,17 +71,15 @@ export function RequiredEmailGate() {
   return (
     <Modal narrow fullScreen icon={Mail} open title={t("link.requiredTitle")}>
       <div className="flex flex-col gap-3">
-        <EmailLogin flow={flow} emailHint={t("link.requiredHint")} />
+        <p className="text-sm text-foreground/80">{t("link.requiredHint")}</p>
+        <EmailLogin
+          flow={flow}
+          // the Mini App would sign straight back in and land here again: no sign-out there
+          onCancel={isMiniApp() ? undefined : () => void logout().then(() => queryClient.clear())}
+          cancelLabel={t("common.logout")}
+        />
         {error && <FormError>{error}</FormError>}
       </div>
-      {/* the Mini App would sign straight back in and land here again: no sign-out there */}
-      {!isMiniApp() && (
-        <DialogFooter>
-          <Button variant="glass" onClick={() => void logout().then(() => queryClient.clear())}>
-            {t("common.logout")}
-          </Button>
-        </DialogFooter>
-      )}
     </Modal>
   );
 }
