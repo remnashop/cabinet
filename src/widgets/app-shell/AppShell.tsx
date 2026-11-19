@@ -8,6 +8,7 @@ import { pushApi } from "@entities/notification/api";
 import { useMeQuery } from "@entities/session/api";
 import { endSession } from "@features/auth/logout";
 import { LegalReacceptanceGate } from "@features/legal-reacceptance/LegalReacceptanceGate";
+import { RequiredEmailGate } from "@features/link-identity/RequiredEmailGate";
 import { clearAccessToken } from "@shared/api/tokens";
 import { isSupportedLanguage } from "@shared/i18n";
 import type { INTRO_STATE } from "@shared/lib/intro";
@@ -133,6 +134,7 @@ export function AppShell() {
       </motion.div>
       <BottomNav />
       <LegalReacceptanceGate />
+      <RequiredEmailGate />
       {supportFromLink}
     </motion.div>
     </SignOutContext.Provider>

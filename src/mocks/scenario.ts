@@ -30,6 +30,7 @@ export interface Scenario {
   failRequests: MockFailure; // every call but sign-in and the documents fails: a 500 or no answer, for the error cards
   legalPending: boolean; // the admin asked to accept the documents again: the re-acceptance gate
   miniAppOnly: boolean; // every browser sign-in off: the login page sends to the bot
+  emailRequired: boolean; // the shop requires an email: a customer without one is held at the email screen
   feed: MockFeed; // the bell's notifications
   pushConfigured: boolean; // the backend has a VAPID key
   restricted: boolean; // the admin closed the service: every call but sign-in answers ACCESS_RESTRICTED
@@ -60,6 +61,7 @@ export const DEFAULT_SCENARIO: Scenario = {
   failRequests: "none",
   legalPending: false,
   miniAppOnly: false,
+  emailRequired: false,
   feed: "normal",
   pushConfigured: true,
   restricted: false,

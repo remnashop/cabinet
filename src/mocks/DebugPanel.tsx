@@ -51,6 +51,7 @@ const FIELDS: [Key, string, Option[]][] = [
   ["failRequests", "Ломать запросы", (["none", "server", "network"] as MockFailure[]).map((s) => [s, s])],
   ["legalPending", "Принять документы заново", yesNo],
   ["miniAppOnly", "Только Mini App", yesNo],
+  ["emailRequired", "Обязательная почта", yesNo],
   ["feed", "Лента уведомлений", (["normal", "empty", "error"] as MockFeed[]).map((s) => [s, s])],
   ["pushConfigured", "Пуш настроен", yesNo],
   ["restricted", "Сервис закрыт (техработы)", yesNo],
