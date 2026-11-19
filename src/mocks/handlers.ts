@@ -454,6 +454,7 @@ export const handlers = [
       allowed_email_domains: ["gmail.com", "yandex.ru", "mail.ru"],
       captcha: null,
       bot_username: "mock_bot",
+      email_required: scenario.emailRequired && !scenario.miniAppOnly,
     }),
   ),
 

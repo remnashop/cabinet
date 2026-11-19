@@ -19,6 +19,7 @@ vi.mock("@entities/shop/api", () => ({
   useCabinetSettingsQuery: () => ({ isPending: false }),
 }));
 vi.mock("@features/legal-reacceptance/LegalReacceptanceGate", () => ({ LegalReacceptanceGate: () => null }));
+vi.mock("@features/link-identity/RequiredEmailGate", () => ({ RequiredEmailGate: () => null }));
 vi.mock("@widgets/app-shell/Sidebar", () => {
   const Sidebar = () => <button id="out" onClick={useSignOut()} />;
   return { Sidebar };

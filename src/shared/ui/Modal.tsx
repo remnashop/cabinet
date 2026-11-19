@@ -46,6 +46,11 @@ const FooterContext = createContext<HTMLElement | null | undefined>(undefined);
 /** The panel's dialog footer: a strip under a line, its buttons on the right (Button glass, then glassAccent or
  *  glassDanger). Rendered by the body, so the buttons keep its state; they land outside its DOM, so a form's submit
  *  button names its form (`form` attribute) for Enter to keep working. */
+/** Inside a sheet, whose footer DialogFooter's buttons go to. */
+export function useInsideDialog(): boolean {
+  return useContext(FooterContext) !== undefined;
+}
+
 export function DialogFooter({ children }: { children: ReactNode }) {
   const el = useContext(FooterContext);
   // outside a sheet (a body rendered on its own) the buttons stay in place

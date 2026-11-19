@@ -7,7 +7,7 @@ import { legalLocale, useShownLegalLocale } from "@entities/legal/api";
 import { authApi, completeLogin, type CaptchaConfig } from "@features/auth/api";
 import { CaptchaWidget } from "@features/auth/ui/CaptchaWidget";
 import { getErrorMessage } from "@shared/api/http";
-import { DialogFooter } from "@shared/ui/Modal";
+import { DialogFooter, useInsideDialog } from "@shared/ui/Modal";
 import { CodeInput } from "@shared/ui/CodeInput";
 import { Button } from "@shared/ui/Button";
 import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
@@ -37,6 +37,7 @@ export function EmailLogin({
   captcha = null,
   emailHint,
   onCancel,
+  cancelLabel,
 }: {
   flow?: EmailCodeFlow;
   /** asked before every code, the resend too */
@@ -45,8 +46,10 @@ export function EmailLogin({
   emailHint?: string;
   /** in a dialog: closes it. The buttons then go to its footer (DialogFooter), cancel first, as every dialog's */
   onCancel?: () => void;
+  /** the cancel button's text, "Cancel" by default */
+  cancelLabel?: string;
 }) {
-  const dialog = onCancel !== undefined;
+  const dialog = useInsideDialog();
   const formId = useId();
   const legal = useShownLegalLocale();
   const flow = customFlow ?? signInFlow(legal);
@@ -118,9 +121,9 @@ export function EmailLogin({
           {captcha && <CaptchaWidget config={captcha} round={captchaRound} onToken={setCaptchaToken} />}
           {/* outside a dialog DialogFooter leaves them in place */}
           <DialogFooter>
-            {dialog && (
+            {onCancel && (
               <Button variant="glass" onClick={onCancel}>
-                {t("common.cancel")}
+                {cancelLabel ?? t("common.cancel")}
               </Button>
             )}
             <Button

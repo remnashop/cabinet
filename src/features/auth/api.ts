@@ -16,6 +16,8 @@ export interface AuthMethods {
   captcha: CaptchaConfig | null;
   // set while the Mini App is on: a browser with no other way in is sent to the bot
   bot_username: string | null;
+  // absent on older backends
+  email_required?: boolean;
 }
 
 export interface CaptchaConfig {
