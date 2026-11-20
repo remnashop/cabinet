@@ -10,7 +10,8 @@ import { getTelegramPhotoUrl } from "@shared/telegram";
 export function Avatar({ name, className }: { name: string | undefined; className: string }) {
   const [photo] = useState(getTelegramPhotoUrl);
   const [failed, setFailed] = useState(false);
-  const letter = name?.trim()[0]?.toUpperCase();
+  // letters and digits only: a symbol the font may lack renders as a box
+  const letter = name?.match(/[\p{L}\p{N}]/u)?.[0].toUpperCase();
   return (
     <span
       className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full glass-control font-semibold text-foreground ${className}`}
