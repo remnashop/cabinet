@@ -27,7 +27,8 @@ export function RequiredEmailGate() {
   const [error, setError] = useState<string | null>(null);
 
   // documents first: their gate holds the screen until they are accepted
-  const waiting = !pendingLegal.data || pendingLegal.data.items.length > 0;
+  // documents that failed to load don't hold it: the email is asked for anyway
+  const waiting = pendingLegal.isPending || (pendingLegal.data?.items.length ?? 0) > 0;
   if (!methods.data?.email_required || !me.data || me.data.email || waiting) return null;
 
   const refetch = () =>
