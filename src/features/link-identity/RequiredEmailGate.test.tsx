@@ -22,15 +22,17 @@ let container: HTMLElement;
 interface Answers {
   methods: object;
   email: string | null;
-  pendingLegal?: number;
+  pendingLegal?: number | "error";
 }
 
 function answer({ methods, email, pendingLegal = 0 }: Answers) {
   api.apiGet.mockImplementation(async (path: string) => {
     if (path === "/auth/methods") return methods;
     if (path === "/users/me") return { email };
-    if (path.startsWith("/cabinet/legal/pending"))
+    if (path.startsWith("/cabinet/legal/pending")) {
+      if (pendingLegal === "error") throw new Error("documents unavailable");
       return { items: Array.from({ length: pendingLegal }, (_, i) => ({ revision_id: i })), total: pendingLegal };
+    }
     throw new Error(`unexpected ${path}`);
   });
 }
@@ -100,6 +102,12 @@ describe("RequiredEmailGate", () => {
     answer({ methods: required, email: null, pendingLegal: 1 });
     await render();
     expect(document.body.textContent).not.toContain(title());
+  });
+
+  it("doesn't wait for documents that failed to load", async () => {
+    answer({ methods: required, email: null, pendingLegal: "error" });
+    await render();
+    expect(document.body.textContent).toContain(title());
   });
 
   it("cannot be dismissed with Escape", async () => {
