@@ -36,6 +36,7 @@ export function RequiredEmailGate() {
   const flow: EmailCodeFlow = {
     sendCode: linkApi.sendEmailCode,
     verify: async (email, code) => {
+      setError(null);
       const result = await linkApi.verifyEmail(email, code);
       if (result.status !== "merge_required") {
         await refetch();

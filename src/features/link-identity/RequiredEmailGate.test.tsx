@@ -111,6 +111,29 @@ describe("RequiredEmailGate", () => {
     expect(document.body.textContent).toContain(title());
   });
 
+  it("drops an earlier attempt's error on the next code", async () => {
+    answer({ methods: required, email: null });
+    // a merge answer without its offer, then a plain link (me still has no email, so the gate stays)
+    const results = [{ status: "merge_required" }, { status: "linked" }];
+    api.apiPost.mockImplementation(async (path: string) => (path.endsWith("/email/code") ? null : results.shift()));
+    await render();
+
+    await type(document.body.querySelector<HTMLInputElement>("input[type=email]")!, "a@b.c");
+    await act(async () => document.body.querySelector("form")!.requestSubmit());
+    const codeInput = await vi.waitFor(() => {
+      const found = document.body.querySelector<HTMLInputElement>("input[autocomplete=one-time-code]");
+      if (!found) throw new Error("no code input yet");
+      return found;
+    });
+    await type(codeInput, "123456");
+    await settle();
+    expect(document.body.textContent).toContain(i18n.t("link.failed"));
+
+    await type(codeInput, "654321");
+    await settle();
+    expect(document.body.textContent).not.toContain(i18n.t("link.failed"));
+  });
+
   it("offers the merge when the address belongs to another account", async () => {
     answer({ methods: required, email: null });
     api.apiPost.mockImplementation(async (path: string) => {
