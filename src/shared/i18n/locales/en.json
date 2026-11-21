@@ -610,6 +610,22 @@
     "text": "We'll remind you to renew and tell you if something goes wrong",
     "later": "Not now"
   },
+  "installPrompt": {
+    "title": "Add the cabinet to your home screen",
+    "text": "Opens in one tap, like an app",
+    "later": "Not now",
+    "how": "Add",
+    "done": "Got it",
+    "ios": {
+      "step1": "Tap Share in Safari's toolbar",
+      "step2": "Choose “Add to Home Screen”, then “Add”",
+      "push": "Once added, open the cabinet from the home screen to turn on notifications"
+    },
+    "android": {
+      "step1": "Open the browser menu",
+      "step2": "Choose “Add to Home screen” or “Install app”, then confirm"
+    }
+  },
   "gateways": {
     "TELEGRAM_STARS": "Telegram Stars",
     "YOOKASSA": "YooKassa",
