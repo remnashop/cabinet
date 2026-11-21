@@ -252,7 +252,7 @@ export function GuideView({
             {t("connect.pickOther")}
           </Button>
           <Button variant="glass" size="lg" onClick={() => void navigate("/")}>
-            {t("connect.backHome")}
+            {t("common.home")}
           </Button>
         </Hero>
       </StepTransition>
@@ -381,7 +381,7 @@ export function GuideView({
         >
           <Button variant="glassSolid" size="lg" onClick={() => void navigate("/")}>
             <House className="size-5" />
-            {t("connect.backHome")}
+            {t("common.home")}
           </Button>
           <Button variant="glass" size="lg" onClick={() => go("device")}>
             {t("connect.otherDevice")}

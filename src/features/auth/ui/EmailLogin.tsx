@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { legalLocale, useShownLegalLocale } from "@entities/legal/api";
 import { authApi, completeLogin, type CaptchaConfig } from "@features/auth/api";
 import { CaptchaWidget } from "@features/auth/ui/CaptchaWidget";
-import { getErrorMessage } from "@shared/api/http";
+import { ApiError, getErrorMessage } from "@shared/api/http";
 import { DialogFooter, useInsideDialog } from "@shared/ui/Modal";
 import { CodeInput } from "@shared/ui/CodeInput";
 import { Button } from "@shared/ui/Button";
@@ -22,6 +22,8 @@ const emailError = (input: HTMLInputElement) =>
 const CODE_LENGTH = 6;
 
 /** The two calls of an email-code flow; verify also finishes it (signs in, or links in the profile). */
+const EMAIL_FIELD_CODES = new Set(["EMAIL_DOMAIN_NOT_ALLOWED", "EMAIL_TAKEN"]);
+
 export interface EmailCodeFlow {
   sendCode: (email: string, locale: string, captchaToken?: string) => Promise<unknown>;
   verify: (email: string, code: string) => Promise<void>;
@@ -81,6 +83,7 @@ export function EmailLogin({
       setCooldown(RESEND_SECONDS);
     },
   });
+  const fieldError = sendCode.error instanceof ApiError && EMAIL_FIELD_CODES.has(sendCode.error.code ?? "");
   // signing in flips the session; GuestOnly on /login then navigates to ?next=
   const verify = useMutation({ mutationFn: (value: string) => flow.verify(email.trim(), value) });
 
@@ -109,15 +112,19 @@ export function EmailLogin({
               setEmail(e.target.value);
               // re-checked while typing once shown, gone when the value passes
               if (invalid) setInvalid(emailError(e.target));
+              if (fieldError) sendCode.reset();
             }}
             onInvalid={(e) => {
               e.preventDefault();
               setInvalid(emailError(e.currentTarget));
             }}
-            aria-invalid={invalid !== null}
+            aria-invalid={invalid !== null || fieldError}
             className="w-full"
           />
           {invalid && <FormError className="px-3 text-left">{t(invalid)}</FormError>}
+          {!invalid && fieldError && (
+            <FormError className="px-3 text-left">{getErrorMessage(sendCode.error, t("errors.generic"))}</FormError>
+          )}
           {captcha && <CaptchaWidget config={captcha} round={captchaRound} onToken={setCaptchaToken} />}
           {/* outside a dialog DialogFooter leaves them in place */}
           <DialogFooter>
@@ -136,7 +143,7 @@ export function EmailLogin({
               {t("auth.sendCode")}
             </Button>
           </DialogFooter>
-          {sendCode.isError && <FormError>{getErrorMessage(sendCode.error, t("errors.generic"))}</FormError>}
+          {sendCode.isError && !fieldError && <FormError>{getErrorMessage(sendCode.error, t("errors.generic"))}</FormError>}
         </form>
       </StepTransition>
     );

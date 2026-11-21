@@ -47,8 +47,8 @@ export function ConnectPage() {
     return (
       <>
         {header}
-        <PageEmpty warning text={t("connect.notFound")}>
-          <ButtonLink to="/" variant="glass" className="mt-1">
+        <PageEmpty warning title={t("connect.notFound")} text={t("connect.notFoundHint")}>
+          <ButtonLink to="/" variant="glassSolid" size="lg" className="w-full">
             {t("common.home")}
           </ButtonLink>
         </PageEmpty>

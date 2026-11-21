@@ -33,7 +33,7 @@ export function OpenInAppPage() {
   if (guide.isError || verify.isError) {
     return (
       <Message tone="error" title={t("connect.openFailed")} text={t("connect.openFailedHint")}>
-        <Button variant="glass" size="lg" className="w-full" onClick={() => void (guide.isError ? guide.refetch() : verify.refetch())}>
+        <Button variant="glassSolid" size="lg" className="w-full" onClick={() => void (guide.isError ? guide.refetch() : verify.refetch())}>
           {t("common.retry")}
         </Button>
       </Message>

@@ -70,19 +70,27 @@ describe("UnsubscribePage", () => {
     expect(button()).toBeNull();
   });
 
-  it("shows the invalid-link error and lets the visitor retry", async () => {
+  it("a rejected token reads as an invalid link, with nothing to retry", async () => {
     fetchMock.mockResolvedValueOnce(
       Response.json({ detail: "Invalid", code: "UNSUBSCRIBE_TOKEN_INVALID" }, { status: 400 }),
     );
     await render("?token=bad");
     await click();
-    await until(() => expect(container.textContent).toContain("The unsubscribe link is invalid"));
+    await until(() => expect(container.textContent).toContain("This link is invalid"));
+    expect(button()).toBeNull();
+  });
+
+  it("any other failure lets the visitor retry", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ detail: "Boom", code: "INTERNAL" }, { status: 500 }));
+    await render("?token=42.sig");
+    await click();
+    await until(() => expect(container.textContent).toContain("Couldn't unsubscribe"));
     expect(button()).not.toBeNull();
   });
 
   it("without a token says the link is invalid and offers no button", async () => {
     await render("");
-    expect(container.textContent).toContain("The unsubscribe link is invalid");
+    expect(container.textContent).toContain("This link is invalid");
     expect(button()).toBeNull();
   });
 });
