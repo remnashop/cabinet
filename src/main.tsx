@@ -43,7 +43,8 @@ async function start(): Promise<void> {
   scrollbarProbe.remove();
   initTelegram(CANVAS_COLOR);
   captureAttribution(window.location.href, document.referrer, getStartParam());
-  capturePromoLink(window.location.search, getStartParam());
+  const withoutPromoLink = capturePromoLink(window.location.href, getStartParam());
+  if (withoutPromoLink) window.history.replaceState(window.history.state, "", withoutPromoLink);
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>

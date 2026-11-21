@@ -8,6 +8,8 @@ export interface PromoLink {
 
 // session-scoped: a link applies to the visit it opened, not to a later one
 const STORAGE_KEY = "cabinet_promo_link";
+// a Mini App reload hands the same start_param again
+const SEEN_START_KEY = "cabinet_promo_link_start_seen";
 const CODE = /^[A-Za-z0-9_-]{1,64}$/;
 // the bot's deep links, as the Mini App's start_param: promo_<code> / ad_<code>
 const START_PARAM = /^(promo|ad)_([A-Za-z0-9_-]{1,64})$/;
@@ -22,10 +24,21 @@ export function parsePromoLink(search: string, startParam: string | null): Promo
   return match ? { kind: match[1] as PromoLink["kind"], code: match[2] } : null;
 }
 
-/** The latest link wins: opening a new one replaces what an earlier one left unapplied. */
-export function capturePromoLink(search: string, startParam: string | null): void {
-  const link = parsePromoLink(search, startParam);
+/**
+ * The latest link wins: opening a new one replaces what an earlier one left unapplied. Returns the address without
+ * ?promo= / ?ad= when it had them, for the caller to put back: a reload must not open the link again.
+ */
+export function capturePromoLink(href: string, startParam: string | null): string | null {
+  const url = new URL(href);
+  const fromAddress = parsePromoLink(url.search, null);
+  const startSeen = startParam !== null && readStorage(SEEN_START_KEY, "session") === startParam;
+  const link = fromAddress ?? (startSeen ? null : parsePromoLink("", startParam));
+  if (startParam !== null) writeStorage(SEEN_START_KEY, startParam, "session");
   if (link) writeStorage(STORAGE_KEY, JSON.stringify(link), "session");
+  if (!fromAddress) return null;
+  url.searchParams.delete("promo");
+  url.searchParams.delete("ad");
+  return url.toString();
 }
 
 /** Once: the link is gone the moment it's read, so a reload doesn't apply it again. */
