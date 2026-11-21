@@ -120,11 +120,20 @@ export function PlanWizardPage() {
     return (
       <>
         {header}
-        <PageEmpty warning text={t("purchase.planNotFound")}>
-          <ButtonLink to={exitTo} variant="glass" className="mt-1">
-            {type === "RENEW" ? t("common.home") : t("purchase.toCatalog")}
-          </ButtonLink>
-        </PageEmpty>
+        {type === "RENEW" ? (
+          // the plan no longer renews (or never could, an imported one): a plan change takes its place
+          <PageEmpty warning text={t("purchase.renewUnavailable")}>
+            <ButtonLink to={`/purchase?type=CHANGE&sub=${subId}`} variant="glass" className="mt-1">
+              {t("home.changePlanDesktop")}
+            </ButtonLink>
+          </PageEmpty>
+        ) : (
+          <PageEmpty warning text={t("purchase.planNotFound")}>
+            <ButtonLink to={exitTo} variant="glass" className="mt-1">
+              {t("purchase.toCatalog")}
+            </ButtonLink>
+          </PageEmpty>
+        )}
       </>
     );
   }
