@@ -48,7 +48,9 @@ export function PromoDialog({
   const [code, setCode] = useState(link?.result?.promocode.code ?? link?.code ?? "");
   const formId = useId();
   // the backend asked which subscription the reward goes to; a link's NO_TARGET lands here too, on the way to buying
-  const [picking, setPicking] = useState(link?.result !== undefined && link.result.outcome !== "ACTIVATED");
+  const [picking, setPicking] = useState(
+    link?.result?.outcome === "CHOOSE_TARGET" || link?.result?.outcome === "NO_TARGET",
+  );
   const [result, setResult] = useState<PromocodeActivation | null>(
     link?.result?.outcome === "ACTIVATED" ? link.result.promocode : null,
   );

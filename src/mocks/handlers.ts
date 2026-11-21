@@ -1031,7 +1031,7 @@ export const handlers = [
   }),
 
   // ?ad=promo carries the PROMO promocode; any other ad link carries none
-  http.post(`${API}/ad-links/actions/activate-promocode`, async ({ request }) => {
+  http.post(`${API}/advertising/links/actions/activate-promocode`, async ({ request }) => {
     const denied = unauthorized(request);
     if (denied) return denied;
     const { code } = (await request.json()) as { code: string };

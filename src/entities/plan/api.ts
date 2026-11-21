@@ -169,7 +169,8 @@ export function activatePromocode(body: { code: string; target_subscription_id?:
 
 /** What opening a promocode by link did: applied it, or left the subscription choice to the customer. */
 export interface PromocodeLinkResult {
-  outcome: "ACTIVATED" | "CHOOSE_TARGET" | "NO_TARGET";
+  // CONFIRM: a reusable code, applied by the customer's own press
+  outcome: "ACTIVATED" | "CHOOSE_TARGET" | "NO_TARGET" | "CONFIRM";
   promocode: PromocodeActivation;
 }
 
@@ -180,7 +181,7 @@ export function activatePromocodeByLink(code: string) {
 /** An ad link's promocode; both null when the link carries none. */
 export function activateAdLinkPromocode(code: string) {
   return apiPost<PromocodeLinkResult | { outcome: null; promocode: null }, { code: string }>(
-    "/ad-links/actions/activate-promocode",
+    "/advertising/links/actions/activate-promocode",
     { code },
   );
 }
