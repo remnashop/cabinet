@@ -33,6 +33,7 @@ import { Hero } from "@pages/connect/HeroArt";
 
 import { LogoArt } from "./EmptyArt";
 import { markPushPromptEligible } from "@features/push-prompt/push-prompt";
+import { InstallPromptCard } from "@features/install-prompt/InstallPromptCard";
 import { PushPromptCard } from "@features/push-prompt/PushPromptCard";
 
 function Header() {
@@ -346,6 +347,8 @@ export function SubscriptionPage() {
 
           {/* right after a purchase or a trial, once per browser */}
           <PushPromptCard />
+          {/* a phone's browser, once per browser */}
+          <InstallPromptCard />
           <div className="mt-5 lg:flex lg:flex-1 lg:flex-col lg:*:flex-1">
             <DevicesCard key={selected.id} subscription={selected} canConnect={!cutOff} />
           </div>
