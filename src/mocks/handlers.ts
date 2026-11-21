@@ -1019,4 +1019,24 @@ export const handlers = [
       { status: 201 },
     );
   }),
+
+  // ?promo=PROMO applies at once, ?promo=NEEDSUB asks which subscription, anything else is unknown
+  http.post(`${API}/promocodes/actions/activate-by-link`, async ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const upper = ((await request.json()) as { code: string }).code.trim().toUpperCase();
+    if (upper !== "PROMO" && upper !== "NEEDSUB") return apiError(404, "PROMOCODE_NOT_FOUND", "Promocode not found");
+    const promocode = { code: upper, reward_type: "DURATION", reward: 7, reward_duration_days: 7, reward_plan_id: null, reward_addon_id: null };
+    return HttpResponse.json({ outcome: upper === "PROMO" ? "ACTIVATED" : "CHOOSE_TARGET", promocode });
+  }),
+
+  // ?ad=promo carries the PROMO promocode; any other ad link carries none
+  http.post(`${API}/ad-links/actions/activate-promocode`, async ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const { code } = (await request.json()) as { code: string };
+    if (code !== "promo") return HttpResponse.json({ outcome: null, promocode: null });
+    const promocode = { code: "PROMO", reward_type: "DURATION", reward: 7, reward_duration_days: 7, reward_plan_id: null, reward_addon_id: null };
+    return HttpResponse.json({ outcome: "ACTIVATED", promocode });
+  }),
 ];

@@ -10,6 +10,7 @@ import { ApplyAppearance } from "@entities/appearance/ApplyAppearance";
 import { detectPlatform } from "@entities/connect-guide/lib";
 import "@shared/i18n";
 import { captureAttribution } from "@shared/lib/attribution";
+import { capturePromoLink } from "@shared/lib/promo-link";
 import { getStartParam, initTelegram } from "@shared/telegram";
 
 import "@app/styles.css";
@@ -42,6 +43,7 @@ async function start(): Promise<void> {
   scrollbarProbe.remove();
   initTelegram(CANVAS_COLOR);
   captureAttribution(window.location.href, document.referrer, getStartParam());
+  capturePromoLink(window.location.search, getStartParam());
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>

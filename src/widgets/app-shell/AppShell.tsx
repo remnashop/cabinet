@@ -22,6 +22,7 @@ import { Sidebar } from "@widgets/app-shell/Sidebar";
 import { SignOutContext } from "@widgets/app-shell/sign-out";
 import { HeaderActions } from "@widgets/header-actions/HeaderActions";
 import { HeaderSlotContext } from "@widgets/page-header/header-slot";
+import { PromoLinkGate } from "@widgets/promo/PromoLinkGate";
 import { useSupportFromLink } from "@widgets/support/use-support";
 
 // The panel's AnimatedOutlet: a fade keyed by the first path segment, so /profile → /profile/payments doesn't
@@ -135,6 +136,7 @@ export function AppShell() {
       <BottomNav />
       <LegalReacceptanceGate />
       <RequiredEmailGate />
+      <PromoLinkGate />
       {supportFromLink}
     </motion.div>
     </SignOutContext.Provider>
