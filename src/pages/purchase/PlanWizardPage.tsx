@@ -128,8 +128,8 @@ export function PlanWizardPage() {
             </ButtonLink>
           </PageEmpty>
         ) : (
-          <PageEmpty warning text={t("purchase.planNotFound")}>
-            <ButtonLink to={exitTo} variant="glass" className="mt-1">
+          <PageEmpty warning title={t("purchase.planNotFoundTitle")} text={t("purchase.planNotFoundHint")}>
+            <ButtonLink to={exitTo} variant="glassSolid" size="lg" className="w-full">
               {t("purchase.toCatalog")}
             </ButtonLink>
           </PageEmpty>

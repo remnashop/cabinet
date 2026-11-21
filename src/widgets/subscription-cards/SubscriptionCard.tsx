@@ -44,9 +44,9 @@ const RING_TONE = {
 };
 
 // what the strip asks for under its title: keep access while it lasts, get it back once lost
-const NOTICE_HINT: Record<CardNotice, "keepUntil" | "keep" | "back" | "channel" | null> = {
+const NOTICE_HINT: Record<CardNotice, "keepUntil" | "keep" | "back" | "channel" | "disabled" | null> = {
   deleted: null,
-  disabled: null,
+  disabled: "disabled",
   expiredTraffic: "back",
   expired: "back",
   trafficOut: "back",
@@ -154,7 +154,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
               </div>
               {ratio !== null && (
                 <div className="h-[clamp(10px,2.8cqw,14px)] overflow-hidden rounded-full bg-black/[0.28] lg:h-2.5">
-                  <div className={`h-full rounded-full ${BAR_TONE[trafficTone]}`} style={{ width: `${(1 - ratio) * 100}%` }} />
+                  <div className={`h-full rounded-full ${inactive ? "bg-white/25" : BAR_TONE[trafficTone]}`} style={{ width: `${(1 - ratio) * 100}%` }} />
                 </div>
               )}
               {/* used up: nothing "left of" it to speak of, the strip says why; the empty line keeps the traffic where
@@ -291,7 +291,7 @@ function useAbbreviated(ref: RefObject<HTMLElement | null>, value: string, short
 function NoticeHint({ hint, trial, date }: { hint: string; trial: boolean; date: string }) {
   const { t, i18n } = useTranslation();
   const ref = useRef<HTMLSpanElement>(null);
-  const key = `home.noticeHint.${hint}${trial ? "Trial" : ""}`;
+  const key = `home.noticeHint.${hint}${trial && hint !== "disabled" ? "Trial" : ""}`;
   const text = t(key as ParseKeys, { date });
   const short = i18n.exists(`${key}Short`) ? t(`${key}Short` as ParseKeys, { date }) : undefined;
   const abbreviated = useAbbreviated(ref, text, short);

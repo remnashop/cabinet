@@ -48,10 +48,10 @@ export function LinkBotPage() {
   return (
     <FullScreenMessage
       tone={exchange.isError ? "error" : "warning"}
-      title={t(exchange.isError ? "link.failed" : "link.botLinkExpired")}
-      text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : t("link.botLinkElsewhere")}
+      title={t(exchange.isError ? "link.failed" : "link.botLinkExpiredTitle")}
+      text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : t("link.botLinkExpiredHint")}
     >
-      <ButtonLink to="/profile" variant="glass" size="lg" className="w-full">
+      <ButtonLink to="/profile" variant="glassSolid" size="lg" className="w-full">
         {t("link.toProfile")}
       </ButtonLink>
     </FullScreenMessage>

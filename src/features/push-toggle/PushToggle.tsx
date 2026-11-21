@@ -9,7 +9,6 @@ import { isMiniApp } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
 import { Card } from "@shared/ui/Card";
 import { IconCircle } from "@shared/ui/IconCircle";
-import { FormError } from "@shared/ui/FormError";
 
 /** The profile's row: push on this device. "On" is a live subscription plus a granted permission. */
 export function PushToggle() {
@@ -72,7 +71,11 @@ export function PushToggle() {
             <IconCircle icon={BellRing} />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="text-sm font-medium text-foreground">{t("push.title")}</span>
-              {caption !== undefined && <span className="text-xs text-muted-foreground">{caption}</span>}
+              {problem ? (
+                <span className="text-xs text-error">{problem}</span>
+              ) : (
+                caption !== undefined && <span className="text-xs text-muted-foreground">{caption}</span>
+              )}
             </span>
           </div>
           {/* on a phone under the text, the full width, as the home page's push prompt */}
@@ -83,7 +86,6 @@ export function PushToggle() {
           )}
         </div>
       </Card>
-      {problem && <FormError className="px-5 lg:px-4">{problem}</FormError>}
     </div>
   );
 }

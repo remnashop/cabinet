@@ -32,8 +32,7 @@
     "payments": "Payment history",
     "notFound": "Page not found",
     "comingSoon": "Coming soon",
-    "notFoundHint": "The link may be outdated or mistyped",
-    "notFoundHome": "Back to home"
+    "notFoundHint": "The link may be outdated or mistyped"
   },
   "common": {
     "qrFailed": "Couldn't draw the QR code",
@@ -43,7 +42,6 @@
     "continue": "Continue",
     "loadFailed": "Failed to load",
     "home": "Home",
-    "backHome": "Back to the home page",
     "logout": "Log out",
     "more": "Load more",
     "lessThanMinuteAgo": "less than a minute ago",
@@ -94,21 +92,25 @@
     "openBot": "Open Telegram",
     "botHint": "The bot will send you a one-time sign-in link — open it",
     "newBotLink": "Get a new link",
-    "botLinkExpired": "This sign-in link has expired — request a new one"
+    "botLinkExpiredTitle": "This sign-in link has expired",
+    "botLinkExpiredHint": "Bot links work once and expire after 5 minutes. Get a new one on the sign-in page"
   },
   "unsubscribe": {
     "title": "Unsubscribe from promotional emails?",
     "hint": "Emails about payments and your subscription will keep coming",
     "confirm": "Unsubscribe",
     "done": "You're unsubscribed from promotional emails",
-    "failed": "Couldn't unsubscribe"
+    "failed": "Couldn't unsubscribe",
+    "invalidTitle": "This link is invalid",
+    "invalidHint": "Open the link from the email again — it may have been copied only partially"
   },
   "errors": {
     "generic": "Something went wrong",
     "network": "Can't reach the service, try again later",
     "offline": "No internet connection",
     "pageTitle": "Couldn’t open the page",
-    "newVersion": "A new version of the cabinet is out, reload the page"
+    "newVersion": "A new version of the cabinet is out, reload the page",
+    "retryLater": "Try again in a minute"
   },
   "apiErrors": {
     "INVALID_INIT_DATA": "Couldn't sign in with Telegram. Close the app and open it again",
@@ -248,7 +250,6 @@
     "unavailableTitle": "Not available yet",
     "unavailableHint": "Connecting {{platform}} isn't set up right now. Try again later or pick another device",
     "pickOther": "Pick another device",
-    "backHome": "Back to the home page",
     "otherTitle": "Set up another device",
     "otherHint": "Pick the platform of the device to connect",
     "morePlatforms": "Other platforms",
@@ -267,7 +268,8 @@
     "openFailed": "Couldn't check the link",
     "openFailedHint": "Check your connection and try again",
     "openUnverified": "The link didn't pass the check",
-    "openUnverifiedHint": "This subscription wasn't issued by your cabinet. Add a subscription only from your own cabinet"
+    "openUnverifiedHint": "This subscription wasn't issued by your cabinet. Add a subscription only from your own cabinet",
+    "notFoundHint": "It may have been deleted or belong to another account"
   },
   "home": {
     "deleteCooldown": "You can delete a device again in {{wait}}",
@@ -286,7 +288,7 @@
       "deleted": "Subscription deleted",
       "disabled": "Subscription disabled",
       "channelPaused": "Trial paused",
-      "expiredTraffic": "Subscription expired, traffic ran out",
+      "expiredTraffic": "Time and traffic have run out",
       "expired": "Subscription expired on {{date}}",
       "trafficOut": "Traffic ran out",
       "bothSoon": "Time and traffic are running out",
@@ -306,7 +308,8 @@
       "keepUntilTrial": "Get a subscription by {{date}} to keep access",
       "keepTrial": "Get a subscription to keep access",
       "backTrial": "Get a subscription to get access back",
-      "channelTrial": "Rejoin the channel to resume it"
+      "channelTrial": "Rejoin the channel to resume it",
+      "disabled": "Access is paused, contact support"
     },
     "noExpiry": "No end date",
     "left": "Left",
@@ -387,7 +390,6 @@
     "paymentsOffHint": "We'll let you know once payments are back",
     "empty": "Plans aren't available yet",
     "emptyChange": "No other plans yet",
-    "planNotFound": "Plan not found or unavailable",
     "renewUnavailable": "This plan can no longer be renewed. Choose another one",
     "toCatalog": "Go to plans",
     "choose": "Choose",
@@ -440,7 +442,9 @@
     "email": "Enter an email to send the receipt to",
     "emailInvalid": "Check the email address",
     "getFree": "Get it free",
-    "pay": "Pay {{amount}}"
+    "pay": "Pay {{amount}}",
+    "planNotFoundTitle": "Plan not found",
+    "planNotFoundHint": "It's no longer on sale or the link is outdated"
   },
   "payment": {
     "waitingButton": "Waiting for the payment…",
@@ -468,7 +472,8 @@
       "failed": "Payment failed"
     },
     "noOrderTitle": "Payment not found",
-    "noOrderText": "The link has no order number. Your payment history shows the payment status."
+    "noOrderText": "The link has no order number. Your payment history shows the payment status.",
+    "notFoundHint": "Your payment history shows the payment status"
   },
   "promo": {
     "title": "Promo code",
@@ -691,8 +696,6 @@
     "alreadyLinkedHint": "It's already tied to your account, nothing to do",
     "failed": "Couldn't connect the sign-in method",
     "toProfile": "To profile",
-    "botLinkExpired": "This link has expired — request a new one in your profile",
-    "botLinkElsewhere": "Open the link in the browser where you're signed in to the cabinet",
     "mergeTitle": "Another account found",
     "mergeText": "This sign-in method is already linked to another account of yours. We will merge it into the current one — everything moves here.",
     "mergeSubscriptions": "Subscriptions",
@@ -705,7 +708,9 @@
     "merged": "Accounts merged",
     "mergedHint": "Subscriptions, payments and sign-in methods are now in one account",
     "mergeCountdown_one": "The offer is valid for {{count}} minute",
-    "mergeCountdown_other": "The offer is valid for {{count}} minutes"
+    "mergeCountdown_other": "The offer is valid for {{count}} minutes",
+    "botLinkExpiredTitle": "This link has expired",
+    "botLinkExpiredHint": "Request a new one in your profile and open it in this browser"
   },
   "legal": {
     "loginNotice": "By continuing, you accept {{documents}}",

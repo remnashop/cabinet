@@ -44,7 +44,7 @@ export function NotFoundPage() {
         <p className="text-sm text-muted-foreground">{t("pages.notFoundHint")}</p>
       </div>
       <ButtonLink to="/" replace variant="glassSolid" size="lg" className="mt-2 w-full">
-        {t("pages.notFoundHome")}
+        {t("common.home")}
       </ButtonLink>
     </FullScreen>
   );

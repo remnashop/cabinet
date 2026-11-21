@@ -98,3 +98,27 @@ it("shows the email error under the field instead of the browser bubble, and cle
   expect(message()).toBeNull();
   expect(input().getAttribute("aria-invalid")).toBe("false");
 });
+
+it("puts the server's refusal of the address under the field, and clears it on edit", async () => {
+  const { ApiError } = await import("@shared/api/http");
+  const sendCode = vi.fn(async () => {
+    throw new ApiError(400, "Domain", "EMAIL_DOMAIN_NOT_ALLOWED");
+  });
+  act(() =>
+    root.render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { mutations: { retry: false } } })}>
+        <EmailLogin flow={{ sendCode, verify: async () => {} }} />
+      </QueryClientProvider>,
+    ),
+  );
+  act(() => type("user@example.org"));
+  await act(async () => container.querySelector("form")!.requestSubmit());
+
+  await until(() => expect(message()).toBe(i18n.t("apiErrors.EMAIL_DOMAIN_NOT_ALLOWED")));
+  expect(input().getAttribute("aria-invalid")).toBe("true");
+  expect(container.querySelectorAll("p.text-error")).toHaveLength(1);
+
+  act(() => type("user@gmail.com"));
+  expect(message()).toBeNull();
+  expect(input().getAttribute("aria-invalid")).toBe("false");
+});
