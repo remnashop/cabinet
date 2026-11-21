@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { activateAdLinkPromocode, activatePromocodeByLink } from "@entities/plan/api";
+import { ApiError } from "@shared/api/http";
 import { takePromoLink } from "@shared/lib/promo-link";
 import { type PromoLinkOpening, PromoDialog } from "@widgets/promo/PromoDialog";
 
@@ -24,8 +25,12 @@ export function PromoLinkGate() {
         }
         setOpening({ result });
       })
-      // an ad link's code stays out of the field: the customer never saw it
-      .catch((error: unknown) => setOpening({ error, code: link.kind === "promo" ? link.code.toUpperCase() : undefined }));
+      .catch((error: unknown) => {
+        // a backend without these routes answers a bare 404: nothing to say then
+        if (error instanceof ApiError && error.code === null) return;
+        // an ad link's code stays out of the field: the customer never saw it
+        setOpening({ error, code: link.kind === "promo" ? link.code.toUpperCase() : undefined });
+      });
   }, [queryClient]);
 
   if (!opening) return null;
