@@ -166,3 +166,22 @@ export function usePromocodeTargetsQuery(code: string, enabled: boolean) {
 export function activatePromocode(body: { code: string; target_subscription_id?: number }) {
   return apiPost<PromocodeActivation, typeof body>("/promocodes/activations", body);
 }
+
+/** What opening a promocode by link did: applied it, or left the subscription choice to the customer. */
+export interface PromocodeLinkResult {
+  // CONFIRM: a reusable code, applied by the customer's own press
+  outcome: "ACTIVATED" | "CHOOSE_TARGET" | "NO_TARGET" | "CONFIRM";
+  promocode: PromocodeActivation;
+}
+
+export function activatePromocodeByLink(code: string) {
+  return apiPost<PromocodeLinkResult, { code: string }>("/promocodes/actions/activate-by-link", { code });
+}
+
+/** An ad link's promocode; both null when the link carries none. */
+export function activateAdLinkPromocode(code: string) {
+  return apiPost<PromocodeLinkResult | { outcome: null; promocode: null }, { code: string }>(
+    "/advertising/links/actions/activate-promocode",
+    { code },
+  );
+}

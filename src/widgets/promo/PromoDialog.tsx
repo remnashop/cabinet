@@ -3,7 +3,12 @@ import { Percent } from "lucide-react";
 import { useId, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
-import { activatePromocode, usePromocodeTargetsQuery, type PromocodeActivation } from "@entities/plan/api";
+import {
+  activatePromocode,
+  usePromocodeTargetsQuery,
+  type PromocodeActivation,
+  type PromocodeLinkResult,
+} from "@entities/plan/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { ApiError, getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
@@ -20,15 +25,36 @@ import { Ripple } from "@shared/ui/Ripple";
 import { rewardText } from "@widgets/promo/reward-text";
 import { SubscriptionCard } from "@widgets/subscription-cards/SubscriptionCard";
 
-export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+/** How a promocode link left things: applied, a choice to make, or refused with the code it carried. */
+export interface PromoLinkOpening {
+  result?: PromocodeLinkResult;
+  code?: string;
+  error?: unknown;
+}
+
+export function PromoDialog({
+  open,
+  onClose,
+  link,
+}: {
+  open: boolean;
+  onClose: () => void;
+  /** read once, on mount */
+  link?: PromoLinkOpening;
+}) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const subscriptions = useSubscriptionsQuery();
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(link?.result?.promocode.code ?? link?.code ?? "");
   const formId = useId();
-  // the backend asked which subscription the reward goes to
-  const [picking, setPicking] = useState(false);
-  const [result, setResult] = useState<PromocodeActivation | null>(null);
+  // the backend asked which subscription the reward goes to; a link's NO_TARGET lands here too, on the way to buying
+  const [picking, setPicking] = useState(
+    link?.result?.outcome === "CHOOSE_TARGET" || link?.result?.outcome === "NO_TARGET",
+  );
+  const [result, setResult] = useState<PromocodeActivation | null>(
+    link?.result?.outcome === "ACTIVATED" ? link.result.promocode : null,
+  );
+  const [linkError, setLinkError] = useState<unknown>(link?.error ?? null);
 
   const activation = useMutation({
     mutationFn: (target?: number) => activatePromocode({ code: code.trim(), target_subscription_id: target }),
@@ -52,6 +78,7 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
     setCode("");
     setPicking(false);
     setResult(null);
+    setLinkError(null);
     activation.reset();
   };
 
@@ -71,7 +98,8 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
     setPicking(false);
     activation.reset();
   };
-  const error = activation.error && !picking ? getErrorMessage(activation.error, t("errors.generic")) : null;
+  const shownError = activation.error ?? linkError;
+  const error = shownError && !picking ? getErrorMessage(shownError, t("errors.generic")) : null;
 
   let body;
   if (result) {
@@ -151,6 +179,7 @@ export function PromoDialog({ open, onClose }: { open: boolean; onClose: () => v
           autoComplete="off"
           onChange={(e) => {
             setCode(e.target.value.toUpperCase());
+            setLinkError(null);
             activation.reset();
           }}
         />
