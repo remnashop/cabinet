@@ -94,7 +94,7 @@ function IdentityAction({
 function IdentityRows({ actions }: { actions: ProfileActions }) {
   const { t } = useTranslation();
   const data = useIdentityRows();
-  if (data.state === "error") return <ErrorCard round error={data.error} onRetry={data.retry} />;
+  if (data.state === "error") return <ErrorCard round block error={data.error} onRetry={data.retry} />;
   // one row's height; the card eases to the real rows
   if (data.state === "loading") return <Skeleton round className="h-15" />;
   return (

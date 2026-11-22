@@ -109,8 +109,9 @@
     "network": "Can't reach the service, try again later",
     "offline": "No internet connection",
     "pageTitle": "Couldn’t open the page",
-    "newVersion": "A new version of the cabinet is out, reload the page",
-    "retryLater": "Try again in a minute"
+    "newVersion": "Reload the page to open the new version",
+    "retryLater": "Try again in a minute",
+    "newVersionTitle": "The cabinet has been updated"
   },
   "apiErrors": {
     "INVALID_INIT_DATA": "Couldn't sign in with Telegram. Close the app and open it again",
@@ -269,7 +270,8 @@
     "openFailedHint": "Check your connection and try again",
     "openUnverified": "The link didn't pass the check",
     "openUnverifiedHint": "This subscription wasn't issued by your cabinet. Add a subscription only from your own cabinet",
-    "notFoundHint": "It may have been deleted or belong to another account"
+    "notFoundHint": "It may have been deleted or belong to another account",
+    "openCabinet": "Open the cabinet"
   },
   "home": {
     "deleteCooldown": "You can delete a device again in {{wait}}",
@@ -390,7 +392,7 @@
     "paymentsOffHint": "We'll let you know once payments are back",
     "empty": "Plans aren't available yet",
     "emptyChange": "No other plans yet",
-    "renewUnavailable": "This plan can no longer be renewed. Choose another one",
+    "renewUnavailable": "This plan can no longer be renewed",
     "toCatalog": "Go to plans",
     "choose": "Choose",
     "currentPlan": "Current plan",
@@ -444,7 +446,11 @@
     "getFree": "Get it free",
     "pay": "Pay {{amount}}",
     "planNotFoundTitle": "Plan not found",
-    "planNotFoundHint": "It's no longer on sale or the link is outdated"
+    "planNotFoundHint": "It's no longer on sale or the link is outdated",
+    "renewUnavailableHint": "Choose another plan for the subscription",
+    "emptyHint": "The shop has no plans yet, check back later",
+    "emptyChangeHint": "There is nothing to switch the subscription to right now",
+    "noMethodsHint": "No payment method is set up for this plan yet"
   },
   "payment": {
     "waitingButton": "Waiting for the payment…",

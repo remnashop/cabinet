@@ -139,6 +139,7 @@ export function PromoDialog({
           {listError && (
             <ErrorCard
               round
+              block
               error={listError}
               onRetry={() => void (subscriptions.isError && !subscriptions.data ? subscriptions.refetch() : targetIds.refetch())}
             />

@@ -249,9 +249,11 @@ export function GuideView({
           art={<HeroArt icon={CloudOff} />}
         >
           <Button variant="glassSolid" size="lg" onClick={() => go("device")}>
+            <DevicesIcon className="size-5" />
             {t("connect.pickOther")}
           </Button>
           <Button variant="glass" size="lg" onClick={() => void navigate("/")}>
+            <House className="size-5" />
             {t("common.home")}
           </Button>
         </Hero>
@@ -384,6 +386,7 @@ export function GuideView({
             {t("common.home")}
           </Button>
           <Button variant="glass" size="lg" onClick={() => go("device")}>
+            <DevicesIcon className="size-5" />
             {t("connect.otherDevice")}
           </Button>
         </Hero>

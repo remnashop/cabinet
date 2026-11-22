@@ -65,7 +65,7 @@ export function DevicesCard({ subscription, canConnect }: { subscription: OwnSub
   const [now] = useState(Date.now);
 
   if (devices.isPending) return <Skeleton round className="h-28" />;
-  if (devices.isError && !devices.data) return <ErrorCard round error={devices.error} onRetry={() => void devices.refetch()} />;
+  if (devices.isError && !devices.data) return <ErrorCard round block error={devices.error} onRetry={() => void devices.refetch()} />;
 
   const items = devices.data.items;
   const maxDevices = subscription.effective_device_limit;

@@ -1,4 +1,4 @@
-import { Clock, CreditCard, Unplug } from "lucide-react";
+import { Clock, CreditCard, House, ReceiptText, RefreshCw, RotateCw, Unplug } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -70,6 +70,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
   const navigate = useNavigate();
   const home = (
     <Button variant="glass" size="lg" className="w-full" onClick={() => void navigate("/", { replace: true })}>
+      <House className="size-5" />
       {t("common.home")}
     </Button>
   );
@@ -124,6 +125,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
         )}
         <div className="flex w-full flex-col gap-2">
           <Button variant="glassSolid" size="lg" className="w-full" onClick={() => void navigate(transaction ? retryPath(transaction) : "/purchase", { replace: true })}>
+            <RotateCw className="size-5" />
             {t("payment.retry")}
           </Button>
           {home}
@@ -138,6 +140,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
         {heading(t("payment.noOrderTitle"), t("payment.notFoundHint"))}
         <div className="flex w-full flex-col gap-2">
           <Button variant="glassSolid" size="lg" className="w-full" onClick={() => void navigate("/profile/payments", { replace: true })}>
+            <ReceiptText className="size-5" />
             {t("pages.payments")}
           </Button>
           {home}
@@ -162,6 +165,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
       {heading(t("payment.timeoutTitle"), t("payment.timeout"))}
       <div className="flex w-full flex-col gap-2">
         <Button variant="glassSolid" size="lg" className="w-full" onClick={retry}>
+          <RefreshCw className="size-5" />
           {t("payment.checkAgain")}
         </Button>
         {home}

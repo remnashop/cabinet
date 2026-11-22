@@ -1,4 +1,4 @@
-import { CreditCard } from "lucide-react";
+import { CreditCard, House } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -13,18 +13,31 @@ import { GATEWAY_LOGOS } from "@entities/plan/gateway-logos";
 import { gatewayLabel } from "@features/purchase/wizard";
 import { formatMoney } from "@shared/lib/format";
 import { AlertMark } from "@shared/ui/AlertMark";
+import { ButtonLink } from "@shared/ui/ButtonLink";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { OptionRow } from "@shared/ui/OptionRow";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { SupportButton } from "@widgets/support/SupportButton";
+import { useSupport } from "@widgets/support/use-support";
 
 export function NoMethods() {
   const { t } = useTranslation();
+  const supportAvailable = useSupport().available;
   return (
     <div className="flex flex-col items-center gap-3 py-16 text-center">
       <AlertMark tone="warning" />
-      <p className="text-sm text-muted-foreground">{t("purchase.noMethods")}</p>
-      <SupportButton className="mt-1" />
+      <div className="flex max-w-sm flex-col gap-1.5">
+        <h2 className="text-xl font-bold tracking-tight">{t("purchase.noMethods")}</h2>
+        <p className="text-sm text-muted-foreground">{t("purchase.noMethodsHint")}</p>
+      </div>
+      <div className="mt-1 flex w-full max-w-sm flex-col gap-2">
+        <SupportButton main />
+        {/* the only button when the shop gave no support contact */}
+        <ButtonLink to="/" variant={supportAvailable ? "glass" : "glassSolid"} size="lg" className="w-full">
+          <House className="size-5" />
+          {t("common.home")}
+        </ButtonLink>
+      </div>
     </div>
   );
 }
@@ -51,7 +64,7 @@ export function MethodStep({
   if (methods.isError && !methods.data) {
     // PAYMENTS_DISABLED and friends deserve their own text, not "failed to load"
     return (
-      <ErrorCard round error={methods.error} onRetry={() => void methods.refetch()} />
+      <ErrorCard round block error={methods.error} onRetry={() => void methods.refetch()} />
     );
   }
   if (!methods.data) return <Skeleton round className="h-[104px]" />;

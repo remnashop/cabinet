@@ -1,3 +1,4 @@
+import { LogIn } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -58,6 +59,7 @@ export function BotSignInPage() {
       text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : t("auth.botLinkExpiredHint")}
     >
       <ButtonLink to="/login" variant="glassSolid" size="lg" className="w-full">
+        <LogIn className="size-5" />
         {t("auth.backToLogin")}
       </ButtonLink>
     </FullScreenMessage>

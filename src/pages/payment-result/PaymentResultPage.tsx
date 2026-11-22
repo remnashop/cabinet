@@ -1,3 +1,4 @@
+import { House, ReceiptText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 
@@ -16,9 +17,11 @@ export function PaymentResultPage() {
       <FullScreenMessage tone="warning" title={t("payment.noOrderTitle")} text={t("payment.noOrderText")}>
         <div className="flex w-full flex-col gap-2">
           <ButtonLink to="/profile/payments" replace variant="glassSolid" size="lg" className="w-full">
+            <ReceiptText className="size-5" />
             {t("pages.payments")}
           </ButtonLink>
           <ButtonLink to="/" replace variant="glass" size="lg" className="w-full">
+            <House className="size-5" />
             {t("common.home")}
           </ButtonLink>
         </div>

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { API_BASE, apiGet } from "@shared/api/http";
@@ -53,7 +54,7 @@ function storedAppearance(): Appearance | undefined {
 }
 
 export function useAppearanceQuery() {
-  return useQuery<Appearance>({
+  const query = useQuery<Appearance>({
     queryKey: ["appearance"],
     queryFn: async ({ signal }) => {
       const settings = await apiGet<AppearanceSettings>("/appearance/cabinet", signal);
@@ -64,6 +65,9 @@ export function useAppearanceQuery() {
     placeholderData: storedAppearance,
     staleTime: Infinity,
   });
+  // a placeholder is gone once the request fails, retries and all: the last visit's look outlasts a server outage
+  const fallback = useMemo(() => (query.isError ? storedAppearance() : undefined), [query.isError]);
+  return { data: query.data ?? fallback, isError: query.isError };
 }
 
 export function useBrandName(): string {
