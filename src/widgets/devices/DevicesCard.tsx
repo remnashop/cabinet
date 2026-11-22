@@ -8,8 +8,10 @@ import {
   useDeleteAllDevices,
   useDeleteDevice,
   useDevicesQuery,
+  type Device,
   type OwnSubscription,
 } from "@entities/subscription/api";
+import { deviceTitle } from "@entities/subscription/lib";
 import { getErrorMessage } from "@shared/api/http";
 import { formatDate, formatDateTime } from "@shared/lib/format";
 import { Button } from "@shared/ui/Button";
@@ -23,13 +25,7 @@ import { Skeleton } from "@shared/ui/Skeleton";
 import { FormError } from "@shared/ui/FormError";
 import { Ripple } from "@shared/ui/Ripple";
 
-function DeleteMark() {
-  return (
-    <span className="flex size-8 items-center justify-center rounded-full font-normal text-muted-foreground transition-colors group-hover:bg-error/10 group-hover:text-error">
-      <Trash2 className="size-3.5" />
-    </span>
-  );
-}
+import { DeviceDialog } from "./DeviceDialog";
 
 // the platform is what the client reports, so matched loosely
 function deviceIcon({ platform, device_model }: { platform: string | null; device_model: string | null }) {
@@ -61,6 +57,7 @@ export function DevicesCard({ subscription, canConnect }: { subscription: OwnSub
   const deleteOne = useDeleteDevice();
   const deleteAll = useDeleteAllDevices();
   const [confirm, setConfirm] = useState<Confirm>(null);
+  const [opened, setOpened] = useState<Device | null>(null);
   // the cooldown is checked against the mount time, the button wakes once the card mounts again
   const [now] = useState(Date.now);
 
@@ -114,22 +111,20 @@ export function DevicesCard({ subscription, canConnect }: { subscription: OwnSub
       <EventList className="mt-2">
         {items.map((device) => {
           const Icon = deviceIcon(device);
-          const name = device.device_model || device.platform || device.hwid;
           return (
             <EventRow
               key={device.hwid}
               icon={<IconCircle glyph={<Icon className="size-4" strokeWidth={1.6} />} />}
-              title={name}
-              caption={
-                <>
-                  {device.platform}
-                  {device.platform && " · "}
-                  {formatDate(device.created_at, i18n.language)}
-                </>
-              }
-              // the whole row asks to remove it; without removal it's a plain row
-              onClick={canDelete ? () => ask({ kind: "one", hwid: device.hwid, name }) : undefined}
-              aside={canDelete && <DeleteMark />}
+              title={deviceTitle(device)}
+              caption={[
+                [device.platform, device.os_version].filter(Boolean).join(" "),
+                device.app,
+                formatDate(device.created_at, i18n.language),
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+              // the row opens the device: its name, and removal where the shop allows it
+              onClick={() => setOpened(device)}
             />
           );
         })}
@@ -156,6 +151,20 @@ export function DevicesCard({ subscription, canConnect }: { subscription: OwnSub
             t("errors.generic"),
             failed === deleteAll ? "home.deleteAllCooldown" : "home.deleteCooldown",
           )}</FormError>}
+
+      <DeviceDialog
+        device={opened}
+        subscriptionId={subscription.id}
+        onDelete={
+          canDelete
+            ? (device) => {
+                setOpened(null);
+                ask({ kind: "one", hwid: device.hwid, name: deviceTitle(device) });
+              }
+            : undefined
+        }
+        onClose={() => setOpened(null)}
+      />
 
       <ConfirmDialog
         open={confirm !== null}
