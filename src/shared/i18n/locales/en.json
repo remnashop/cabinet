@@ -37,6 +37,7 @@
   "common": {
     "qrFailed": "Couldn't draw the QR code",
     "retry": "Retry",
+    "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
     "continue": "Continue",
@@ -348,7 +349,6 @@
     "deviceApp": "App",
     "deviceConnected": "Connected",
     "deviceNamePlaceholder": "Device name",
-    "save": "Save",
     "deleteDeviceTitle": "Delete device?",
     "deleteDeviceText": "“{{name}}” will be disconnected from the subscription and lose access. You can connect again any time",
     "deleteAllTitle": "Delete all devices?",

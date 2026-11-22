@@ -37,6 +37,7 @@
   "common": {
     "qrFailed": "Не удалось построить QR-код",
     "retry": "Повторить",
+    "save": "Сохранить",
     "cancel": "Отмена",
     "close": "Закрыть",
     "continue": "Продолжить",
@@ -364,7 +365,6 @@
     "deviceApp": "Приложение",
     "deviceConnected": "Подключено",
     "deviceNamePlaceholder": "Имя устройства",
-    "save": "Сохранить",
     "deleteDeviceTitle": "Удалить устройство?",
     "deleteDeviceText": "«{{name}}» отключится от подписки и потеряет доступ. Подключиться снова можно в любой момент",
     "deleteAllTitle": "Удалить все устройства?",

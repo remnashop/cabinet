@@ -1,5 +1,5 @@
 import { Smartphone } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useRenameDevice, type Device } from "@entities/subscription/api";
@@ -52,7 +52,10 @@ function DeviceForm({
 }) {
   const { t, i18n } = useTranslation();
   const rename = useRenameDevice();
+  const formId = useId();
   const [name, setName] = useState(device.name ?? "");
+  // a backend without device names sends no such field, and has no route to save one
+  const canRename = "name" in device;
   const system = [device.platform, device.os_version].filter(Boolean).join(" ");
   const rows: [string, string][] = [
     [t("home.deviceModel"), device.device_model ?? ""],
@@ -62,6 +65,7 @@ function DeviceForm({
   ];
 
   const save = () => {
+    if (rename.isPending) return;
     const trimmed = name.trim();
     if (trimmed === (device.name ?? "")) return onClose();
     rename.mutate({ subscriptionId, hwid: device.hwid, name: trimmed }, { onSuccess: onClose });
@@ -69,19 +73,22 @@ function DeviceForm({
 
   return (
     <form
+      id={formId}
       className="flex flex-col gap-3"
       onSubmit={(event) => {
         event.preventDefault();
         save();
       }}
     >
-      <Input
-        value={name}
-        maxLength={NAME_MAX_LENGTH}
-        placeholder={device.device_model || device.platform || t("home.deviceNamePlaceholder")}
-        aria-invalid={rename.isError || undefined}
-        onChange={(event) => setName(event.target.value)}
-      />
+      {canRename && (
+        <Input
+          value={name}
+          placeholder={device.device_model || device.platform || t("home.deviceNamePlaceholder")}
+          aria-invalid={rename.isError || undefined}
+          // counted in characters, as the shop does: an emoji is one, not two UTF-16 units
+          onChange={(event) => setName(Array.from(event.target.value).slice(0, NAME_MAX_LENGTH).join(""))}
+        />
+      )}
       {rename.isError && <FormError>{getErrorMessage(rename.error, t("errors.generic"))}</FormError>}
       <Card variant="list">
         {rows
@@ -96,10 +103,11 @@ function DeviceForm({
             {t("home.delete")}
           </Button>
         )}
-        {/* the footer is portalled out of the form, so the button saves on its own; Enter submits the form */}
-        <Button variant="glassAccent" type="button" disabled={rename.isPending} onClick={save}>
-          {t("home.save")}
-        </Button>
+        {canRename && (
+          <Button type="submit" form={formId} variant="glassAccent" disabled={rename.isPending}>
+            {t("common.save")}
+          </Button>
+        )}
       </DialogFooter>
     </form>
   );
