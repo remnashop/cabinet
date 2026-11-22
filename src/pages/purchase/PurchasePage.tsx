@@ -1,11 +1,10 @@
-import { useMutation } from "@tanstack/react-query";
-import { Gift, TriangleAlert, Zap } from "lucide-react";
+import { Gift, House, Zap } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate, useSearchParams } from "react-router";
 
-import { joinPaymentWaitlist, useCatalogQuery, type Plan } from "@entities/plan/api";
+import { useCatalogQuery, type Plan } from "@entities/plan/api";
 import { PlanIcon } from "@entities/plan/PlanIcon";
 import { PlanDescription } from "@entities/plan/PlanDescription";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
@@ -15,14 +14,17 @@ import { bestMonthlyRate, effectivePrice, minPrice } from "@features/purchase/sa
 import { durationLabel, parseWizardParams } from "@features/purchase/wizard";
 import { formatPrice } from "@shared/lib/format";
 import { buttonClass } from "@shared/ui/button-class";
+import { ButtonLink } from "@shared/ui/ButtonLink";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { PageEmpty } from "@shared/ui/PageEmpty";
 import { Ripple } from "@shared/ui/Ripple";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 import { SupportButton } from "@widgets/support/SupportButton";
+import { useSupport } from "@widgets/support/use-support";
 
 import { PlanLimits } from "./PlanLimits";
+import { PaymentsOffBanner, WarningBanner } from "./WarningBanner";
 
 const MotionLink = motion.create(Link);
 
@@ -145,28 +147,6 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
   );
 }
 
-function WarningBanner({ title, hint }: { title: string; hint: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-card border border-warning/30 bg-linear-to-r from-warning/[0.12] to-warning/[0.03] p-5 lg:p-4">
-      <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
-        <TriangleAlert className="size-5" />
-      </span>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <h2 className="text-base font-bold text-warning">{title}</h2>
-        <span className="text-xs text-foreground">{hint}</span>
-      </div>
-    </div>
-  );
-}
-
-// seeing the catalog while payments are off is wanting to buy: the user goes on the waitlist and hears once they're back
-function PaymentsOffBanner() {
-  const { t } = useTranslation();
-  const { mutate } = useMutation({ mutationFn: joinPaymentWaitlist });
-  useEffect(() => mutate(), [mutate]);
-  return <WarningBanner title={t("purchase.paymentsOffTitle")} hint={t("purchase.paymentsOffHint")} />;
-}
-
 export function PurchasePage() {
   const { t } = useTranslation();
   const [search] = useSearchParams();
@@ -175,6 +155,7 @@ export function PurchasePage() {
   const catalog = useCatalogQuery(access);
   const settings = useCabinetSettingsQuery();
   const subscriptions = useSubscriptionsQuery();
+  const supportAvailable = useSupport().available;
 
   const title = type === "CHANGE" ? t("purchase.changeTitle") : t("purchase.catalog");
   // a plan change hides the current plan, so it needs the subscriptions before listing anything
@@ -206,8 +187,17 @@ export function PurchasePage() {
     }
     if (plans.every((p) => p.id === currentPlanId)) {
       body = (
-        <PageEmpty warning text={t(change ? "purchase.emptyChange" : "purchase.empty")}>
-          <SupportButton className="mt-1" />
+        <PageEmpty
+          warning
+          title={t(change ? "purchase.emptyChange" : "purchase.empty")}
+          text={t(change ? "purchase.emptyChangeHint" : "purchase.emptyHint")}
+        >
+          <SupportButton main />
+          {/* the only button when the shop gave no support contact */}
+          <ButtonLink to="/" variant={supportAvailable ? "glass" : "glassSolid"} size="lg" className="w-full">
+            <House className="size-5" />
+            {t("common.home")}
+          </ButtonLink>
         </PageEmpty>
       );
     } else body = (

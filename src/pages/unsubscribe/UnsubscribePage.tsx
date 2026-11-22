@@ -1,3 +1,4 @@
+import { House, MailX, RotateCw } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -48,10 +49,12 @@ export function UnsubscribePage() {
       <div className="flex w-full flex-col gap-2">
         {canSubmit && (
           <Button variant="glassSolid" size="lg" disabled={action.isPending} onClick={() => action.mutate(token)}>
+            {action.isError ? <RotateCw className="size-5" /> : <MailX className="size-5" />}
             {action.isError ? t("common.retry") : t("unsubscribe.confirm")}
           </Button>
         )}
         <ButtonLink to="/" variant={canSubmit ? "glass" : "glassSolid"} size="lg">
+          <House className="size-5" />
           {t("common.home")}
         </ButtonLink>
       </div>

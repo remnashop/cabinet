@@ -15,18 +15,21 @@ export function FullScreen({ children }: { children: ReactNode }) {
  *  mark over the title (AlertMark). */
 export function FullScreenMessage({
   tone,
+  art,
   title,
   text,
   children,
 }: {
   tone?: "error" | "warning";
+  /** in place of the tone's mark: a state that is neither a failure nor a warning */
+  art?: ReactNode;
   title: string;
   text?: string | null;
   children?: ReactNode;
 }) {
   return (
     <FullScreen>
-      {tone && <AlertMark tone={tone} />}
+      {art ?? (tone && <AlertMark tone={tone} />)}
       <h1 className="text-xl font-bold tracking-tight">{title}</h1>
       {text && <p className="text-sm text-muted-foreground">{text}</p>}
       {children}

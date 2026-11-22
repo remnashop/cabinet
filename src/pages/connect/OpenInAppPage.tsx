@@ -1,4 +1,4 @@
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, ExternalLink, House, RotateCw } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -10,6 +10,17 @@ import { Spinner } from "@shared/ui/Spinner";
 import { FullScreen, FullScreenMessage as Message } from "@widgets/full-screen/FullScreen";
 
 import { useCopyLink } from "./use-copy-link";
+
+/** The way out of a link that can't be opened: this page has no cabinet around it. */
+function OpenCabinet() {
+  const { t } = useTranslation();
+  return (
+    <ButtonLink to="/" replace variant="glassSolid" size="lg" className="w-full">
+      <House className="size-5" />
+      {t("connect.openCabinet")}
+    </ButtonLink>
+  );
+}
 
 /**
  * Where a Mini App deep link lands: Telegram's webview can't open an app scheme, so the connect screen
@@ -28,12 +39,17 @@ export function OpenInAppPage() {
   const [copied, copy] = useCopyLink(hop?.sub ?? "");
 
   if (hop === null || (guide.data !== undefined && !built)) {
-    return <Message tone="warning" title={t("connect.openInvalid")} text={t("connect.openInvalidHint")} />;
+    return (
+      <Message tone="warning" title={t("connect.openInvalid")} text={t("connect.openInvalidHint")}>
+        <OpenCabinet />
+      </Message>
+    );
   }
   if (guide.isError || verify.isError) {
     return (
       <Message tone="error" title={t("connect.openFailed")} text={t("connect.openFailedHint")}>
         <Button variant="glassSolid" size="lg" className="w-full" onClick={() => void (guide.isError ? guide.refetch() : verify.refetch())}>
+          <RotateCw className="size-5" />
           {t("common.retry")}
         </Button>
       </Message>
@@ -47,7 +63,11 @@ export function OpenInAppPage() {
     );
   }
   if (!verify.data.valid) {
-    return <Message tone="warning" title={t("connect.openUnverified")} text={t("connect.openUnverifiedHint")} />;
+    return (
+      <Message tone="warning" title={t("connect.openUnverified")} text={t("connect.openUnverifiedHint")}>
+        <OpenCabinet />
+      </Message>
+    );
   }
   return (
     <Message title={t("connect.openTitle")} text={t("connect.openHint")}>
@@ -56,6 +76,7 @@ export function OpenInAppPage() {
       </p>
       <div className="flex w-full flex-col gap-2">
         <ButtonLink href={hop.link} variant="glassSolid" size="lg">
+          <ExternalLink className="size-5" />
           {t("connect.open")}
         </ButtonLink>
         <Button variant="glass" size="lg" onClick={() => void copy()}>

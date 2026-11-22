@@ -1,3 +1,4 @@
+import { House } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ButtonLink } from "@shared/ui/ButtonLink";
@@ -44,6 +45,7 @@ export function NotFoundPage() {
         <p className="text-sm text-muted-foreground">{t("pages.notFoundHint")}</p>
       </div>
       <ButtonLink to="/" replace variant="glassSolid" size="lg" className="mt-2 w-full">
+        <House className="size-5" />
         {t("common.home")}
       </ButtonLink>
     </FullScreen>
