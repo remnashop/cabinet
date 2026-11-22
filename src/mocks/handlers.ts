@@ -132,11 +132,14 @@ function mockSubscription(template: (typeof TEMPLATES)[number], i: number): Mock
   });
 }
 
-const device = (hwid: string, platform: string, device_model: string) => ({
+const device = (hwid: string, platform: string, device_model: string, name: string | null = null) => ({
   hwid,
+  name,
   platform,
+  os_version: platform === "iOS" ? "18.1" : null,
   device_model,
-  user_agent: "Happ/1.0",
+  app: "Happ 2.1.0",
+  user_agent: "Happ/2.1.0",
   created_at: "2026-09-01T09:00:00Z",
 });
 const MODELS: [string, string][] = [
@@ -152,7 +155,7 @@ const devices: Record<number, ReturnType<typeof device>[]> = Object.fromEntries(
     sub.id,
     Array.from({ length: scenario.devices }, (_, i) => {
       const [platform, model] = MODELS[i % MODELS.length];
-      return device(`hwid-${sub.id}-${i}`, platform, model);
+      return device(`hwid-${sub.id}-${i}`, platform, model, i === 0 ? "Мой телефон" : null);
     }),
   ]),
 );
@@ -642,6 +645,23 @@ export const handlers = [
     if (denied) return denied;
     const id = Number(params.id);
     devices[id] = (devices[id] ?? []).filter((d) => d.hwid !== params.hwid);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.put(`${API}/subscriptions/me/:id/devices/:hwid/name`, async ({ request, params }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const { name } = (await request.json()) as { name: string };
+    const target = devices[Number(params.id)]?.find((d) => d.hwid === params.hwid);
+    if (target) target.name = name;
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.delete(`${API}/subscriptions/me/:id/devices/:hwid/name`, ({ request, params }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const target = devices[Number(params.id)]?.find((d) => d.hwid === params.hwid);
+    if (target) target.name = null;
     return new HttpResponse(null, { status: 204 });
   }),
 

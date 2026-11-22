@@ -1,5 +1,5 @@
 import type { Plan } from "@entities/plan/api";
-import type { OwnSubscription } from "@entities/subscription/api";
+import type { Device, OwnSubscription } from "@entities/subscription/api";
 
 const DAY_MS = 86_400_000;
 const SOON_DAYS = 3;
@@ -119,4 +119,9 @@ export function canBuyMore(maxActive: number | null, items: OwnSubscription[]): 
 /** The number a card shows: #0042. */
 export function subscriptionNumber(id: number): string {
   return `#${String(id).padStart(4, "0")}`;
+}
+
+/** the customer's own name, or what the panel knows of the device */
+export function deviceTitle(device: Device): string {
+  return device.name || device.device_model || device.platform || device.hwid;
 }

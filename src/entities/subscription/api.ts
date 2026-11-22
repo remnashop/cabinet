@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiDelete, apiGet, apiPost } from "@shared/api/http";
+import { apiDelete, apiGet, apiPost, apiPut } from "@shared/api/http";
 import { isMiniApp } from "@shared/telegram";
 
 export type SubscriptionStatus = "ACTIVE" | "LIMITED" | "EXPIRED" | "DISABLED" | "DELETED";
@@ -49,8 +49,13 @@ export interface Trial {
 
 export interface Device {
   hwid: string;
+  // the customer's own name for it, kept by the shop
+  name: string | null;
   platform: string | null;
+  os_version: string | null;
   device_model: string | null;
+  // the client app and its version, read off the user agent
+  app: string | null;
   user_agent: string | null;
   created_at: string;
 }
@@ -95,6 +100,18 @@ export function useDeleteDevice() {
   return useSubscriptionMutation(({ subscriptionId, hwid }: { subscriptionId: number; hwid: string }) =>
     apiDelete(`/subscriptions/me/${subscriptionId}/devices/${encodeURIComponent(hwid)}`),
   );
+}
+
+/** an empty name drops the customer's own, the device's model shows again */
+export function useRenameDevice() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ subscriptionId, hwid, name }: { subscriptionId: number; hwid: string; name: string }) => {
+      const path = `/subscriptions/me/${subscriptionId}/devices/${encodeURIComponent(hwid)}/name`;
+      return name ? apiPut(path, { name }) : apiDelete(path);
+    },
+    onSuccess: (_data, { subscriptionId }) => client.invalidateQueries({ queryKey: ["devices", subscriptionId] }),
+  });
 }
 
 export function useDeleteAllDevices() {
