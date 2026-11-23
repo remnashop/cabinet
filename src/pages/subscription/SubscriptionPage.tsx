@@ -5,11 +5,11 @@ import { Navigate, useMatch, useNavigate, useSearchParams } from "react-router";
 
 import { useBrandName } from "@entities/appearance/api";
 import { BrandMark } from "@entities/appearance/BrandMark";
-import { useCatalogQuery } from "@entities/plan/api";
+import { PUBLIC_ACCESS, useCatalogQuery } from "@entities/plan/api";
 import { useMeQuery } from "@entities/session/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useActivateTrial, useSubscriptionsQuery, useTrialQuery } from "@entities/subscription/api";
-import { canBuyMore, canRenew, cardNotice } from "@entities/subscription/lib";
+import { canBuyMore, canRenew, cardNotice, isCutOff } from "@entities/subscription/lib";
 import { getErrorMessage } from "@shared/api/http";
 import { formatDate, formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
@@ -172,7 +172,7 @@ export function SubscriptionPage() {
     items.map((s) => s.id),
   );
   // the plan the selected subscription renews into, as the backend decides (a link plan, one closed to new buyers)
-  const catalog = useCatalogQuery({ plan_code: null, renew_subscription_id: selectedId, change_subscription_id: null });
+  const catalog = useCatalogQuery({ ...PUBLIC_ACCESS, renew_subscription_id: selectedId });
   const linkedId = Number(params.get("sub")) || null;
   const renewLink = params.get("renew") === "1";
   const subsLoaded = subscriptions.isSuccess;
@@ -229,12 +229,7 @@ export function SubscriptionPage() {
   // no days or no traffic left, or switched off by the admin: a new device would get no connection, so "connect" is
   // gone until a renewal (or the admin turns it back on)
   const notice = selected && cardNotice(selected, now);
-  const cutOff =
-    notice === "expired" ||
-    notice === "trafficOut" ||
-    notice === "expiredTraffic" ||
-    notice === "disabled" ||
-    notice === "deleted";
+  const cutOff = isCutOff(notice ?? null);
   // a user can only ever have this one subscription (an admin lowering the cap leaves extra ones in the slider)
   const single = settings.data.max_active_subscriptions === 1 && items.length === 1;
   // the tiles side by side (connect among them): one row across the frame. Alone, the card takes the left half on

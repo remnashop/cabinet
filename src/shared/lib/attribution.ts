@@ -3,6 +3,7 @@ import {
   removeStorage,
   writeStorage,
 } from "@shared/lib/safe-storage";
+import { LINK_CODE, startParamPattern } from "@shared/lib/link-code";
 
 /** What the browser saw on the first visit; the backend keeps it in the registration snapshot. */
 export interface FirstTouch {
@@ -23,9 +24,8 @@ export interface Attribution {
 }
 
 const STORAGE_KEY = "cabinet_attribution";
-const CODE = /^[A-Za-z0-9_-]{1,64}$/;
-// the bot's deep links: t.me/<bot>?start=ref_<code> / ad_<code>
-const START_PARAM = /^(ref|ad)_([A-Za-z0-9_-]{1,64})$/;
+// t.me/<bot>?start=ref_<code> / ad_<code>
+const START_PARAM = startParamPattern(["ref", "ad"]);
 const UTM_KEYS = [
   "utm_source",
   "utm_medium",
@@ -47,7 +47,7 @@ export function parseAttribution(
   const result: Attribution = {};
   for (const key of ["ref", "ad"] as const) {
     const value = params.get(key);
-    if (value && CODE.test(value)) result[key] = value;
+    if (value && LINK_CODE.test(value)) result[key] = value;
   }
   const match = startParam?.match(START_PARAM);
   if (match) result[match[1] as "ref" | "ad"] = match[2];

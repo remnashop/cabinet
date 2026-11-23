@@ -10,6 +10,8 @@ import {
   cardNotice,
   daysAlert,
   daysLeft,
+  isCutOff,
+  isSwitchedOff,
   isUnlimited,
   timeLeft,
   trafficAlert,
@@ -160,4 +162,14 @@ it("an unlimited subscription never reads as expiring and can't be renewed", () 
   expect(urgency(forever, now)).toBe("ok");
   expect(daysAlert(forever, now)).toBeNull();
   expect(canRenew(forever, [{ id: forever.plan_id } as Plan])).toBe(false);
+});
+
+it("isCutOff: no access left or switched off; isSwitchedOff: the admin's two only", () => {
+  for (const notice of ["expired", "trafficOut", "expiredTraffic", "disabled", "deleted"] as const) {
+    expect(isCutOff(notice)).toBe(true);
+  }
+  for (const notice of ["bothSoon", "daysSoon", "trafficSoon", null] as const) expect(isCutOff(notice)).toBe(false);
+  expect(isSwitchedOff("disabled")).toBe(true);
+  expect(isSwitchedOff("deleted")).toBe(true);
+  expect(isSwitchedOff("expired")).toBe(false);
 });

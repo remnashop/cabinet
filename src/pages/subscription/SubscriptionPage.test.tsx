@@ -11,7 +11,10 @@ const state = vi.hoisted(() => ({
 
 vi.mock("@entities/appearance/api", () => ({ useBrandName: () => "Brand" }));
 vi.mock("@entities/appearance/BrandMark", () => ({ BrandMark: () => null }));
-vi.mock("@entities/plan/api", () => ({ useCatalogQuery: () => state.catalog }));
+vi.mock("@entities/plan/api", () => ({
+  PUBLIC_ACCESS: { plan_code: null, renew_subscription_id: null, change_subscription_id: null },
+  useCatalogQuery: () => state.catalog,
+}));
 vi.mock("@entities/referral/api", () => ({
   invitedCount: () => 0,
   useRedeemTargetsQuery: () => ({ data: undefined }),
@@ -40,6 +43,7 @@ vi.mock("@entities/subscription/lib", () => ({
   canBuyMore: () => true,
   canRenew: (s: { plan_id: number }, items: { id: number }[]) => items.some((p) => p.id === s.plan_id),
   cardNotice: () => null,
+  isCutOff: () => false,
 }));
 vi.mock("@features/push-prompt/PushPromptCard", () => ({ PushPromptCard: () => null }));
 vi.mock("@widgets/devices/DevicesCard", () => ({ DevicesCard: () => null }));

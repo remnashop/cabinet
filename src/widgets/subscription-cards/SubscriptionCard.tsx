@@ -13,6 +13,7 @@ import {
   cardAlert,
   cardNotice,
   daysAlert,
+  isSwitchedOff,
   isUnlimited,
   subscriptionNumber,
   timeLeft,
@@ -20,7 +21,7 @@ import {
   trafficOut,
   trafficRatio,
 } from "@entities/subscription/lib";
-import { formatBytes, formatDate, formatGb } from "@shared/lib/format";
+import { formatBytes, formatDate, formatGb, GB } from "@shared/lib/format";
 import { isMiniApp, openExternal } from "@shared/telegram";
 import { Ripple } from "@shared/ui/Ripple";
 
@@ -68,8 +69,6 @@ function usePausedChannel(sub: OwnSubscription): string | null {
   return settings.data?.bot_username ? settings.data.channel_url : null;
 }
 
-const GB = 1024 ** 3;
-
 interface SubscriptionCardProps {
   sub: OwnSubscription;
   devicesUsed?: number;
@@ -99,10 +98,10 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
   const notice = compact ? null : cardNotice(sub, now);
   const channel = usePausedChannel(sub);
   // a disabled or deleted card says so on its strip but has no alert edge: there is nothing to act on in time
-  const alert = notice === "disabled" || notice === "deleted" ? null : cardAlert(sub, now);
+  const alert = isSwitchedOff(notice) ? null : cardAlert(sub, now);
   const hint = notice && (channel ? "channel" : NOTICE_HINT[notice]);
   // no access any more (to get back, or disabled, deleted): its texts go grey, the alert's colors stay
-  const inactive = hint === "back" || notice === "disabled" || notice === "deleted";
+  const inactive = hint === "back" || isSwitchedOff(notice);
   const date = formatDate(sub.expire_at, locale);
 
   // the edge is drawn round a wrapper: the card itself clips to its corners. Below lg the card's contents grow with its
@@ -219,7 +218,7 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
   const [now] = useState(() => new Date());
   const notice = cardNotice(sub, now);
   const channel = usePausedChannel(sub);
-  const alert = notice === "disabled" || notice === "deleted" ? null : cardAlert(sub, now);
+  const alert = isSwitchedOff(notice) ? null : cardAlert(sub, now);
   const hint = notice && (channel ? "channel" : NOTICE_HINT[notice]);
   const left = timeLeft(sub.expire_at, now);
   const date = formatDate(sub.expire_at, i18n.language);

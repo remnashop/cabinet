@@ -32,7 +32,7 @@ export function formatNumber(value: string | number, locale: string): string {
   return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(Number(value));
 }
 
-const GB = 1024 ** 3;
+export const GB = 1024 ** 3;
 
 export function formatBytes(bytes: number, locale: string): string {
   // nothing at all reads in GB, as the limits it is measured against

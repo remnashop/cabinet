@@ -3,13 +3,13 @@ import { useCallback, useRef, useState } from "react";
 import { CreditCard, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { createCheckout, useQuoteQuery, type PaymentMethod, type Plan, type PlanAccess } from "@entities/plan/api";
+import { createCheckout, useQuoteQuery, type PaymentMethod, type Plan, type PlanAccess, type PurchaseType } from "@entities/plan/api";
 import { useShownLegalLocale } from "@entities/legal/api";
 import { LegalNotice } from "@entities/legal/LegalNotice";
 import { useMeQuery } from "@entities/session/api";
 import { AwaitPaymentButton } from "@features/payment/AwaitPaymentButton";
 import { StarsInvoiceError, UnsafePaymentUrlError } from "@features/payment/start-payment";
-import { gatewayLabel, isValidEmail, typeNoticeKey, type PurchaseType } from "@features/purchase/wizard";
+import { gatewayLabel, isValidEmail, typeNoticeKey } from "@features/purchase/wizard";
 import { getErrorMessage } from "@shared/api/http";
 import { formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";

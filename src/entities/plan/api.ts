@@ -5,6 +5,9 @@ import { isMiniApp } from "@shared/telegram";
 
 export const emojiThumbnailUrl = (id: string) => `${API_BASE}/emoji-packs/thumbnails/${encodeURIComponent(id)}`;
 
+export type PurchaseType = "NEW" | "RENEW" | "CHANGE";
+export type DiscountSource = "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";
+
 export interface PlanPrice {
   currency: string;
   price: string;
@@ -74,7 +77,7 @@ export interface Quote {
   change_credit_days: number;
   plan_discount_percent: number;
   discount_percent: number;
-  discount_source: "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";
+  discount_source: DiscountSource;
   final_price: string;
   currency: string;
 }
@@ -83,7 +86,7 @@ export interface CheckoutInput {
   plan_id: number;
   duration_days: number;
   currency: string;
-  purchase_type: "NEW" | "RENEW" | "CHANGE";
+  purchase_type: PurchaseType;
   // omitted only for an order that costs nothing: the backend records it without a gateway
   gateway_type?: string;
   target_subscription_id?: number;
