@@ -4,10 +4,10 @@ import { useTranslation } from "react-i18next";
 
 import { useConnectGuideQuery, useVerifyHopQuery } from "@entities/connect-guide/api";
 import { catalogBuilds, decodeHop } from "@entities/connect-guide/lib";
+import { useCopyLink } from "@shared/lib/use-copy-link";
 import { Button } from "@shared/ui/Button";
 import { ButtonLink } from "@shared/ui/ButtonLink";
 import { Spinner } from "@shared/ui/Spinner";
-import { useCopyLink } from "@shared/lib/use-copy-link";
 import { FullScreen, FullScreenMessage as Message } from "@widgets/full-screen/FullScreen";
 
 /** The way out of a link that can't be opened: this page has no cabinet around it. */
