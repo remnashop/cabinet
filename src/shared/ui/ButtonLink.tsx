@@ -1,12 +1,8 @@
-import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
-
 import { buttonClass, type ButtonSize, type ButtonVariant } from "./button-class";
 import { Ripple } from "./Ripple";
-
-const MotionLink = motion.create(Link);
 
 /**
  * A link that looks and answers a tap as Button does (ripple). to: a route in the cabinet; href: an anchor,
@@ -46,12 +42,12 @@ export function ButtonLink({
     </>
   );
   return to !== undefined ? (
-    <MotionLink to={to} replace={replace} {...props}>
+    <Link to={to} replace={replace} {...props}>
       {content}
-    </MotionLink>
+    </Link>
   ) : (
-    <motion.a href={href} target={target} rel={rel} {...props}>
+    <a href={href} target={target} rel={rel} {...props}>
       {content}
-    </motion.a>
+    </a>
   );
 }

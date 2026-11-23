@@ -1,5 +1,4 @@
 import { Gift, House, Zap } from "lucide-react";
-import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate, useSearchParams } from "react-router";
@@ -25,8 +24,6 @@ import { useSupport } from "@widgets/support/use-support";
 
 import { PlanLimits } from "./PlanLimits";
 import { PaymentsOffBanner, WarningBanner } from "./WarningBanner";
-
-const MotionLink = motion.create(Link);
 
 // the card's grid with its button, and without it (an inert card): no empty track, so no gap where the button would be
 const WITH_BUTTON =
@@ -140,10 +137,10 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
     );
   }
   return (
-    <MotionLink to={to} className={`${frame} text-foreground`}>
+    <Link to={to} className={`${frame} text-foreground`}>
       {body}
       <Ripple />
-    </MotionLink>
+    </Link>
   );
 }
 

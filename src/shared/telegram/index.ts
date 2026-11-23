@@ -9,7 +9,6 @@ import {
   openTelegramLink,
   retrieveLaunchParams,
   retrieveRawInitData,
-  shareURL,
   swipeBehavior,
   viewport,
 } from "@telegram-apps/sdk-react";
@@ -200,22 +199,3 @@ export async function openStarsInvoice(
   return "pending";
 }
 
-/** Resolves true when there was no share sheet and the link went to the clipboard instead. */
-export async function share(url: string, text: string): Promise<boolean> {
-  if (active && shareURL.isAvailable()) {
-    shareURL(url, text);
-    return false;
-  }
-  if (navigator.share) {
-    // the user closing the share sheet rejects with AbortError; that's not a failure
-    await navigator.share({ url, text }).catch(() => {});
-    return false;
-  }
-  try {
-    // no clipboard (insecure context) throws too
-    await navigator.clipboard.writeText(url);
-    return true;
-  } catch {
-    return false;
-  }
-}

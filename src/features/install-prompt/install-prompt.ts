@@ -6,7 +6,7 @@ const RECORD_KEY = "remnashop_cabinet_install_prompt";
 
 export type InstallPlatform = "ios" | "android";
 
-export function detectInstallPlatform(): InstallPlatform | null {
+function detectInstallPlatform(): InstallPlatform | null {
   const ua = navigator.userAgent;
   if (/iphone|ipad|ipod/i.test(ua)) return "ios";
   // iPadOS Safari reports itself as a Mac

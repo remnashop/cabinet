@@ -25,7 +25,7 @@ interface CardsSliderProps {
 const SLIDE = "w-full shrink-0 snap-center lg:w-[calc((100%-2.5rem)/3)]";
 
 // every card counts its own devices; the selected one shares the query with the devices list
-export function SlideCard({
+function SlideCard({
   sub,
   noticeApart,
   selected,
