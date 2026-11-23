@@ -92,11 +92,12 @@ interface SubscriptionCardProps {
  * A subscription styled as a bank card; a strip at its foot says what's wrong, if anything. Its height is its
  * content's, so the strip never needs room carved out of a fixed shape.
  */
-export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selected }: SubscriptionCardProps) {
+export function SubscriptionCard({ sub: given, devicesUsed, compact, noticeApart, selected }: SubscriptionCardProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   // fixed per mount: the day count needn't tick while the page is open
   const [now] = useState(() => new Date());
+  const sub = withoutGraceUsage(given, now);
   const ratio = trafficRatio(sub.used_traffic, sub.effective_traffic_limit);
   const deviceLimit = sub.effective_device_limit === 0 ? "∞" : String(sub.effective_device_limit);
   const Icon = sub.is_trial ? Gift : Zap;
@@ -220,14 +221,20 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
   );
 }
 
+// the panel counts the grace's own traffic from zero: against the plan's limit it would read as almost untouched
+function withoutGraceUsage(sub: OwnSubscription, now: Date): OwnSubscription {
+  return inGrace(sub, now) ? { ...sub, used_traffic: null } : sub;
+}
+
 function hintDate(sub: OwnSubscription, date: string, locale: string, now: Date): string {
   return inGrace(sub, now) ? formatDate(sub.grace_until!, locale) : date;
 }
 
 /** The card's strip on its own, under the slider, for the selected card. */
-export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap renews it */ to?: string }) {
+export function NoticeBar({ sub: given, to }: { sub: OwnSubscription; /** where a tap renews it */ to?: string }) {
   const { t, i18n } = useTranslation();
   const [now] = useState(() => new Date());
+  const sub = withoutGraceUsage(given, now);
   const notice = cardNotice(sub, now);
   const channel = usePausedChannel(sub);
   const alert = isSwitchedOff(notice) ? null : cardAlert(sub, now);
