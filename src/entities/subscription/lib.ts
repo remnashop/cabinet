@@ -11,6 +11,11 @@ export function isUnlimited(sub: Pick<OwnSubscription, "expire_at">): boolean {
   return new Date(sub.expire_at).getUTCFullYear() >= UNLIMITED_EXPIRE_YEAR;
 }
 
+/** Expired, yet still connected on the shop's grace config. */
+export function inGrace(sub: Pick<OwnSubscription, "status" | "grace_until">): boolean {
+  return sub.status === "EXPIRED" && !!sub.grace_until;
+}
+
 // whole days, rounded up, so "0.4 days left" still reads as one day
 export function daysLeft(expireAt: string, now: Date): number {
   return Math.max(0, Math.ceil((new Date(expireAt).getTime() - now.getTime()) / DAY_MS));

@@ -9,7 +9,7 @@ import { PUBLIC_ACCESS, useCatalogQuery } from "@entities/plan/api";
 import { useMeQuery } from "@entities/session/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useActivateTrial, useSubscriptionsQuery, useTrialQuery } from "@entities/subscription/api";
-import { canBuyMore, canRenew, cardNotice, isCutOff } from "@entities/subscription/lib";
+import { canBuyMore, canRenew, cardNotice, inGrace, isCutOff } from "@entities/subscription/lib";
 import { InstallPromptCard } from "@features/install-prompt/InstallPromptCard";
 import { markPushPromptEligible } from "@features/push-prompt/push-prompt";
 import { PushPromptCard } from "@features/push-prompt/PushPromptCard";
@@ -227,9 +227,9 @@ export function SubscriptionPage() {
       ? `/purchase/${selected.plan_id}?type=RENEW&sub=${selected.id}`
       : `/purchase?type=CHANGE&sub=${selected.id}`);
   // no days or no traffic left, or switched off by the admin: a new device would get no connection, so "connect" is
-  // gone until a renewal (or the admin turns it back on)
+  // gone until a renewal (or the admin turns it back on). The grace config still connects
   const notice = selected && cardNotice(selected, now);
-  const cutOff = isCutOff(notice ?? null);
+  const cutOff = isCutOff(notice ?? null) && !(selected && inGrace(selected));
   // a user can only ever have this one subscription (an admin lowering the cap leaves extra ones in the slider)
   const single = settings.data.max_active_subscriptions === 1 && items.length === 1;
   // the tiles side by side (connect among them): one row across the frame. Alone, the card takes the left half on

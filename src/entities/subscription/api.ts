@@ -33,6 +33,8 @@ export interface OwnSubscription {
   paused_by_channel_leave: boolean;
   // the backend's signature over url: what the connect page's browser hop is vouched for with
   connect_signature: string;
+  // expired, but the panel keeps a reduced config until then; absent on older backends
+  grace_until?: string | null;
 }
 
 export interface Trial {

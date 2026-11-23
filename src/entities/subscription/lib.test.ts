@@ -10,6 +10,7 @@ import {
   cardNotice,
   daysAlert,
   daysLeft,
+  inGrace,
   isCutOff,
   isSwitchedOff,
   isUnlimited,
@@ -172,4 +173,11 @@ it("isCutOff: no access left or switched off; isSwitchedOff: the admin's two onl
   expect(isSwitchedOff("disabled")).toBe(true);
   expect(isSwitchedOff("deleted")).toBe(true);
   expect(isSwitchedOff("expired")).toBe(false);
+});
+
+it("inGrace: an expired one with grace_until; absent on older backends", () => {
+  expect(inGrace(sub({ status: "EXPIRED", grace_until: "2026-10-20T12:00:00Z" }))).toBe(true);
+  expect(inGrace(sub({ status: "EXPIRED", grace_until: null }))).toBe(false);
+  expect(inGrace(sub({ status: "EXPIRED" }))).toBe(false);
+  expect(inGrace(sub({ grace_until: "2026-10-20T12:00:00Z" }))).toBe(false);
 });

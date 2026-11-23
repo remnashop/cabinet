@@ -13,6 +13,7 @@ import {
   cardAlert,
   cardNotice,
   daysAlert,
+  inGrace,
   isSwitchedOff,
   isUnlimited,
   subscriptionNumber,
@@ -55,6 +56,13 @@ const NOTICE_HINT: Record<CardNotice, "keepUntil" | "keep" | "back" | "channel" 
   daysSoon: "keepUntil",
   trafficSoon: "keep",
 };
+
+/** The strip's second line: the grace's end while it lasts, else what the notice asks for. */
+function noticeHint(sub: OwnSubscription, notice: CardNotice, channel: string | null) {
+  if (channel) return "channel";
+  if (inGrace(sub)) return isUnlimited({ expire_at: sub.grace_until! }) ? "graceForever" : "grace";
+  return NOTICE_HINT[notice];
+}
 
 // "ends in N days" turns to hours, then minutes, as the time left does
 function noticeKey(notice: CardNotice, left: ReturnType<typeof timeLeft>, channel: string | null) {
@@ -99,7 +107,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
   const channel = usePausedChannel(sub);
   // a disabled or deleted card says so on its strip but has no alert edge: there is nothing to act on in time
   const alert = isSwitchedOff(notice) ? null : cardAlert(sub, now);
-  const hint = notice && (channel ? "channel" : NOTICE_HINT[notice]);
+  const hint = notice && noticeHint(sub, notice, channel);
   // no access any more (to get back, or disabled, deleted): its texts go grey, the alert's colors stay
   const inactive = hint === "back" || isSwitchedOff(notice);
   const date = formatDate(sub.expire_at, locale);
@@ -203,13 +211,17 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
               <span className={`text-sm font-bold ${TEXT_TONE[alert ?? "ok"]}`}>
                 {t(`home.notice.${noticeKey(notice, left, channel)}`, { count: left.count, date })}
               </span>
-              {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={date} />}
+              {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={hintDate(sub, date, locale)} />}
             </div>
           </div>
         )}
       </div>
     </div>
   );
+}
+
+function hintDate(sub: OwnSubscription, date: string, locale: string): string {
+  return inGrace(sub) ? formatDate(sub.grace_until!, locale) : date;
 }
 
 /** The card's strip on its own, under the slider, for the selected card. */
@@ -219,7 +231,7 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
   const notice = cardNotice(sub, now);
   const channel = usePausedChannel(sub);
   const alert = isSwitchedOff(notice) ? null : cardAlert(sub, now);
-  const hint = notice && (channel ? "channel" : NOTICE_HINT[notice]);
+  const hint = notice && noticeHint(sub, notice, channel);
   const left = timeLeft(sub.expire_at, now);
   const date = formatDate(sub.expire_at, i18n.language);
 
@@ -234,7 +246,7 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
         <span className={`text-sm font-bold ${TEXT_TONE[alert ?? "ok"]}`}>
           {t(`home.notice.${noticeKey(notice, left, channel)}`, { count: left.count, date })}
         </span>
-        {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={date} />}
+        {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={hintDate(sub, date, i18n.language)} />}
       </div>
       {(link || channel) && <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground" />}
     </>
