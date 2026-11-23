@@ -13,6 +13,7 @@ import {
   cardAlert,
   cardNotice,
   daysAlert,
+  inGrace,
   isSwitchedOff,
   isUnlimited,
   subscriptionNumber,
@@ -56,6 +57,13 @@ const NOTICE_HINT: Record<CardNotice, "keepUntil" | "keep" | "back" | "channel" 
   trafficSoon: "keep",
 };
 
+/** The strip's second line: the grace's end while it lasts, else what the notice asks for. */
+function noticeHint(sub: OwnSubscription, notice: CardNotice, channel: string | null, now: Date) {
+  if (channel) return "channel";
+  if (inGrace(sub, now)) return isUnlimited({ expire_at: sub.grace_until! }) ? "graceForever" : "grace";
+  return NOTICE_HINT[notice];
+}
+
 // "ends in N days" turns to hours, then minutes, as the time left does
 function noticeKey(notice: CardNotice, left: ReturnType<typeof timeLeft>, channel: string | null) {
   if (channel) return "channelPaused";
@@ -84,11 +92,12 @@ interface SubscriptionCardProps {
  * A subscription styled as a bank card; a strip at its foot says what's wrong, if anything. Its height is its
  * content's, so the strip never needs room carved out of a fixed shape.
  */
-export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selected }: SubscriptionCardProps) {
+export function SubscriptionCard({ sub: given, devicesUsed, compact, noticeApart, selected }: SubscriptionCardProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   // fixed per mount: the day count needn't tick while the page is open
   const [now] = useState(() => new Date());
+  const sub = withoutGraceUsage(given, now);
   const ratio = trafficRatio(sub.used_traffic, sub.effective_traffic_limit);
   const deviceLimit = sub.effective_device_limit === 0 ? "∞" : String(sub.effective_device_limit);
   const Icon = sub.is_trial ? Gift : Zap;
@@ -99,7 +108,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
   const channel = usePausedChannel(sub);
   // a disabled or deleted card says so on its strip but has no alert edge: there is nothing to act on in time
   const alert = isSwitchedOff(notice) ? null : cardAlert(sub, now);
-  const hint = notice && (channel ? "channel" : NOTICE_HINT[notice]);
+  const hint = notice && noticeHint(sub, notice, channel, now);
   // no access any more (to get back, or disabled, deleted): its texts go grey, the alert's colors stay
   const inactive = hint === "back" || isSwitchedOff(notice);
   const date = formatDate(sub.expire_at, locale);
@@ -203,7 +212,7 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
               <span className={`text-sm font-bold ${TEXT_TONE[alert ?? "ok"]}`}>
                 {t(`home.notice.${noticeKey(notice, left, channel)}`, { count: left.count, date })}
               </span>
-              {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={date} />}
+              {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={hintDate(sub, date, locale, now)} />}
             </div>
           </div>
         )}
@@ -212,14 +221,24 @@ export function SubscriptionCard({ sub, devicesUsed, compact, noticeApart, selec
   );
 }
 
+// the panel counts the grace's own traffic from zero: against the plan's limit it would read as almost untouched
+function withoutGraceUsage(sub: OwnSubscription, now: Date): OwnSubscription {
+  return inGrace(sub, now) ? { ...sub, used_traffic: null } : sub;
+}
+
+function hintDate(sub: OwnSubscription, date: string, locale: string, now: Date): string {
+  return inGrace(sub, now) ? formatDate(sub.grace_until!, locale) : date;
+}
+
 /** The card's strip on its own, under the slider, for the selected card. */
-export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap renews it */ to?: string }) {
+export function NoticeBar({ sub: given, to }: { sub: OwnSubscription; /** where a tap renews it */ to?: string }) {
   const { t, i18n } = useTranslation();
   const [now] = useState(() => new Date());
+  const sub = withoutGraceUsage(given, now);
   const notice = cardNotice(sub, now);
   const channel = usePausedChannel(sub);
   const alert = isSwitchedOff(notice) ? null : cardAlert(sub, now);
-  const hint = notice && (channel ? "channel" : NOTICE_HINT[notice]);
+  const hint = notice && noticeHint(sub, notice, channel, now);
   const left = timeLeft(sub.expire_at, now);
   const date = formatDate(sub.expire_at, i18n.language);
 
@@ -234,7 +253,7 @@ export function NoticeBar({ sub, to }: { sub: OwnSubscription; /** where a tap r
         <span className={`text-sm font-bold ${TEXT_TONE[alert ?? "ok"]}`}>
           {t(`home.notice.${noticeKey(notice, left, channel)}`, { count: left.count, date })}
         </span>
-        {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={date} />}
+        {hint && <NoticeHint hint={hint} trial={sub.is_trial} date={hintDate(sub, date, i18n.language, now)} />}
       </div>
       {(link || channel) && <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground" />}
     </>

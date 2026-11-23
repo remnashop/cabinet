@@ -70,6 +70,7 @@ interface MockSubscription {
   plan_traffic_limit_strategy: string;
   used_traffic: number | null; // bytes
   link_reset_at: string | null;
+  grace_until?: string | null;
 }
 
 const soldTerms = (traffic: number, devices: number) => ({
@@ -83,8 +84,8 @@ const TEMPLATES = [
   { plan_name: "Базовый", plan_id: 1, url: "https://sub.example.com/basic", ...soldTerms(50, 2) },
   { plan_name: "Безлимит", plan_id: 3, url: "https://sub.example.com/unlimited", ...soldTerms(0, 5) },
 ];
-// the cards' alert demo: one card per look, [days left, % of 100 GB used, status]
-const ALERT_DEMO: [number, number, MockSubscription["status"]][] = [
+// the cards' alert demo: one card per look, [days left, % of 100 GB used, status, grace days left]
+const ALERT_DEMO: [number, number, MockSubscription["status"], number?][] = [
   [27, 12, "ACTIVE"], // calm
   [3, 12, "ACTIVE"], // orange: three days
   [1, 12, "ACTIVE"], // red: a day
@@ -92,9 +93,10 @@ const ALERT_DEMO: [number, number, MockSubscription["status"]][] = [
   [40, 95, "ACTIVE"], // red: 95% used
   [40, 100, "ACTIVE"], // used up: LIMITED
   [-2, 30, "EXPIRED"], // expired
+  [-2, 30, "EXPIRED", 1], // expired, in grace
 ];
 let subscriptions: MockSubscription[] = scenario.alertDemo
-  ? ALERT_DEMO.map(([days, used, status], i) =>
+  ? ALERT_DEMO.map(([days, used, status, grace], i) =>
       limitedWhenUsedUp({
         ...TEMPLATES[i % TEMPLATES.length],
         id: i + 1,
@@ -106,6 +108,7 @@ let subscriptions: MockSubscription[] = scenario.alertDemo
         traffic_limit_strategy: "NO_RESET",
         used_traffic: used * GB,
         link_reset_at: null,
+        grace_until: grace === undefined ? null : daysFromNow(grace),
       }),
     )
   : TEMPLATES.slice(0, scenario.subscriptions).map((template, i) => mockSubscription(template, i));

@@ -310,6 +310,8 @@
       "keep": "Renew to keep access",
       "back": "Renew to get access back",
       "backShort": "Renew to regain access",
+      "grace": "Grace period until {{date}}",
+      "graceForever": "Grace period is on",
       "keepUntilTrial": "Get a subscription by {{date}} to keep access",
       "keepTrial": "Get a subscription to keep access",
       "backTrial": "Get a subscription to get access back",
