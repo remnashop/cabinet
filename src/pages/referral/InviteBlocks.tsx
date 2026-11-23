@@ -25,7 +25,7 @@ import { Card } from "@shared/ui/Card";
 import { Ripple } from "@shared/ui/Ripple";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { IconCircle } from "@shared/ui/IconCircle";
-import { CopyLinkField } from "@pages/connect/CopyLinkField";
+import { CopyLinkField } from "@shared/ui/CopyLinkField";
 
 export interface InviteData {
   program: ReferralProgram;

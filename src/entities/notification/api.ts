@@ -18,11 +18,11 @@ export interface NotificationFeed {
   unread_count: number;
 }
 
-const KEY = ["notifications"];
+export const NOTIFICATIONS_KEY = ["notifications"];
 
 export function useNotificationsQuery() {
   return useQuery({
-    queryKey: KEY,
+    queryKey: NOTIFICATIONS_KEY,
     queryFn: ({ signal }) => apiGet<NotificationFeed>("/notifications/me", signal),
     refetchInterval: 60_000,
     refetchIntervalInBackground: false,
@@ -35,7 +35,7 @@ export function useMarkNotificationsRead() {
   return useMutation({
     mutationFn: () => apiPost<void, Record<string, never>>("/notifications/me/actions/mark-read", {}),
     onSuccess: () =>
-      client.setQueryData<NotificationFeed>(KEY, (feed) => (feed ? { ...feed, unread_count: 0 } : feed)),
+      client.setQueryData<NotificationFeed>(NOTIFICATIONS_KEY, (feed) => (feed ? { ...feed, unread_count: 0 } : feed)),
   });
 }
 
@@ -44,8 +44,8 @@ export function useClearNotifications() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: () => apiPost<void, Record<string, never>>("/notifications/me/actions/clear", {}),
-    onMutate: () => client.setQueryData<NotificationFeed>(KEY, { items: [], unread_count: 0 }),
-    onError: () => void client.invalidateQueries({ queryKey: KEY }),
+    onMutate: () => client.setQueryData<NotificationFeed>(NOTIFICATIONS_KEY, { items: [], unread_count: 0 }),
+    onError: () => void client.invalidateQueries({ queryKey: NOTIFICATIONS_KEY }),
   });
 }
 

@@ -7,9 +7,8 @@ import { catalogBuilds, decodeHop } from "@entities/connect-guide/lib";
 import { Button } from "@shared/ui/Button";
 import { ButtonLink } from "@shared/ui/ButtonLink";
 import { Spinner } from "@shared/ui/Spinner";
+import { useCopyLink } from "@shared/lib/use-copy-link";
 import { FullScreen, FullScreenMessage as Message } from "@widgets/full-screen/FullScreen";
-
-import { useCopyLink } from "./use-copy-link";
 
 /** The way out of a link that can't be opened: this page has no cabinet around it. */
 function OpenCabinet() {

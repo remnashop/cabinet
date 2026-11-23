@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { Ripple } from "@shared/ui/Ripple";
 
-import { useCopyLink } from "./use-copy-link";
+import { useCopyLink } from "@shared/lib/use-copy-link";
 
 export function CopyLinkField({
   url,

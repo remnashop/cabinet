@@ -10,10 +10,14 @@ import { useMeQuery } from "@entities/session/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useActivateTrial, useSubscriptionsQuery, useTrialQuery } from "@entities/subscription/api";
 import { canBuyMore, canRenew, cardNotice, isCutOff } from "@entities/subscription/lib";
+import { InstallPromptCard } from "@features/install-prompt/InstallPromptCard";
+import { markPushPromptEligible } from "@features/push-prompt/push-prompt";
+import { PushPromptCard } from "@features/push-prompt/PushPromptCard";
 import { getErrorMessage } from "@shared/api/http";
 import { formatDate, formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
 import { ActionTile } from "@shared/ui/ActionTile";
+import { Hero } from "@shared/ui/Hero";
 import { Modal } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
 import { ErrorCard } from "@shared/ui/ErrorCard";
@@ -29,12 +33,8 @@ import { PromoDialog } from "@widgets/promo/PromoDialog";
 import { CardsSlider } from "@widgets/subscription-cards/CardsSlider";
 import { NoticeBar } from "@widgets/subscription-cards/SubscriptionCard";
 import { pickSelected } from "@widgets/subscription-cards/select";
-import { Hero } from "@pages/connect/HeroArt";
 
 import { LogoArt } from "./EmptyArt";
-import { markPushPromptEligible } from "@features/push-prompt/push-prompt";
-import { InstallPromptCard } from "@features/install-prompt/InstallPromptCard";
-import { PushPromptCard } from "@features/push-prompt/PushPromptCard";
 
 function Header() {
   const { t } = useTranslation();
@@ -95,16 +95,16 @@ function EmptyState({ onActivated }: { onActivated: () => void }) {
               {t("home.tryFor", { price: paid.price })}
             </PulseButton>
           ) : (
-          <PulseButton
-            onClick={() => {
-              if (activate.isPending) return;
-              haptic();
-              activate.mutate(undefined, { onSuccess: onActivated });
-            }}
-          >
-            <Gift className="size-5" />
-            {t("home.tryFree")}
-          </PulseButton>
+            <PulseButton
+              onClick={() => {
+                if (activate.isPending) return;
+                haptic();
+                activate.mutate(undefined, { onSuccess: onActivated });
+              }}
+            >
+              <Gift className="size-5" />
+              {t("home.tryFree")}
+            </PulseButton>
           )}
           <Button variant="glass" size="lg" onClick={() => void navigate("/purchase")}>
             <ShoppingCart className="size-5" />
@@ -161,7 +161,8 @@ export function SubscriptionPage() {
   // the page keeps rendering while it fades out (AnimatedOutlet), on the next page's address: it rewrites the address
   // only while it's its own, or a renewal's `?type=RENEW&sub=` would lose its `sub` on the way to the wizard
   const isHome = useMatch("/") !== null;
-  const [chosenId, setChosenId] = useState<number | null>(() => Number(params.get("sub")) || null);
+  const linkedId = Number(params.get("sub")) || null;
+  const [chosenId, setChosenId] = useState<number | null>(linkedId);
   const [trialActivated, setTrialActivated] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
   // fixed per mount, as on the cards
@@ -173,7 +174,6 @@ export function SubscriptionPage() {
   );
   // the plan the selected subscription renews into, as the backend decides (a link plan, one closed to new buyers)
   const catalog = useCatalogQuery({ ...PUBLIC_ACCESS, renew_subscription_id: selectedId });
-  const linkedId = Number(params.get("sub")) || null;
   const renewLink = params.get("renew") === "1";
   const subsLoaded = subscriptions.isSuccess;
   const linkedFound = linkedId !== null && items.some((s) => s.id === linkedId);

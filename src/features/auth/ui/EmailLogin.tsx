@@ -7,7 +7,8 @@ import { legalLocale, useShownLegalLocale } from "@entities/legal/api";
 import { authApi, completeLogin, type CaptchaConfig } from "@features/auth/api";
 import { CaptchaWidget } from "@features/auth/ui/CaptchaWidget";
 import { ApiError, getErrorMessage } from "@shared/api/http";
-import { DialogFooter, useInsideDialog } from "@shared/ui/Modal";
+import { DialogFooter } from "@shared/ui/Modal";
+import { useInsideDialog } from "@shared/ui/surface";
 import { CodeInput } from "@shared/ui/CodeInput";
 import { Button } from "@shared/ui/Button";
 import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
@@ -17,13 +18,13 @@ import { FormError } from "@shared/ui/FormError";
 
 const RESEND_SECONDS = 60;
 
-const emailError = (input: HTMLInputElement) =>
-  input.validity.valueMissing ? "auth.emailRequired" : input.validity.valid ? null : "auth.emailInvalid";
 const CODE_LENGTH = 6;
 
-/** The two calls of an email-code flow; verify also finishes it (signs in, or links in the profile). */
+const emailError = (input: HTMLInputElement) =>
+  input.validity.valueMissing ? "auth.emailRequired" : input.validity.valid ? null : "auth.emailInvalid";
 const EMAIL_FIELD_CODES = new Set(["EMAIL_DOMAIN_NOT_ALLOWED", "EMAIL_TAKEN"]);
 
+/** The two calls of an email-code flow; verify also finishes it (signs in, or links in the profile). */
 export interface EmailCodeFlow {
   sendCode: (email: string, locale: string, captchaToken?: string) => Promise<unknown>;
   verify: (email: string, code: string) => Promise<void>;

@@ -10,9 +10,8 @@ import { Button } from "@shared/ui/Button";
 import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
 import { QrCode } from "@shared/ui/QrCode";
 import { FormError } from "@shared/ui/FormError";
-
-import { CopyLinkField } from "./CopyLinkField";
-import { useCopyLink } from "./use-copy-link";
+import { CopyLinkField } from "@shared/ui/CopyLinkField";
+import { useCopyLink } from "@shared/lib/use-copy-link";
 
 /**
  * QR, the link itself, copy/open and reissue: the plain connect page. The guide's dialog (dialog) is for another

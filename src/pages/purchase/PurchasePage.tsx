@@ -31,6 +31,18 @@ const WITH_BUTTON =
 const NO_BUTTON =
   "grid-rows-[auto_auto_1fr] [grid-template-areas:'head_head'_'desc_desc'_'feat_price'] lg:[grid-template-areas:'head_price'_'desc_price'_'feat_price']";
 
+/** The price before the plan's promotion, struck out, and the promotion's percent. */
+function OldPrice({ price, percent, dimmed }: { price: string; percent: number | undefined; dimmed: boolean }) {
+  return (
+    <span className="flex items-center gap-1.5 text-xs">
+      <span className="text-muted-foreground line-through">{price}</span>
+      <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
+        −{percent}%
+      </span>
+    </span>
+  );
+}
+
 function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: boolean }) {
   const { plan, currency, to, current } = props;
   const { t, i18n } = useTranslation();
@@ -89,12 +101,7 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
         {rate !== null ? (
           <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
             {rate.original !== null && (
-              <span className="flex items-center gap-1.5 text-xs">
-                <span className="text-muted-foreground line-through">{money(String(rate.original))}</span>
-                <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
-                  −{plan.discount_percent}%
-                </span>
-              </span>
+              <OldPrice price={money(String(rate.original))} percent={plan.discount_percent} dimmed={dimmed} />
             )}
             <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
               {t("purchase.fromPerMonth", { price: money(String(rate.amount)) })}
@@ -104,12 +111,7 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
         ) : price !== null && (
           <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
             {price.discounted_price && (
-              <span className="flex items-center gap-1.5 text-xs">
-                <span className="text-muted-foreground line-through">{money(price.price)}</span>
-                <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
-                  −{plan.discount_percent}%
-                </span>
-              </span>
+              <OldPrice price={money(price.price)} percent={plan.discount_percent} dimmed={dimmed} />
             )}
             <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
               {/* "from Free" reads wrong: a free period is the cheapest, it says enough */}

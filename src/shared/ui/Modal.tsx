@@ -1,12 +1,12 @@
 import { X, type LucideIcon } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { EASE_SOFT, FADE_IN, FADE_OUT } from "@shared/lib/motion";
 import { useTelegramBackButton } from "@shared/telegram";
 import { AnimatedHeight } from "@shared/ui/AnimatedHeight";
-import { DialogContext } from "@shared/ui/surface";
+import { DialogContext, FooterContext } from "@shared/ui/surface";
 import { Ripple } from "@shared/ui/Ripple";
 
 interface ModalProps {
@@ -40,17 +40,9 @@ const ICON_TONE = {
   danger: "border-error/30 bg-error/10 text-error",
 } as const;
 
-// undefined: not in a sheet; null: in one whose strip hasn't mounted yet
-const FooterContext = createContext<HTMLElement | null | undefined>(undefined);
-
 /** The panel's dialog footer: a strip under a line, its buttons on the right (Button glass, then glassAccent or
  *  glassDanger). Rendered by the body, so the buttons keep its state; they land outside its DOM, so a form's submit
  *  button names its form (`form` attribute) for Enter to keep working. */
-/** Inside a sheet, whose footer DialogFooter's buttons go to. */
-export function useInsideDialog(): boolean {
-  return useContext(FooterContext) !== undefined;
-}
-
 export function DialogFooter({ children }: { children: ReactNode }) {
   const el = useContext(FooterContext);
   // outside a sheet (a body rendered on its own) the buttons stay in place

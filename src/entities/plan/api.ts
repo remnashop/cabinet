@@ -115,7 +115,8 @@ export function useCatalogQuery(access: PlanAccess = PUBLIC_ACCESS) {
   if (access.renew_subscription_id !== null) params.set("renew_subscription_id", String(access.renew_subscription_id));
   const query = params.size ? `?${params}` : "";
   return useQuery({
-    queryKey: ["catalog", access],
+    // what the request sends: a change asks for the same catalog as a new purchase
+    queryKey: ["catalog", access.plan_code, access.renew_subscription_id],
     queryFn: ({ signal }) =>
       apiGet<{ items: Plan[]; total: number; anchor_currency: string }>(`/plans/catalog${query}`, signal),
   });
