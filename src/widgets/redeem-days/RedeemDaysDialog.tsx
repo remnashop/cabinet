@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { PlanIcon } from "@entities/plan/PlanIcon";
 import { redeemDays, useRedeemTargetsQuery, type RedeemDaysResult } from "@entities/referral/api";
 import { useSubscriptionsQuery, type OwnSubscription } from "@entities/subscription/api";
-import { subscriptionNumber } from "@entities/subscription/lib";
+import { DAY_MS, subscriptionNumber } from "@entities/subscription/lib";
 import { getErrorMessage } from "@shared/api/http";
 import { formatDate } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
@@ -20,7 +20,6 @@ import { FormError } from "@shared/ui/FormError";
 
 // the backend's MAX_BONUS_DAYS
 const MAX_DAYS = 3650;
-const DAY_MS = 86_400_000;
 
 interface Props {
   open: boolean;

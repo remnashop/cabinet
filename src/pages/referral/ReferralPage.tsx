@@ -16,7 +16,7 @@ import { Skeleton } from "@shared/ui/Skeleton";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 import { RedeemDaysDialog } from "@widgets/redeem-days/RedeemDaysDialog";
 import { useSupport } from "@widgets/support/use-support";
-import { CopyLinkField } from "@pages/connect/CopyLinkField";
+import { CopyLinkField } from "@shared/ui/CopyLinkField";
 
 import { InviteBlocks } from "./InviteBlocks";
 

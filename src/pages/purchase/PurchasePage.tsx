@@ -1,5 +1,4 @@
 import { Gift, House, Zap } from "lucide-react";
-import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate, useSearchParams } from "react-router";
@@ -26,13 +25,23 @@ import { useSupport } from "@widgets/support/use-support";
 import { PlanLimits } from "./PlanLimits";
 import { PaymentsOffBanner, WarningBanner } from "./WarningBanner";
 
-const MotionLink = motion.create(Link);
-
 // the card's grid with its button, and without it (an inert card): no empty track, so no gap where the button would be
 const WITH_BUTTON =
   "grid-rows-[auto_auto_1fr_auto] [grid-template-areas:'head_head'_'desc_desc'_'feat_price'_'btn_btn'] lg:grid-cols-[1fr_auto_9rem] lg:[grid-template-areas:'head_price_btn'_'desc_price_btn'_'feat_price_btn']";
 const NO_BUTTON =
   "grid-rows-[auto_auto_1fr] [grid-template-areas:'head_head'_'desc_desc'_'feat_price'] lg:[grid-template-areas:'head_price'_'desc_price'_'feat_price']";
+
+/** The price before the plan's promotion, struck out, and the promotion's percent. */
+function OldPrice({ price, percent, dimmed }: { price: string; percent: number | undefined; dimmed: boolean }) {
+  return (
+    <span className="flex items-center gap-1.5 text-xs">
+      <span className="text-muted-foreground line-through">{price}</span>
+      <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
+        −{percent}%
+      </span>
+    </span>
+  );
+}
 
 function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: boolean }) {
   const { plan, currency, to, current } = props;
@@ -92,12 +101,7 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
         {rate !== null ? (
           <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
             {rate.original !== null && (
-              <span className="flex items-center gap-1.5 text-xs">
-                <span className="text-muted-foreground line-through">{money(String(rate.original))}</span>
-                <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
-                  −{plan.discount_percent}%
-                </span>
-              </span>
+              <OldPrice price={money(String(rate.original))} percent={plan.discount_percent} dimmed={dimmed} />
             )}
             <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
               {t("purchase.fromPerMonth", { price: money(String(rate.amount)) })}
@@ -107,12 +111,7 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
         ) : price !== null && (
           <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
             {price.discounted_price && (
-              <span className="flex items-center gap-1.5 text-xs">
-                <span className="text-muted-foreground line-through">{money(price.price)}</span>
-                <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
-                  −{plan.discount_percent}%
-                </span>
-              </span>
+              <OldPrice price={money(price.price)} percent={plan.discount_percent} dimmed={dimmed} />
             )}
             <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
               {/* "from Free" reads wrong: a free period is the cheapest, it says enough */}
@@ -140,10 +139,10 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
     );
   }
   return (
-    <MotionLink to={to} className={`${frame} text-foreground`}>
+    <Link to={to} className={`${frame} text-foreground`}>
       {body}
       <Ripple />
-    </MotionLink>
+    </Link>
   );
 }
 

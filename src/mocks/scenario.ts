@@ -37,7 +37,7 @@ export interface Scenario {
   paymentsEnabled: boolean;
 }
 
-export const DEFAULT_SCENARIO: Scenario = {
+const DEFAULT_SCENARIO: Scenario = {
   subscriptions: 2,
   maxActive: 3,
   trial: false,

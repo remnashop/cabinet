@@ -5,6 +5,9 @@ import { isMiniApp } from "@shared/telegram";
 
 export const emojiThumbnailUrl = (id: string) => `${API_BASE}/emoji-packs/thumbnails/${encodeURIComponent(id)}`;
 
+export type PurchaseType = "NEW" | "RENEW" | "CHANGE";
+export type DiscountSource = "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";
+
 export interface PlanPrice {
   currency: string;
   price: string;
@@ -74,7 +77,7 @@ export interface Quote {
   change_credit_days: number;
   plan_discount_percent: number;
   discount_percent: number;
-  discount_source: "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";
+  discount_source: DiscountSource;
   final_price: string;
   currency: string;
 }
@@ -83,7 +86,7 @@ export interface CheckoutInput {
   plan_id: number;
   duration_days: number;
   currency: string;
-  purchase_type: "NEW" | "RENEW" | "CHANGE";
+  purchase_type: PurchaseType;
   // omitted only for an order that costs nothing: the backend records it without a gateway
   gateway_type?: string;
   target_subscription_id?: number;
@@ -112,7 +115,8 @@ export function useCatalogQuery(access: PlanAccess = PUBLIC_ACCESS) {
   if (access.renew_subscription_id !== null) params.set("renew_subscription_id", String(access.renew_subscription_id));
   const query = params.size ? `?${params}` : "";
   return useQuery({
-    queryKey: ["catalog", access],
+    // what the request sends: a change asks for the same catalog as a new purchase
+    queryKey: ["catalog", access.plan_code, access.renew_subscription_id],
     queryFn: ({ signal }) =>
       apiGet<{ items: Plan[]; total: number; anchor_currency: string }>(`/plans/catalog${query}`, signal),
   });

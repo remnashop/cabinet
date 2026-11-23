@@ -7,8 +7,7 @@ export interface ShaderColors {
 }
 
 // With DEFAULT_ACCENT_COLOR these four stops reproduce the background the app has always had.
-export const DEFAULT_SHADER_BASE = "#12101a";
-export const SHADER_TONE_COUNT = 3;
+const DEFAULT_SHADER_BASE = "#12101a";
 
 // each tone from the base: hue shift, added saturation, fixed lightness, so any base keeps the background dark
 const TONE_RULES: readonly { hueShift: number; saturationGain: number; lightness: number }[] = [

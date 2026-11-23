@@ -1,9 +1,8 @@
 import type { TFunction } from "i18next";
 
-import type { PaymentMethod, Plan, PlanAccess, Quote } from "@entities/plan/api";
+import { PUBLIC_ACCESS, type PaymentMethod, type Plan, type PlanAccess, type PurchaseType, type Quote } from "@entities/plan/api";
 import { formatGb } from "@shared/lib/format";
-
-export type PurchaseType = "NEW" | "RENEW" | "CHANGE";
+import { LINK_CODE } from "@shared/lib/link-code";
 
 /** RENEW/CHANGE only make sense for a subscription; anything else is a plain purchase.
     access: the renewed subscription for RENEW; a plan link's code (the bot's plan_<code>) for a new purchase. */
@@ -19,15 +18,15 @@ export function parseWizardParams(search: URLSearchParams): {
       type,
       subId,
       access: {
-        plan_code: null,
+        ...PUBLIC_ACCESS,
         renew_subscription_id: type === "RENEW" ? subId : null,
         change_subscription_id: type === "CHANGE" ? subId : null,
       },
     };
   }
   const code = search.get("code");
-  const plan_code = code && /^[A-Za-z0-9_-]{1,64}$/.test(code) ? code : null;
-  return { type: "NEW", subId: null, access: { plan_code, renew_subscription_id: null, change_subscription_id: null } };
+  const plan_code = code && LINK_CODE.test(code) ? code : null;
+  return { type: "NEW", subId: null, access: { ...PUBLIC_ACCESS, plan_code } };
 }
 
 /** Which "what happens to your subscription" text the summary shows, from what the quote credits: an unlimited

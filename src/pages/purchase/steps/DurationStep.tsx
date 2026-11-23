@@ -1,9 +1,9 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useQuoteQueries, type Plan, type PlanAccess } from "@entities/plan/api";
+import { useQuoteQueries, type Plan, type PlanAccess, type PurchaseType } from "@entities/plan/api";
 import { effectivePrice, savingsPercent, unitPrice } from "@features/purchase/savings";
-import { durationLabel, type PurchaseType } from "@features/purchase/wizard";
+import { durationLabel } from "@features/purchase/wizard";
 import { formatMoney, formatPrice } from "@shared/lib/format";
 import { NotePill } from "@shared/ui/NotePill";
 import { Ripple } from "@shared/ui/Ripple";

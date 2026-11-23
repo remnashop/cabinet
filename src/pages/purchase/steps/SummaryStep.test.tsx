@@ -3,8 +3,7 @@ import { act, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createCheckout, type PaymentMethod, type Plan, type PlanAccess } from "@entities/plan/api";
-import type { PurchaseType } from "@features/purchase/wizard";
+import { createCheckout, type PaymentMethod, type Plan, type PlanAccess, type PurchaseType } from "@entities/plan/api";
 import "@shared/i18n";
 import { tick, until } from "@shared/testing/until";
 
