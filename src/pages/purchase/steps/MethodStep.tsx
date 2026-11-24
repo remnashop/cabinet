@@ -10,7 +10,7 @@ import {
   type Quote,
 } from "@entities/plan/api";
 import { GATEWAY_LOGOS } from "@entities/plan/gateway-logos";
-import { gatewayLabel } from "@features/purchase/wizard";
+import { methodLabel } from "@features/purchase/wizard";
 import { formatMoney } from "@shared/lib/format";
 import { AlertMark } from "@shared/ui/AlertMark";
 import { ButtonLink } from "@shared/ui/ButtonLink";
@@ -96,7 +96,7 @@ export function MethodStep({
                   <CreditCard className="size-4" />
                 </span>
               )}
-              <span className="text-sm font-semibold">{gatewayLabel(m.gateway_type, t)}</span>
+              <span className="text-sm font-semibold">{methodLabel(m, t)}</span>
             </span>
           </OptionRow>
         );

@@ -9,7 +9,7 @@ import { LegalNotice } from "@entities/legal/LegalNotice";
 import { useMeQuery } from "@entities/session/api";
 import { AwaitPaymentButton } from "@features/payment/AwaitPaymentButton";
 import { StarsInvoiceError, UnsafePaymentUrlError } from "@features/payment/start-payment";
-import { gatewayLabel, isValidEmail, typeNoticeKey } from "@features/purchase/wizard";
+import { isValidEmail, methodLabel, typeNoticeKey } from "@features/purchase/wizard";
 import { getErrorMessage } from "@shared/api/http";
 import { formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
@@ -136,7 +136,7 @@ export function SummaryStep({
             <InfoRow
               icon={method.gateway_type === "TELEGRAM_STARS" ? Star : CreditCard}
               label={t("purchase.method")}
-              value={gatewayLabel(method.gateway_type, t)}
+              value={methodLabel(method, t)}
               bright
             />
             <div className="flex flex-col gap-1.5">

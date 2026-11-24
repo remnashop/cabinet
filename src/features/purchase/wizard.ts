@@ -92,6 +92,11 @@ export function gatewayLabel(type: string | null, t: TFunction): string {
   return t(`gateways.${type}`, { defaultValue: type.charAt(0) + type.slice(1).toLowerCase() });
 }
 
+/** What the shop calls a checkout method; the gateway's own name on an older backend. */
+export function methodLabel(method: PaymentMethod, t: TFunction): string {
+  return method.name || gatewayLabel(method.gateway_type, t);
+}
+
 /** ?days= of "buy again": 0 is unlimited, so a missing or broken value is null, never 0. */
 export function parseDaysParam(search: URLSearchParams): number | null {
   const raw = search.get("days");

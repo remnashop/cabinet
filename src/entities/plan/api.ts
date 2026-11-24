@@ -48,6 +48,8 @@ export interface Plan {
 export interface PaymentMethod {
   gateway_type: string;
   currency: string;
+  /** gateway-name from the shop's translations in the customer's language; absent on older backends */
+  name?: string;
   requires_email: boolean;
   /** false: the shop sends its own email to the gateway, so the customer's isn't asked; absent on older backends */
   asks_email?: boolean;
