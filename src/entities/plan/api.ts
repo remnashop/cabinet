@@ -46,7 +46,6 @@ export interface Plan {
 }
 
 export interface PaymentMethod {
-  presentation?: Record<string, { name: string; description: string }>;
   gateway_type: string;
   currency: string;
   requires_email: boolean;

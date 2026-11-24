@@ -6,7 +6,6 @@ import i18n from "@shared/i18n";
 import {
   durationUnit,
   gatewayLabel,
-  paymentMethodText,
   isValidEmail,
   parseDaysParam,
   parseWizardParams,
@@ -93,18 +92,4 @@ it("parseDaysParam keeps 0 (unlimited) and drops a missing or broken value", () 
   expect(parseDaysParam(new URLSearchParams(""))).toBeNull();
   expect(parseDaysParam(new URLSearchParams("?days="))).toBeNull();
   expect(parseDaysParam(new URLSearchParams("?days=abc"))).toBeNull();
-});
-
-
-it("uses localized gateway text, English fallback and old-backend names", () => {
-  const t = i18n.getFixedT("ru");
-  const method = { gateway_type: "PAY_2328", currency: "RUB", requires_email: false,
-    presentation: { ru: { name: "Криптовалюта", description: "Монета и сеть на странице оплаты" },
-      en: { name: "Crypto", description: "Choose asset and network" } } };
-  expect(paymentMethodText(method, "ru-RU", t)).toEqual(method.presentation.ru);
-  expect(paymentMethodText(method, "de", t)).toEqual(method.presentation.en);
-  expect(paymentMethodText({ ...method, presentation: undefined }, "ru", t)).toEqual({
-    name: gatewayLabel("PAY_2328", t), description: "" });
-  expect(paymentMethodText({ ...method, presentation: { ru: { name: "", description: "Hint" } } }, "ru", t)).toEqual({
-    name: gatewayLabel("PAY_2328", t), description: "Hint" });
 });

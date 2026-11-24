@@ -67,14 +67,12 @@ async function render(
   access: PlanAccess = { plan_code: null, renew_subscription_id: type === "RENEW" ? subId : null, change_subscription_id: null },
   replacesOrderId: number | null = null,
   asksEmail = true,
-  presentation?: PaymentMethod["presentation"],
 ) {
   const method: PaymentMethod = {
     gateway_type: "YOOKASSA",
     currency: "RUB",
     requires_email: requiresEmail,
     asks_email: asksEmail,
-    presentation,
   };
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   await act(async () => {
@@ -261,14 +259,4 @@ describe("SummaryStep", () => {
     });
     await until(() => expect(payButton().disabled).toBe(false));
   });
-});
-
-
-it("shows custom payment guidance without an email field and treats it as plain text", async () => {
-  await render("NEW", null, false, undefined, undefined, null, false,
-    { en: { name: "Crypto", description: "Use <b>your wallet</b> & confirm" } });
-  expect(container.textContent).toContain("Crypto");
-  expect(container.textContent).toContain("Use <b>your wallet</b> & confirm");
-  expect(container.querySelector("b")).toBeNull();
-  expect(container.querySelector("input[type=email]")).toBeNull();
 });

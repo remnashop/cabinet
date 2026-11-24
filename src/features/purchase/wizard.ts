@@ -98,11 +98,3 @@ export function parseDaysParam(search: URLSearchParams): number | null {
   const days = raw ? Number(raw) : NaN;
   return Number.isInteger(days) && days >= 0 ? days : null;
 }
-
-export function paymentMethodText(
-  method: PaymentMethod, language: string, t: TFunction,
-): { name: string; description: string } {
-  const texts = method.presentation;
-  const text = texts?.[language.split("-")[0].toLowerCase()] ?? texts?.en;
-  return { name: text?.name || gatewayLabel(method.gateway_type, t), description: text?.description || "" };
-}
