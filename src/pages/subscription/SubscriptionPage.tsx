@@ -5,15 +5,19 @@ import { Navigate, useMatch, useNavigate, useSearchParams } from "react-router";
 
 import { useBrandName } from "@entities/appearance/api";
 import { BrandMark } from "@entities/appearance/BrandMark";
-import { useCatalogQuery } from "@entities/plan/api";
+import { PUBLIC_ACCESS, useCatalogQuery } from "@entities/plan/api";
 import { useMeQuery } from "@entities/session/api";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useActivateTrial, useSubscriptionsQuery, useTrialQuery } from "@entities/subscription/api";
-import { canBuyMore, canRenew, cardNotice } from "@entities/subscription/lib";
+import { canBuyMore, canRenew, cardNotice, inGrace, isCutOff } from "@entities/subscription/lib";
+import { InstallPromptCard } from "@features/install-prompt/InstallPromptCard";
+import { markPushPromptEligible } from "@features/push-prompt/push-prompt";
+import { PushPromptCard } from "@features/push-prompt/PushPromptCard";
 import { getErrorMessage } from "@shared/api/http";
 import { formatDate, formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
 import { ActionTile } from "@shared/ui/ActionTile";
+import { Hero } from "@shared/ui/Hero";
 import { Modal } from "@shared/ui/Modal";
 import { Button } from "@shared/ui/Button";
 import { ErrorCard } from "@shared/ui/ErrorCard";
@@ -29,11 +33,8 @@ import { PromoDialog } from "@widgets/promo/PromoDialog";
 import { CardsSlider } from "@widgets/subscription-cards/CardsSlider";
 import { NoticeBar } from "@widgets/subscription-cards/SubscriptionCard";
 import { pickSelected } from "@widgets/subscription-cards/select";
-import { Hero } from "@pages/connect/HeroArt";
 
 import { LogoArt } from "./EmptyArt";
-import { markPushPromptEligible } from "@features/push-prompt/push-prompt";
-import { PushPromptCard } from "@features/push-prompt/PushPromptCard";
 
 import { AutoRenewCard } from "./AutoRenewCard";
 
@@ -50,7 +51,7 @@ function Header() {
           <div className="truncate text-sm font-bold lg:hidden">{brand}</div>
           {me.data && (
             <div className="truncate text-xs text-muted-foreground lg:text-lg lg:font-semibold lg:tracking-tight lg:text-foreground">
-              {t("home.welcome", { name: me.data.name })}
+              {me.data.name ? t("home.welcome", { name: me.data.name }) : t("home.welcomeNoName")}
             </div>
           )}
         </div>
@@ -96,16 +97,16 @@ function EmptyState({ onActivated }: { onActivated: () => void }) {
               {t("home.tryFor", { price: paid.price })}
             </PulseButton>
           ) : (
-          <PulseButton
-            onClick={() => {
-              if (activate.isPending) return;
-              haptic();
-              activate.mutate(undefined, { onSuccess: onActivated });
-            }}
-          >
-            <Gift className="size-5" />
-            {t("home.tryFree")}
-          </PulseButton>
+            <PulseButton
+              onClick={() => {
+                if (activate.isPending) return;
+                haptic();
+                activate.mutate(undefined, { onSuccess: onActivated });
+              }}
+            >
+              <Gift className="size-5" />
+              {t("home.tryFree")}
+            </PulseButton>
           )}
           <Button variant="glass" size="lg" onClick={() => void navigate("/purchase")}>
             <ShoppingCart className="size-5" />
@@ -162,7 +163,8 @@ export function SubscriptionPage() {
   // the page keeps rendering while it fades out (AnimatedOutlet), on the next page's address: it rewrites the address
   // only while it's its own, or a renewal's `?type=RENEW&sub=` would lose its `sub` on the way to the wizard
   const isHome = useMatch("/") !== null;
-  const [chosenId, setChosenId] = useState<number | null>(() => Number(params.get("sub")) || null);
+  const linkedId = Number(params.get("sub")) || null;
+  const [chosenId, setChosenId] = useState<number | null>(linkedId);
   const [trialActivated, setTrialActivated] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
   // fixed per mount, as on the cards
@@ -173,8 +175,7 @@ export function SubscriptionPage() {
     items.map((s) => s.id),
   );
   // the plan the selected subscription renews into, as the backend decides (a link plan, one closed to new buyers)
-  const catalog = useCatalogQuery({ plan_code: null, renew_subscription_id: selectedId, change_subscription_id: null });
-  const linkedId = Number(params.get("sub")) || null;
+  const catalog = useCatalogQuery({ ...PUBLIC_ACCESS, renew_subscription_id: selectedId });
   const renewLink = params.get("renew") === "1";
   const subsLoaded = subscriptions.isSuccess;
   const linkedFound = linkedId !== null && items.some((s) => s.id === linkedId);
@@ -228,14 +229,9 @@ export function SubscriptionPage() {
       ? `/purchase/${selected.plan_id}?type=RENEW&sub=${selected.id}`
       : `/purchase?type=CHANGE&sub=${selected.id}`);
   // no days or no traffic left, or switched off by the admin: a new device would get no connection, so "connect" is
-  // gone until a renewal (or the admin turns it back on)
+  // gone until a renewal (or the admin turns it back on). The grace config still connects
   const notice = selected && cardNotice(selected, now);
-  const cutOff =
-    notice === "expired" ||
-    notice === "trafficOut" ||
-    notice === "expiredTraffic" ||
-    notice === "disabled" ||
-    notice === "deleted";
+  const cutOff = isCutOff(notice ?? null) && !(selected && inGrace(selected, now));
   // a user can only ever have this one subscription (an admin lowering the cap leaves extra ones in the slider)
   const single = settings.data.max_active_subscriptions === 1 && items.length === 1;
   // the tiles side by side (connect among them): one row across the frame. Alone, the card takes the left half on
@@ -348,6 +344,8 @@ export function SubscriptionPage() {
 
           {/* right after a purchase or a trial, once per browser */}
           <PushPromptCard />
+          {/* a phone's browser, once per browser */}
+          <InstallPromptCard />
           <div className="mt-5">
             <AutoRenewCard key={selected.id} subscriptionId={selected.id} />
           </div>

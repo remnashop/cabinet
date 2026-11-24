@@ -33,7 +33,7 @@ import { InfoDialog } from "@widgets/info/InfoDialog";
 import { PromoDialog } from "@widgets/promo/PromoDialog";
 import { useSupport } from "@widgets/support/use-support";
 import { RedeemDaysDialog } from "@widgets/redeem-days/RedeemDaysDialog";
-import { useCopyLink } from "@pages/connect/use-copy-link";
+import { useCopyLink } from "@shared/lib/use-copy-link";
 
 import { KIND_ICON } from "./identity-icons";
 import { ProfileBlocks } from "./ProfileBlocks";
@@ -175,6 +175,12 @@ export function ProfilePage() {
     else oauthLink.mutate(kind.toLowerCase());
   };
 
+  // "Почта" takes the feminine: its own line
+  const linkedTitle =
+    link.notice?.kind === "EMAIL"
+      ? t("link.linkedEmailTitle")
+      : t("link.linkedTitle", { kind: link.notice ? t(`profile.kinds.${link.notice.kind}`) : "" });
+
   const header = <PageHeader title={t("pages.profile")} backTo="/" navItem />;
   if (me.isError && !me.data) {
     return (
@@ -258,12 +264,7 @@ export function ProfilePage() {
         glyph={link.notice && KIND_ICON[link.notice.kind]}
         open={link.notice !== null}
         onClose={link.closeNotice}
-        // "Почта" takes the feminine: its own line
-        title={
-          link.notice?.kind === "EMAIL"
-            ? t("link.linkedEmailTitle")
-            : t("link.linkedTitle", { kind: link.notice ? t(`profile.kinds.${link.notice.kind}`) : "" })
-        }
+        title={linkedTitle}
       >
         <SuccessMessage
           hint={
@@ -278,9 +279,7 @@ export function ProfilePage() {
             ? t("link.merged")
             : link.notice?.status === "already_linked"
               ? t("link.alreadyLinked")
-              : link.notice?.kind === "EMAIL"
-                ? t("link.linkedEmailTitle")
-                : t("link.linkedTitle", { kind: link.notice ? t(`profile.kinds.${link.notice.kind}`) : "" })}
+              : linkedTitle}
         </SuccessMessage>
         <Button variant="glass" size="lg" className="mt-6 w-full" onClick={link.closeNotice}>
           {t("common.continue")}

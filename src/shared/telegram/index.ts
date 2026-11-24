@@ -9,7 +9,6 @@ import {
   openTelegramLink,
   retrieveLaunchParams,
   retrieveRawInitData,
-  shareURL,
   swipeBehavior,
   viewport,
 } from "@telegram-apps/sdk-react";
@@ -86,6 +85,16 @@ export function getTelegramPhotoUrl(): string | null {
   try {
     const url = retrieveLaunchParams().tgWebAppData?.user?.photo_url;
     return url && isHttpsUrl(url) ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+/** ios, android, tdesktop, web…; null outside the Mini App. */
+export function getPlatform(): string | null {
+  if (!active) return null;
+  try {
+    return retrieveLaunchParams().tgWebAppPlatform ?? null;
   } catch {
     return null;
   }
@@ -168,24 +177,4 @@ export async function openStarsInvoice(url: string): Promise<StarsInvoiceResult>
   if (active && invoice.open.isAvailable()) return (await invoice.open(url, "url")) as StarsInvoiceResult;
   window.open(url, "_blank", "noopener");
   return "pending";
-}
-
-/** Resolves true when there was no share sheet and the link went to the clipboard instead. */
-export async function share(url: string, text: string): Promise<boolean> {
-  if (active && shareURL.isAvailable()) {
-    shareURL(url, text);
-    return false;
-  }
-  if (navigator.share) {
-    // the user closing the share sheet rejects with AbortError; that's not a failure
-    await navigator.share({ url, text }).catch(() => {});
-    return false;
-  }
-  try {
-    // no clipboard (insecure context) throws too
-    await navigator.clipboard.writeText(url);
-    return true;
-  } catch {
-    return false;
-  }
 }

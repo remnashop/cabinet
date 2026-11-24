@@ -1,13 +1,19 @@
 import type { Plan } from "@entities/plan/api";
-import type { OwnSubscription } from "@entities/subscription/api";
+import type { Device, OwnSubscription } from "@entities/subscription/api";
+import { GB } from "@shared/lib/format";
 
-const DAY_MS = 86_400_000;
+export const DAY_MS = 86_400_000;
 const SOON_DAYS = 3;
 // the backend's unlimited expiry: a date the panel needs, read as "never"
 const UNLIMITED_EXPIRE_YEAR = 2099;
 
 export function isUnlimited(sub: Pick<OwnSubscription, "expire_at">): boolean {
   return new Date(sub.expire_at).getUTCFullYear() >= UNLIMITED_EXPIRE_YEAR;
+}
+
+/** Expired, yet still connected on the shop's grace config; a past date is a grace the worker hasn't ended yet. */
+export function inGrace(sub: Pick<OwnSubscription, "status" | "grace_until">, now: Date): boolean {
+  return sub.status === "EXPIRED" && !!sub.grace_until && new Date(sub.grace_until).getTime() > now.getTime();
 }
 
 // whole days, rounded up, so "0.4 days left" still reads as one day
@@ -39,7 +45,7 @@ export function daysAlert(sub: Pick<OwnSubscription, "status" | "expire_at">, no
   const state = urgency(sub, now);
   if (state === "ok") return null;
   if (state === "expired" || daysLeft(sub.expire_at, now) <= 1) return "error";
-  return state === "soon" ? "warning" : null;
+  return "warning";
 }
 
 /** The traffic's alarm: red over 90% used or once the panel has limited it, orange from 60%. */
@@ -73,6 +79,16 @@ export function trafficOut(sub: Pick<OwnSubscription, "status" | "used_traffic" 
   return sub.status === "LIMITED" || trafficRatio(sub.used_traffic, sub.effective_traffic_limit) === 1;
 }
 
+/** Switched off by the admin: the strip says so, but there is nothing to act on in time. */
+export function isSwitchedOff(notice: CardNotice | null): boolean {
+  return notice === "disabled" || notice === "deleted";
+}
+
+/** No days or no traffic left, or switched off: a new device would get no connection. */
+export function isCutOff(notice: CardNotice | null): boolean {
+  return isSwitchedOff(notice) || notice === "expired" || notice === "trafficOut" || notice === "expiredTraffic";
+}
+
 /** What the strip under a card says, the worst first. null: nothing wrong, no strip. */
 export function cardNotice(sub: AlertSub, now: Date): CardNotice | null {
   if (sub.status === "DELETED") return "deleted";
@@ -92,7 +108,7 @@ export function cardNotice(sub: AlertSub, now: Date): CardNotice | null {
 // used is bytes, the limit whole GB (binary); null when usage is unknown or uncapped (0 = unlimited)
 export function trafficRatio(used: number | null, limitGb: number): number | null {
   if (used === null || limitGb === 0) return null;
-  return Math.min(1, used / (limitGb * 1024 ** 3));
+  return Math.min(1, used / (limitGb * GB));
 }
 
 // trials cannot be renewed, and a plan the backend's renewal catalog lacks has nothing to renew into
@@ -119,4 +135,9 @@ export function canBuyMore(maxActive: number | null, items: OwnSubscription[]): 
 /** The number a card shows: #0042. */
 export function subscriptionNumber(id: number): string {
   return `#${String(id).padStart(4, "0")}`;
+}
+
+/** the customer's own name, or what the panel knows of the device */
+export function deviceTitle(device: Device): string {
+  return device.name || device.device_model || device.platform || device.hwid;
 }

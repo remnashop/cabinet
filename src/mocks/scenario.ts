@@ -25,18 +25,19 @@ export interface Scenario {
   referral: boolean;
   referralEmpty: boolean; // nobody invited yet
   connectGuide: boolean; // the dashboard's connect guide on, or only the link and QR code
-  alertDemo: boolean; // seven cards, one per look (calm, orange and red by days and traffic, limited, expired)
+  alertDemo: boolean; // eight cards, one per look (calm, orange and red by days and traffic, limited, expired, grace)
   paymentOutcome: MockPaymentOutcome; // what an order turns into from its second poll; PENDING runs into the timeout
   failRequests: MockFailure; // every call but sign-in and the documents fails: a 500 or no answer, for the error cards
   legalPending: boolean; // the admin asked to accept the documents again: the re-acceptance gate
   miniAppOnly: boolean; // every browser sign-in off: the login page sends to the bot
+  emailRequired: boolean; // the shop requires an email: a customer without one is held at the email screen
   feed: MockFeed; // the bell's notifications
   pushConfigured: boolean; // the backend has a VAPID key
   restricted: boolean; // the admin closed the service: every call but sign-in answers ACCESS_RESTRICTED
   paymentsEnabled: boolean;
 }
 
-export const DEFAULT_SCENARIO: Scenario = {
+const DEFAULT_SCENARIO: Scenario = {
   subscriptions: 2,
   maxActive: 3,
   trial: false,
@@ -60,6 +61,7 @@ export const DEFAULT_SCENARIO: Scenario = {
   failRequests: "none",
   legalPending: false,
   miniAppOnly: false,
+  emailRequired: false,
   feed: "normal",
   pushConfigured: true,
   restricted: false,

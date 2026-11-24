@@ -8,6 +8,7 @@ import { pushApi } from "@entities/notification/api";
 import { useMeQuery } from "@entities/session/api";
 import { endSession } from "@features/auth/logout";
 import { LegalReacceptanceGate } from "@features/legal-reacceptance/LegalReacceptanceGate";
+import { RequiredEmailGate } from "@features/link-identity/RequiredEmailGate";
 import { clearAccessToken } from "@shared/api/tokens";
 import { isSupportedLanguage } from "@shared/i18n";
 import type { INTRO_STATE } from "@shared/lib/intro";
@@ -21,6 +22,7 @@ import { Sidebar } from "@widgets/app-shell/Sidebar";
 import { SignOutContext } from "@widgets/app-shell/sign-out";
 import { HeaderActions } from "@widgets/header-actions/HeaderActions";
 import { HeaderSlotContext } from "@widgets/page-header/header-slot";
+import { PromoLinkGate } from "@widgets/promo/PromoLinkGate";
 import { useSupportFromLink } from "@widgets/support/use-support";
 
 // The panel's AnimatedOutlet: a fade keyed by the first path segment, so /profile → /profile/payments doesn't
@@ -117,9 +119,11 @@ export function AppShell() {
             <HeaderActions />
           </div>
         </header>
-        {/* the stable gutter (--scrollbar-size, app/styles.css) comes out of the right padding: 20px either side */}
+        {/* the scrollbar is always there (overflow-y: scroll, not scrollbar-gutter: Safari reserves the native width for an
+            empty gutter) and its width (--scrollbar-size) comes out of the right padding: 20px either side. No sideways
+            scroll: Firefox's 11px thin scrollbar leaves 9px, less than the cards slider's 10px bleed */}
         <main
-          className={`mx-auto w-full max-w-[560px] min-w-0 px-4 pb-[calc(max(var(--safe-bottom),16px)+80px)] lg:max-w-none lg:flex-1 lg:overflow-y-auto lg:pl-5 lg:pr-[calc(1.25rem-var(--scrollbar-size))] lg:pt-0 lg:pb-5 lg:[scrollbar-gutter:stable] ${wide ? "lg:flex lg:flex-col" : ""}`}
+          className={`mx-auto w-full max-w-[560px] min-w-0 px-4 pb-[calc(max(var(--safe-bottom),16px)+80px)] lg:max-w-none lg:flex-1 lg:overflow-x-hidden lg:overflow-y-scroll lg:pl-5 lg:pr-[calc(1.25rem-var(--scrollbar-size))] lg:pt-0 lg:pb-5 ${wide ? "lg:flex lg:flex-col" : ""}`}
         >
           <HeaderSlotContext.Provider value={headerSlot}>
             <AnimatedOutlet className={wide ? "lg:flex lg:flex-1 lg:flex-col" : undefined} />
@@ -131,6 +135,8 @@ export function AppShell() {
       </motion.div>
       <BottomNav />
       <LegalReacceptanceGate />
+      <RequiredEmailGate />
+      <PromoLinkGate />
       {supportFromLink}
     </motion.div>
     </SignOutContext.Provider>

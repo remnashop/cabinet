@@ -1,3 +1,4 @@
+import { CircleUser, LogIn } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -61,7 +62,8 @@ export function LoginCallbackPage() {
       title={t(linking ? "link.failed" : "auth.callbackFailed")}
       text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : null}
     >
-      <ButtonLink to={linking ? "/profile" : "/login"} variant="glass" size="lg" className="w-full">
+      <ButtonLink to={linking ? "/profile" : "/login"} variant="glassSolid" size="lg" className="w-full">
+        {linking ? <CircleUser className="size-5" /> : <LogIn className="size-5" />}
         {t(linking ? "link.toProfile" : "auth.backToLogin")}
       </ButtonLink>
     </FullScreenMessage>

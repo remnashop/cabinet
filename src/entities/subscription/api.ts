@@ -17,6 +17,9 @@ export interface OwnSubscription {
   effective_device_limit: number;
   traffic_limit_strategy: string;
   plan_name: string;
+  // absent on older backends
+  plan_icon_emoji_id?: string | null;
+  plan_icon_emoji_fallback?: string | null;
   plan_id: number;
   // the terms it was sold with: a paid renewal moves it to the plan's current ones
   plan_traffic_limit: number;
@@ -31,6 +34,8 @@ export interface OwnSubscription {
   paused_by_channel_leave: boolean;
   // the backend's signature over url: what the connect page's browser hop is vouched for with
   connect_signature: string;
+  // expired, but the panel keeps a reduced config until then; absent on older backends
+  grace_until?: string | null;
 }
 
 export interface Trial {
@@ -47,8 +52,13 @@ export interface Trial {
 
 export interface Device {
   hwid: string;
+  // the customer's own name for it, kept by the shop
+  name: string | null;
   platform: string | null;
+  os_version: string | null;
   device_model: string | null;
+  // the client app and its version, read off the user agent
+  app: string | null;
   user_agent: string | null;
   created_at: string;
 }
@@ -93,6 +103,18 @@ export function useDeleteDevice() {
   return useSubscriptionMutation(({ subscriptionId, hwid }: { subscriptionId: number; hwid: string }) =>
     apiDelete(`/subscriptions/me/${subscriptionId}/devices/${encodeURIComponent(hwid)}`),
   );
+}
+
+/** an empty name drops the customer's own, the device's model shows again */
+export function useRenameDevice() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ subscriptionId, hwid, name }: { subscriptionId: number; hwid: string; name: string }) => {
+      const path = `/subscriptions/me/${subscriptionId}/devices/${encodeURIComponent(hwid)}/name`;
+      return name ? apiPut(path, { name }) : apiDelete(path);
+    },
+    onSuccess: (_data, { subscriptionId }) => client.invalidateQueries({ queryKey: ["devices", subscriptionId] }),
+  });
 }
 
 export function useDeleteAllDevices() {

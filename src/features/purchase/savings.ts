@@ -22,11 +22,11 @@ export function minPrice(plan: Plan, currency: string): PlanPrice | null {
 
 /** Per-day saving against the shortest duration priced in the same currency; null when there is none. */
 export function savingsPercent(plan: Plan, days: number, currency: string): number | null {
-  // an unlimited duration (0 days) has no per-day price to compare
+  // an unlimited (0 days) or a free duration has no per-day price to compare
   const priced = plan.durations
     .filter((d) => d.days > 0)
     .map((d) => ({ days: d.days, price: priceIn(d.prices, currency) }))
-    .filter((d): d is { days: number; price: number } => d.price !== null);
+    .filter((d): d is { days: number; price: number } => d.price !== null && d.price > 0);
   const target = priced.find((d) => d.days === days);
   if (!target) return null;
   const base = priced.reduce((a, b) => (b.days < a.days ? b : a));
@@ -46,4 +46,28 @@ export function unitPrice(plan: Plan, days: number, price: number): { unit: "mon
   const cents = Number.isInteger(price) ? 1 : 100;
   if (shortest >= 30) return { unit: "month", amount: Math.round(((price * 30) / days) * cents) / cents };
   return { unit: "day", amount: Math.round((price / days) * 100) / 100 };
+}
+
+/**
+ * The plan's lowest price per month over its periods of a month or more, the promotion's while one runs; `original`
+ * is the same period's rate before it. Null when no paid period is a month or longer.
+ */
+export function bestMonthlyRate(
+  plan: Plan,
+  currency: string,
+): { amount: number; original: number | null; days: number } | null {
+  let best: { amount: number; original: number | null; days: number } | null = null;
+  for (const d of plan.durations) {
+    const found = d.prices.find((p) => p.currency === currency);
+    const price = found ? Number(effectivePrice(found)) : 0;
+    if (!found || d.days < 30 || price <= 0) continue;
+    // whole when the list price is (a promotion's 2239.20 ₽ a year is 184 ₽, not 184.04 ₽), to the cent otherwise
+    const cents = Number.isInteger(Number(found.price)) ? 1 : 100;
+    const rate = (value: number) => Math.round(((value * 30) / d.days) * cents) / cents;
+    const amount = rate(price);
+    if (best === null || amount < best.amount) {
+      best = { amount, original: found.discounted_price ? rate(Number(found.price)) : null, days: d.days };
+    }
+  }
+  return best;
 }

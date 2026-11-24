@@ -11,13 +11,14 @@ import {
   type PaymentMethod,
   type Plan,
   type PlanAccess,
+  type PurchaseType,
 } from "@entities/plan/api";
 import { useShownLegalLocale } from "@entities/legal/api";
 import { LegalNotice } from "@entities/legal/LegalNotice";
 import { useMeQuery } from "@entities/session/api";
 import { AwaitPaymentButton } from "@features/payment/AwaitPaymentButton";
 import { StarsInvoiceError, UnsafePaymentUrlError } from "@features/payment/start-payment";
-import { gatewayLabel, isValidEmail, typeNoticeKey, type PurchaseType } from "@features/purchase/wizard";
+import { gatewayLabel, isValidEmail, typeNoticeKey } from "@features/purchase/wizard";
 import { getErrorMessage } from "@shared/api/http";
 import { formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
@@ -28,6 +29,9 @@ import { Input } from "@shared/ui/Input";
 import { FormError } from "@shared/ui/FormError";
 import { LegalDocumentDialog } from "@shared/ui/LegalDocumentDialog";
 import { OptionRow } from "@shared/ui/OptionRow";
+import { Skeleton } from "@shared/ui/Skeleton";
+
+import { NoMethods } from "./MethodStep";
 
 type CheckoutResult = Awaited<ReturnType<typeof createCheckout>>;
 
@@ -93,7 +97,7 @@ export function SummaryStep({
     duration_days: days,
     currency: method.currency,
     purchase_type: type,
-    gateway_type: method.gateway_type,
+    ...(method.gateway_type && { gateway_type: method.gateway_type }),
     ...(legal && { legal_locale: legal }),
     ...(subId !== null && { target_subscription_id: subId }),
     ...(access.plan_code && { plan_code: access.plan_code }),
@@ -144,6 +148,10 @@ export function SummaryStep({
     (!consentRequired || consented) &&
     !checkout.isPending &&
     !checkout.isSuccess;
+
+  // no method to pay with: only a free order goes through, which the quote has to show first
+  if (!method.gateway_type && !quote.data && !quote.isError) return <Skeleton round className="h-64" />;
+  if (!method.gateway_type && quote.data && Number(quote.data.final_price) > 0) return <NoMethods />;
 
   return (
     // a form: Enter in the email field pays; noValidate keeps the browser's bubble out, the field says it itself
@@ -240,7 +248,9 @@ export function SummaryStep({
           <AwaitPaymentButton key={awaited} orderId={awaited} onStop={stopWaiting} />
         ) : (
           <Button type="submit" variant="glassSolid" size="lg" disabled={!canPay}>
-            {t("purchase.pay", { amount: amount ?? "…" })}
+            {quote.data && Number(quote.data.final_price) === 0
+              ? t("purchase.getFree")
+              : t("purchase.pay", { amount: amount ?? "…" })}
           </Button>
         )}
         <LegalNotice kinds={["OFFER"]} message="payNotice" />

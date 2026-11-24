@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 
 import type { Plan } from "@entities/plan/api";
 
-import { minPrice, savingsPercent, unitPrice } from "./savings";
+import { bestMonthlyRate, minPrice, savingsPercent, unitPrice } from "./savings";
 
 const plan = (durations: [number, Record<string, string>][]): Plan => ({
   id: 1,
@@ -104,4 +104,26 @@ it("an unlimited duration takes no part in the per-day saving", () => {
   expect(savingsPercent(forever, 90, "RUB")).toBe(16);
   expect(savingsPercent(forever, 0, "RUB")).toBeNull();
   expect(unitPrice(forever, 0, 5000)).toBeNull();
+});
+
+it("bestMonthlyRate picks the lowest price per month over periods of a month or more", () => {
+  const yearly = plan([
+    [7, { RUB: "29" }],
+    [30, { RUB: "199.00" }],
+    [365, { RUB: "1399.00" }],
+    [0, { RUB: "5000.00" }],
+  ]);
+  expect(bestMonthlyRate(yearly, "RUB")).toEqual({ amount: 115, original: null, days: 365 });
+  expect(bestMonthlyRate(yearly, "USD")).toBeNull();
+  expect(bestMonthlyRate(plan([[7, { RUB: "29" }]]), "RUB")).toBeNull();
+});
+
+it("bestMonthlyRate takes the promotion's price, whole when the list price is", () => {
+  const promo = plan([
+    [30, { RUB: "299" }],
+    [365, { RUB: "2799" }],
+  ]);
+  promo.durations[1].prices[0].discounted_price = "2239.20";
+  expect(bestMonthlyRate(promo, "RUB")).toEqual({ amount: 184, original: 230, days: 365 });
+  expect(bestMonthlyRate(plan([[90, { USD: "8.49" }]]), "USD")).toEqual({ amount: 2.83, original: null, days: 90 });
 });

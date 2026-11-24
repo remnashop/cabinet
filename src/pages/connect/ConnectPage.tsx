@@ -1,4 +1,4 @@
-import { QrCode } from "lucide-react";
+import { House, QrCode } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
@@ -47,8 +47,9 @@ export function ConnectPage() {
     return (
       <>
         {header}
-        <PageEmpty warning text={t("connect.notFound")}>
-          <ButtonLink to="/" variant="glass" className="mt-1">
+        <PageEmpty warning title={t("connect.notFound")} text={t("connect.notFoundHint")}>
+          <ButtonLink to="/" variant="glassSolid" size="lg" className="w-full">
+            <House className="size-5" />
             {t("common.home")}
           </ButtonLink>
         </PageEmpty>

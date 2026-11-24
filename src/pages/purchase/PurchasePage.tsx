@@ -1,28 +1,29 @@
-import { useMutation } from "@tanstack/react-query";
-import { Gift, TriangleAlert, Zap } from "lucide-react";
-import { motion } from "motion/react";
-import { useEffect, type ReactNode } from "react";
+import { Gift, House, Zap } from "lucide-react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate, useSearchParams } from "react-router";
 
-import { joinPaymentWaitlist, useCatalogQuery, type Plan } from "@entities/plan/api";
+import { useCatalogQuery, type Plan } from "@entities/plan/api";
+import { PlanIcon } from "@entities/plan/PlanIcon";
+import { PlanDescription } from "@entities/plan/PlanDescription";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useSubscriptionsQuery } from "@entities/subscription/api";
 import { canBuyMore } from "@entities/subscription/lib";
-import { effectivePrice, minPrice } from "@features/purchase/savings";
+import { bestMonthlyRate, effectivePrice, minPrice } from "@features/purchase/savings";
 import { durationLabel, parseWizardParams } from "@features/purchase/wizard";
-import { formatMoney } from "@shared/lib/format";
+import { formatPrice } from "@shared/lib/format";
 import { buttonClass } from "@shared/ui/button-class";
+import { ButtonLink } from "@shared/ui/ButtonLink";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { PageEmpty } from "@shared/ui/PageEmpty";
 import { Ripple } from "@shared/ui/Ripple";
 import { Skeleton } from "@shared/ui/Skeleton";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 import { SupportButton } from "@widgets/support/SupportButton";
+import { useSupport } from "@widgets/support/use-support";
 
 import { PlanLimits } from "./PlanLimits";
-
-const MotionLink = motion.create(Link);
+import { PaymentsOffBanner, WarningBanner } from "./WarningBanner";
 
 // the card's grid with its button, and without it (an inert card): no empty track, so no gap where the button would be
 const WITH_BUTTON =
@@ -30,16 +31,30 @@ const WITH_BUTTON =
 const NO_BUTTON =
   "grid-rows-[auto_auto_1fr] [grid-template-areas:'head_head'_'desc_desc'_'feat_price'] lg:[grid-template-areas:'head_price'_'desc_price'_'feat_price']";
 
+/** The price before the plan's promotion, struck out, and the promotion's percent. */
+function OldPrice({ price, percent, dimmed }: { price: string; percent: number | undefined; dimmed: boolean }) {
+  return (
+    <span className="flex items-center gap-1.5 text-xs">
+      <span className="text-muted-foreground line-through">{price}</span>
+      <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
+        −{percent}%
+      </span>
+    </span>
+  );
+}
+
 function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: boolean }) {
   const { plan, currency, to, current } = props;
   const { t, i18n } = useTranslation();
   const price = minPrice(plan, currency);
   // no room for one more: the card and its badge muted
   const dimmed = !to && !current;
-  const money = (amount: string) => formatMoney(amount, currency, i18n.language);
+  const money = (amount: string) => formatPrice(amount, currency, i18n.language);
   // one period in this currency: its exact price and the period, not "from"
   const priced = plan.durations.filter((d) => d.prices.some((p) => p.currency === currency));
   const single = priced.length === 1 ? priced[0] : null;
+  // several periods: the lowest rate per month, the way long periods compare; a free period keeps "Free"
+  const rate = !single && price !== null && Number(effectivePrice(price)) > 0 ? bestMonthlyRate(plan, currency) : null;
   const body = (
     <>
       {plan.badge && !dimmed && (
@@ -53,7 +68,12 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
       <div className={`relative grid h-full grid-cols-[1fr_auto] gap-3 lg:grid-rows-[auto_auto_1fr] lg:gap-x-6 lg:gap-y-2 ${to ? WITH_BUTTON : NO_BUTTON}`}>
         <div className="flex items-center justify-between gap-2 [grid-area:head] lg:justify-start">
           <span className="flex min-w-0 items-center gap-1.5">
-            {plan.is_trial ? <Gift className="size-4 shrink-0" /> : <Zap className="size-4 shrink-0" />}
+            <PlanIcon
+              id={plan.icon_emoji_id}
+              glyph={plan.icon_emoji_fallback}
+              className="size-4 shrink-0"
+              fallback={plan.is_trial ? <Gift className="size-4 shrink-0" /> : <Zap className="size-4 shrink-0" />}
+            />
             <span className="truncate text-base font-bold">{plan.name}</span>
           </span>
           {current ? (
@@ -72,20 +92,32 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
             )
           )}
         </div>
-        {plan.description && <p className="text-xs text-muted-foreground [grid-area:desc]">{plan.description}</p>}
+        {plan.description && (
+          <p className="text-xs text-muted-foreground [grid-area:desc]">
+            <PlanDescription markup={plan.description_markup ?? plan.description} />
+          </p>
+        )}
         <PlanLimits plan={plan} className="self-end [grid-area:feat] lg:flex-row lg:gap-4" />
-        {price !== null && (
+        {rate !== null ? (
           <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
-            {price.discounted_price && (
-              <span className="flex items-center gap-1.5 text-xs">
-                <span className="text-muted-foreground line-through">{money(price.price)}</span>
-                <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${dimmed ? "bg-white/10" : "bg-white/20"}`}>
-                  −{plan.discount_percent}%
-                </span>
-              </span>
+            {rate.original !== null && (
+              <OldPrice price={money(String(rate.original))} percent={plan.discount_percent} dimmed={dimmed} />
             )}
             <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
-              {single ? money(effectivePrice(price)) : t("purchase.from", { price: money(effectivePrice(price)) })}
+              {t("purchase.fromPerMonth", { price: money(String(rate.amount)) })}
+            </span>
+            <span className="text-xs text-muted-foreground">{t("purchase.billedFor", { period: durationLabel(rate.days, t) })}</span>
+          </span>
+        ) : price !== null && (
+          <span className="flex flex-col items-end gap-1 self-end [grid-area:price] lg:self-center">
+            {price.discounted_price && (
+              <OldPrice price={money(price.price)} percent={plan.discount_percent} dimmed={dimmed} />
+            )}
+            <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
+              {/* "from Free" reads wrong: a free period is the cheapest, it says enough */}
+              {single || Number(effectivePrice(price)) === 0
+                ? money(effectivePrice(price))
+                : t("purchase.from", { price: money(effectivePrice(price)) })}
             </span>
             {single && (
               <span className="text-xs text-muted-foreground">
@@ -107,33 +139,11 @@ function PlanCard(props: { plan: Plan; currency: string; to?: string; current?: 
     );
   }
   return (
-    <MotionLink to={to} className={`${frame} text-foreground`}>
+    <Link to={to} className={`${frame} text-foreground`}>
       {body}
       <Ripple />
-    </MotionLink>
+    </Link>
   );
-}
-
-function WarningBanner({ title, hint }: { title: string; hint: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-card border border-warning/30 bg-linear-to-r from-warning/[0.12] to-warning/[0.03] p-5 lg:p-4">
-      <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-warning/20 text-warning">
-        <TriangleAlert className="size-5" />
-      </span>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <h2 className="text-base font-bold text-warning">{title}</h2>
-        <span className="text-xs text-foreground">{hint}</span>
-      </div>
-    </div>
-  );
-}
-
-// seeing the catalog while payments are off is wanting to buy: the user goes on the waitlist and hears once they're back
-function PaymentsOffBanner() {
-  const { t } = useTranslation();
-  const { mutate } = useMutation({ mutationFn: joinPaymentWaitlist });
-  useEffect(() => mutate(), [mutate]);
-  return <WarningBanner title={t("purchase.paymentsOffTitle")} hint={t("purchase.paymentsOffHint")} />;
 }
 
 export function PurchasePage() {
@@ -144,6 +154,7 @@ export function PurchasePage() {
   const catalog = useCatalogQuery(access);
   const settings = useCabinetSettingsQuery();
   const subscriptions = useSubscriptionsQuery();
+  const supportAvailable = useSupport().available;
 
   const title = type === "CHANGE" ? t("purchase.changeTitle") : t("purchase.catalog");
   // a plan change hides the current plan, so it needs the subscriptions before listing anything
@@ -175,8 +186,17 @@ export function PurchasePage() {
     }
     if (plans.every((p) => p.id === currentPlanId)) {
       body = (
-        <PageEmpty warning text={t(change ? "purchase.emptyChange" : "purchase.empty")}>
-          <SupportButton className="mt-1" />
+        <PageEmpty
+          warning
+          title={t(change ? "purchase.emptyChange" : "purchase.empty")}
+          text={t(change ? "purchase.emptyChangeHint" : "purchase.emptyHint")}
+        >
+          <SupportButton main />
+          {/* the only button when the shop gave no support contact */}
+          <ButtonLink to="/" variant={supportAvailable ? "glass" : "glassSolid"} size="lg" className="w-full">
+            <House className="size-5" />
+            {t("common.home")}
+          </ButtonLink>
         </PageEmpty>
       );
     } else body = (

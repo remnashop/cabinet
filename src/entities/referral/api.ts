@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiGet, apiPost } from "@shared/api/http";
 
@@ -60,6 +60,15 @@ export function useRedeemTargetsQuery(enabled: boolean) {
 
 export function redeemDays(body: { subscription_id: number; days: number }) {
   return apiPost<RedeemDaysResult, typeof body>("/referrals/me/actions/redeem-days", body);
+}
+
+/** A new code: the old link stops working. */
+export function useResetReferralCode() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiPost("/referrals/me/actions/reset-code", {}),
+    onSuccess: () => client.invalidateQueries({ queryKey: ["referral"] }),
+  });
 }
 
 /** One of the customer's invitees, any level: the name only, never ids or contacts. */

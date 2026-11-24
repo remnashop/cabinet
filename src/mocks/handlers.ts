@@ -106,6 +106,7 @@ interface MockSubscription {
   plan_traffic_limit_strategy: string;
   used_traffic: number | null; // bytes
   link_reset_at: string | null;
+  grace_until?: string | null;
 }
 
 const soldTerms = (traffic: number, devices: number) => ({
@@ -119,8 +120,8 @@ const TEMPLATES = [
   { plan_name: "Базовый", plan_id: 1, url: "https://sub.example.com/basic", ...soldTerms(50, 2) },
   { plan_name: "Безлимит", plan_id: 3, url: "https://sub.example.com/unlimited", ...soldTerms(0, 5) },
 ];
-// the cards' alert demo: one card per look, [days left, % of 100 GB used, status]
-const ALERT_DEMO: [number, number, MockSubscription["status"]][] = [
+// the cards' alert demo: one card per look, [days left, % of 100 GB used, status, grace days left]
+const ALERT_DEMO: [number, number, MockSubscription["status"], number?][] = [
   [27, 12, "ACTIVE"], // calm
   [3, 12, "ACTIVE"], // orange: three days
   [1, 12, "ACTIVE"], // red: a day
@@ -128,9 +129,10 @@ const ALERT_DEMO: [number, number, MockSubscription["status"]][] = [
   [40, 95, "ACTIVE"], // red: 95% used
   [40, 100, "ACTIVE"], // used up: LIMITED
   [-2, 30, "EXPIRED"], // expired
+  [-2, 30, "EXPIRED", 1], // expired, in grace
 ];
 let subscriptions: MockSubscription[] = scenario.alertDemo
-  ? ALERT_DEMO.map(([days, used, status], i) =>
+  ? ALERT_DEMO.map(([days, used, status, grace], i) =>
       limitedWhenUsedUp({
         ...TEMPLATES[i % TEMPLATES.length],
         id: i + 1,
@@ -142,6 +144,7 @@ let subscriptions: MockSubscription[] = scenario.alertDemo
         traffic_limit_strategy: "NO_RESET",
         used_traffic: used * GB,
         link_reset_at: null,
+        grace_until: grace === undefined ? null : daysFromNow(grace),
       }),
     )
   : TEMPLATES.slice(0, scenario.subscriptions).map((template, i) => mockSubscription(template, i));
@@ -168,11 +171,14 @@ function mockSubscription(template: (typeof TEMPLATES)[number], i: number): Mock
   });
 }
 
-const device = (hwid: string, platform: string, device_model: string) => ({
+const device = (hwid: string, platform: string, device_model: string, name: string | null = null) => ({
   hwid,
+  name,
   platform,
+  os_version: platform === "iOS" ? "18.1" : null,
   device_model,
-  user_agent: "Happ/1.0",
+  app: "Happ 2.1.0",
+  user_agent: "Happ/2.1.0",
   created_at: "2026-09-01T09:00:00Z",
 });
 const MODELS: [string, string][] = [
@@ -188,7 +194,7 @@ const devices: Record<number, ReturnType<typeof device>[]> = Object.fromEntries(
     sub.id,
     Array.from({ length: scenario.devices }, (_, i) => {
       const [platform, model] = MODELS[i % MODELS.length];
-      return device(`hwid-${sub.id}-${i}`, platform, model);
+      return device(`hwid-${sub.id}-${i}`, platform, model, i === 0 ? "Мой телефон" : null);
     }),
   ]),
 );
@@ -490,6 +496,7 @@ export const handlers = [
       allowed_email_domains: ["gmail.com", "yandex.ru", "mail.ru"],
       captcha: null,
       bot_username: "mock_bot",
+      email_required: scenario.emailRequired && !scenario.miniAppOnly,
     }),
   ),
 
@@ -600,6 +607,7 @@ export const handlers = [
         device_single_reset_enabled: scenario.deviceReset,
         device_all_reset_enabled: scenario.deviceReset,
         link_reset_enabled: true,
+        referral_reset_enabled: true,
         bot_username: "mock_bot",
         channel_url: "https://t.me/mock_channel",
         support_telegram: "mock_support",
@@ -676,6 +684,23 @@ export const handlers = [
     if (denied) return denied;
     const id = Number(params.id);
     devices[id] = (devices[id] ?? []).filter((d) => d.hwid !== params.hwid);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.put(`${API}/subscriptions/me/:id/devices/:hwid/name`, async ({ request, params }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const { name } = (await request.json()) as { name: string };
+    const target = devices[Number(params.id)]?.find((d) => d.hwid === params.hwid);
+    if (target) target.name = name;
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.delete(`${API}/subscriptions/me/:id/devices/:hwid/name`, ({ request, params }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const target = devices[Number(params.id)]?.find((d) => d.hwid === params.hwid);
+    if (target) target.name = null;
     return new HttpResponse(null, { status: 204 });
   }),
 
@@ -1026,6 +1051,13 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 });
   }),
 
+  http.post(`${API}/referrals/me/actions/reset-code`, ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    referral.referral_code = Math.random().toString(36).slice(2, 10).toUpperCase();
+    return new HttpResponse(null, { status: 204 });
+  }),
+
   http.post(`${API}/referrals/me/actions/redeem-days`, async ({ request }) => {
     const denied = unauthorized(request);
     if (denied) return denied;
@@ -1069,5 +1101,25 @@ export const handlers = [
       },
       { status: 201 },
     );
+  }),
+
+  // ?promo=PROMO applies at once, ?promo=NEEDSUB asks which subscription, anything else is unknown
+  http.post(`${API}/promocodes/actions/activate-by-link`, async ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const upper = ((await request.json()) as { code: string }).code.trim().toUpperCase();
+    if (upper !== "PROMO" && upper !== "NEEDSUB") return apiError(404, "PROMOCODE_NOT_FOUND", "Promocode not found");
+    const promocode = { code: upper, reward_type: "DURATION", reward: 7, reward_duration_days: 7, reward_plan_id: null, reward_addon_id: null };
+    return HttpResponse.json({ outcome: upper === "PROMO" ? "ACTIVATED" : "CHOOSE_TARGET", promocode });
+  }),
+
+  // ?ad=promo carries the PROMO promocode; any other ad link carries none
+  http.post(`${API}/advertising/links/actions/activate-promocode`, async ({ request }) => {
+    const denied = unauthorized(request);
+    if (denied) return denied;
+    const { code } = (await request.json()) as { code: string };
+    if (code !== "promo") return HttpResponse.json({ outcome: null, promocode: null });
+    const promocode = { code: "PROMO", reward_type: "DURATION", reward: 7, reward_duration_days: 7, reward_plan_id: null, reward_addon_id: null };
+    return HttpResponse.json({ outcome: "ACTIVATED", promocode });
   }),
 ];

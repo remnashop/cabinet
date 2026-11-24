@@ -3,9 +3,10 @@ import { CalendarClock, CalendarPlus, CircleCheck, Minus, Plus, Zap } from "luci
 import { useId, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+import { PlanIcon } from "@entities/plan/PlanIcon";
 import { redeemDays, useRedeemTargetsQuery, type RedeemDaysResult } from "@entities/referral/api";
 import { useSubscriptionsQuery, type OwnSubscription } from "@entities/subscription/api";
-import { subscriptionNumber } from "@entities/subscription/lib";
+import { DAY_MS, subscriptionNumber } from "@entities/subscription/lib";
 import { getErrorMessage } from "@shared/api/http";
 import { formatDate } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
@@ -19,7 +20,6 @@ import { FormError } from "@shared/ui/FormError";
 
 // the backend's MAX_BONUS_DAYS
 const MAX_DAYS = 3650;
-const DAY_MS = 86_400_000;
 
 interface Props {
   open: boolean;
@@ -32,7 +32,12 @@ function TargetRow({ sub, picked, onPick }: { sub: OwnSubscription; picked: bool
   return (
     <OptionRow selected={picked} onClick={onPick}>
       <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
-        <Zap className="size-4" />
+        <PlanIcon
+          id={sub.plan_icon_emoji_id}
+          glyph={sub.plan_icon_emoji_fallback}
+          className="size-4"
+          fallback={<Zap className="size-4" />}
+        />
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm font-semibold">{sub.plan_name}</span>

@@ -5,7 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefO
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
-import { useMarkNotificationsRead, useNotificationsQuery } from "@entities/notification/api";
+import { NOTIFICATIONS_KEY, useMarkNotificationsRead, useNotificationsQuery } from "@entities/notification/api";
 import { useChangeLanguage, useMeQuery } from "@entities/session/api";
 import { getErrorMessage } from "@shared/api/http";
 import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@shared/i18n";
@@ -102,7 +102,7 @@ export function HeaderActions() {
 
   // a push arrived: the feed is stale before the next poll
   useEffect(
-    () => onServiceWorkerMessage((message) => message.type === "notification" && void client.invalidateQueries({ queryKey: ["notifications"] })),
+    () => onServiceWorkerMessage((message) => message.type === "notification" && void client.invalidateQueries({ queryKey: NOTIFICATIONS_KEY })),
     [client],
   );
 
@@ -114,7 +114,7 @@ export function HeaderActions() {
   }, [bellOpen, unread]);
   const wasBellOpen = useRef(false);
   useEffect(() => {
-    if (wasBellOpen.current && !bellOpen) void client.invalidateQueries({ queryKey: ["notifications"] });
+    if (wasBellOpen.current && !bellOpen) void client.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
     wasBellOpen.current = bellOpen;
   }, [bellOpen, client]);
 

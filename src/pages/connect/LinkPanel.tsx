@@ -5,14 +5,13 @@ import { useTranslation } from "react-i18next";
 import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useReissue, type OwnSubscription } from "@entities/subscription/api";
 import { getErrorMessage } from "@shared/api/http";
+import { useCopyLink } from "@shared/lib/use-copy-link";
 import { haptic, openExternal } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
 import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
+import { CopyLinkField } from "@shared/ui/CopyLinkField";
 import { QrCode } from "@shared/ui/QrCode";
 import { FormError } from "@shared/ui/FormError";
-
-import { CopyLinkField } from "./CopyLinkField";
-import { useCopyLink } from "./use-copy-link";
 
 /**
  * QR, the link itself, copy/open and reissue: the plain connect page. The guide's dialog (dialog) is for another

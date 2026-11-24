@@ -1,11 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { API_BASE, apiGet } from "@shared/api/http";
 import { readStorage, writeStorage } from "@shared/lib/safe-storage";
 import type { ShaderColors } from "@shared/lib/shaderPalette";
-
-type AppearanceTarget = "cabinet" | "dashboard";
 
 interface AppearanceSettings {
   brand_name: string | null;
@@ -26,35 +25,18 @@ export interface Appearance {
   faviconUrl: string | null;
 }
 
-function imageUrl(target: AppearanceTarget, kind: "logo" | "favicon", updatedAt: number): string {
-  return `${API_BASE}/appearance/${target}/${kind}?v=${updatedAt}`;
+function imageUrl(kind: "logo" | "favicon", updatedAt: number): string {
+  return `${API_BASE}/appearance/cabinet/${kind}?v=${updatedAt}`;
 }
 
-function shaderColors(settings: AppearanceSettings): ShaderColors {
-  return { base: settings.shader_base, tones: settings.shader_tones };
-}
-
-// what the cabinet leaves unset comes from the dashboard's settings
-export function mergeAppearance(
-  cabinet: AppearanceSettings,
-  dashboard: AppearanceSettings,
-  updatedAt: number,
-): Appearance {
-  const image = (kind: "logo" | "favicon", flag: "has_logo" | "has_favicon") => {
-    if (cabinet[flag]) return imageUrl("cabinet", kind, updatedAt);
-    if (dashboard[flag]) return imageUrl("dashboard", kind, updatedAt);
-    return null;
-  };
+export function toAppearance(settings: AppearanceSettings, updatedAt: number): Appearance {
   return {
-    brandName: cabinet.brand_name ?? dashboard.brand_name,
-    primaryColor: cabinet.primary_color ?? dashboard.primary_color,
-    // base and tones as one unit: tones pinned for one base don't fit another
-    shaderColors: shaderColors(
-      cabinet.shader_base !== null || cabinet.shader_tones !== null ? cabinet : dashboard,
-    ),
-    shaderEnabled: cabinet.shader_enabled,
-    logoUrl: image("logo", "has_logo"),
-    faviconUrl: image("favicon", "has_favicon"),
+    brandName: settings.brand_name,
+    primaryColor: settings.primary_color,
+    shaderColors: { base: settings.shader_base, tones: settings.shader_tones },
+    shaderEnabled: settings.shader_enabled,
+    logoUrl: settings.has_logo ? imageUrl("logo", updatedAt) : null,
+    faviconUrl: settings.has_favicon ? imageUrl("favicon", updatedAt) : null,
   };
 }
 
@@ -72,20 +54,20 @@ function storedAppearance(): Appearance | undefined {
 }
 
 export function useAppearanceQuery() {
-  return useQuery<Appearance>({
+  const query = useQuery<Appearance>({
     queryKey: ["appearance"],
     queryFn: async ({ signal }) => {
-      const [cabinet, dashboard] = await Promise.all([
-        apiGet<AppearanceSettings>("/appearance/cabinet", signal),
-        apiGet<AppearanceSettings>("/appearance/dashboard", signal),
-      ]);
-      const appearance = mergeAppearance(cabinet, dashboard, Date.now());
+      const settings = await apiGet<AppearanceSettings>("/appearance/cabinet", signal);
+      const appearance = toAppearance(settings, Date.now());
       writeStorage(STORAGE_KEY, JSON.stringify(appearance));
       return appearance;
     },
     placeholderData: storedAppearance,
     staleTime: Infinity,
   });
+  // a placeholder is gone once the request fails, retries and all: the last visit's look outlasts a server outage
+  const fallback = useMemo(() => (query.isError ? storedAppearance() : undefined), [query.isError]);
+  return { data: query.data ?? fallback, isError: query.isError };
 }
 
 export function useBrandName(): string {

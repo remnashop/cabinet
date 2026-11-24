@@ -1,4 +1,4 @@
-import { Users } from "lucide-react";
+import { User, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useInvitedInfinite, type InvitedUser } from "@entities/referral/api";
@@ -44,6 +44,8 @@ export function InvitedPage() {
     );
   }
   const items = query.data.pages.flatMap((page) => page.items);
+  // newest first: the first invitee is "Friend 1" and keeps the number as new ones arrive on top
+  const total = query.data.pages[0]?.total ?? items.length;
   if (!items.length) {
     return (
       <>
@@ -59,11 +61,24 @@ export function InvitedPage() {
         <EventList>
           {items.map((user, i) => {
             const reward = earned(user, t, i18n.language);
+            const name = user.name?.trim();
             return (
               <EventRow
                 key={i}
-                icon={<IconCircle glyph={(user.name?.trim()[0] ?? "?").toUpperCase()} tone="bg-primary/12 text-primary" />}
-                title={user.name ?? t("referral.goneUser")}
+                icon={
+                  name ? (
+                    <IconCircle glyph={name[0]!.toUpperCase()} tone="bg-primary/12 text-primary" />
+                  ) : (
+                    <IconCircle icon={User} tone="bg-white/[0.06] text-muted-foreground" />
+                  )
+                }
+                title={
+                  name || (
+                    <span className="text-muted-foreground">
+                      {t("referral.friendN", { n: total - i })}
+                    </span>
+                  )
+                }
                 caption={
                   <>
                     {t("referral.levelN", { level: user.level })}

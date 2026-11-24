@@ -24,8 +24,11 @@ import type { ConnectButton, ConnectGuide, PlatformId } from "@entities/connect-
 import { buildDeepLink, chooseApp, detectPlatform, encodeHop, splitSteps } from "@entities/connect-guide/lib";
 import type { OwnSubscription } from "@entities/subscription/api";
 import { readStorage, writeStorage } from "@shared/lib/safe-storage";
+import { useCopyLink } from "@shared/lib/use-copy-link";
 import { haptic, isMiniApp, openExternal } from "@shared/telegram";
 import { Button } from "@shared/ui/Button";
+import { CopyLinkField } from "@shared/ui/CopyLinkField";
+import { Hero } from "@shared/ui/Hero";
 import { AndroidIcon, AppleIcon, DevicesIcon, LinuxIcon, TvIcon, WindowsIcon } from "@shared/ui/PlatformIcons";
 import { StepTransition } from "@shared/ui/StepTransition";
 import { PulseButton } from "@shared/ui/PulseButton";
@@ -33,9 +36,7 @@ import { Ripple } from "@shared/ui/Ripple";
 import { PageHeader } from "@widgets/page-header/PageHeader";
 
 import { Confetti } from "./Confetti";
-import { CopyLinkField } from "./CopyLinkField";
-import { Hero, HeroArt, SuccessArt } from "./HeroArt";
-import { useCopyLink } from "./use-copy-link";
+import { HeroArt, SuccessArt } from "./HeroArt";
 
 const appKey = (platform: PlatformId) => `cabinet_connect_app_${platform}`;
 
@@ -249,10 +250,12 @@ export function GuideView({
           art={<HeroArt icon={CloudOff} />}
         >
           <Button variant="glassSolid" size="lg" onClick={() => go("device")}>
+            <DevicesIcon className="size-5" />
             {t("connect.pickOther")}
           </Button>
           <Button variant="glass" size="lg" onClick={() => void navigate("/")}>
-            {t("connect.backHome")}
+            <House className="size-5" />
+            {t("common.home")}
           </Button>
         </Hero>
       </StepTransition>
@@ -381,9 +384,10 @@ export function GuideView({
         >
           <Button variant="glassSolid" size="lg" onClick={() => void navigate("/")}>
             <House className="size-5" />
-            {t("connect.backHome")}
+            {t("common.home")}
           </Button>
           <Button variant="glass" size="lg" onClick={() => go("device")}>
+            <DevicesIcon className="size-5" />
             {t("connect.otherDevice")}
           </Button>
         </Hero>

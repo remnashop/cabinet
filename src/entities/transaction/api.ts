@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 
+import type { DiscountSource, PurchaseType } from "@entities/plan/api";
 import { apiGet } from "@shared/api/http";
 
 export interface Transaction {
@@ -12,11 +13,15 @@ export interface Transaction {
   change_credit: string;
   plan_discount_percent: number;
   discount_percent: number;
-  discount_source: "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";
+  discount_source: DiscountSource;
   currency: string;
-  purchase_type: "NEW" | "RENEW" | "CHANGE";
-  gateway_type: string;
+  purchase_type: PurchaseType;
+  // null: a free order, paid through no gateway
+  gateway_type: string | null;
   plan_name: string;
+  // absent on older backends
+  plan_icon_emoji_id?: string | null;
+  plan_icon_emoji_fallback?: string | null;
   duration_days: number;
   created_at: string | null;
   // what a failed payment's "try again" reopens: the plan, and the subscription a renewal or change was for

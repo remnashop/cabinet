@@ -1,3 +1,4 @@
+import { RefreshCw } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouteError } from "react-router";
@@ -25,8 +26,20 @@ export function RouteErrorPage() {
 
   if (reloading) return null;
   return (
-    <FullScreenMessage tone="error" title={t("errors.pageTitle")} text={stale ? t("errors.newVersion") : t("errors.generic")}>
+    <FullScreenMessage
+      tone="error"
+      art={
+        stale ? (
+          <span className="flex size-16 items-center justify-center rounded-full border border-white/[0.14] bg-white/[0.06] text-muted-foreground">
+            <RefreshCw className="size-7" />
+          </span>
+        ) : undefined
+      }
+      title={t(stale ? "errors.newVersionTitle" : "errors.pageTitle")}
+      text={t(stale ? "errors.newVersion" : "errors.generic")}
+    >
       <Button variant="glassSolid" size="lg" className="w-full" onClick={() => window.location.reload()}>
+        <RefreshCw className="size-5" />
         {t("common.reload")}
       </Button>
     </FullScreenMessage>

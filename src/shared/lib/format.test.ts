@@ -1,12 +1,18 @@
 import { expect, it } from "vitest";
 
-import { formatBytes, formatDate, formatGb, formatMoney, formatRelative, formatWait } from "@shared/lib/format";
+import { formatBytes, formatDate, formatGb, formatMoney, formatPrice, formatRelative, formatWait } from "@shared/lib/format";
 
 it("formats money; XTR is a number with a star", () => {
   expect(formatMoney("149.00", "RUB", "ru")).toBe("149\u00a0₽");
   expect(formatMoney("149.5", "RUB", "ru")).toBe("149,50\u00a0₽");
   expect(formatMoney("149", "RUB", "en")).toBe("₽149");
   expect(formatMoney("150", "XTR", "ru")).toBe("150 ★");
+});
+
+it("formats a price to pay; nothing to pay is free", () => {
+  expect(formatPrice("0.00", "RUB", "ru")).toBe("Бесплатно");
+  expect(formatPrice("0", "XTR", "en")).toBe("Free");
+  expect(formatPrice("149", "RUB", "ru")).toBe("149\u00a0₽");
 });
 
 it("formats bytes as GB or MB with one decimal", () => {

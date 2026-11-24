@@ -1,7 +1,12 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 
-import { apiGet, apiPost } from "@shared/api/http";
+import { API_BASE, apiGet, apiPost } from "@shared/api/http";
 import { isMiniApp } from "@shared/telegram";
+
+export const emojiThumbnailUrl = (id: string) => `${API_BASE}/emoji-packs/thumbnails/${encodeURIComponent(id)}`;
+
+export type PurchaseType = "NEW" | "RENEW" | "CHANGE";
+export type DiscountSource = "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";
 
 export interface PlanPrice {
   currency: string;
@@ -20,6 +25,8 @@ export interface Plan {
   id: number;
   name: string;
   description: string | null;
+  // the description with Telegram's [glyph](emoji:id) markup kept; absent on older backends
+  description_markup?: string | null;
   // shown on the plan card
   badge: "POPULAR" | "BEST_VALUE" | null;
   type: string;
@@ -33,6 +40,9 @@ export interface Plan {
   // the promotion running now: 0 and null while there is none
   discount_percent?: number;
   discount_ends_at?: string | null;
+  // a Telegram custom emoji and its plain glyph; absent on older backends
+  icon_emoji_id?: string | null;
+  icon_emoji_fallback?: string | null;
 }
 
 export interface PaymentMethod {
@@ -81,7 +91,7 @@ export interface Quote {
   change_credit_days: number;
   plan_discount_percent: number;
   discount_percent: number;
-  discount_source: "NONE" | "PERSONAL" | "PURCHASE" | "LOYALTY";
+  discount_source: DiscountSource;
   final_price: string;
   currency: string;
 }
@@ -90,8 +100,9 @@ export interface CheckoutInput {
   plan_id: number;
   duration_days: number;
   currency: string;
-  purchase_type: "NEW" | "RENEW" | "CHANGE";
-  gateway_type: string;
+  purchase_type: PurchaseType;
+  // omitted only for an order that costs nothing: the backend records it without a gateway
+  gateway_type?: string;
   target_subscription_id?: number;
   plan_code?: string;
   customer_email?: string;
@@ -122,7 +133,8 @@ export function useCatalogQuery(access: PlanAccess = PUBLIC_ACCESS) {
   if (access.renew_subscription_id !== null) params.set("renew_subscription_id", String(access.renew_subscription_id));
   const query = params.size ? `?${params}` : "";
   return useQuery({
-    queryKey: ["catalog", access],
+    // what the request sends: a change asks for the same catalog as a new purchase
+    queryKey: ["catalog", access.plan_code, access.renew_subscription_id],
     queryFn: ({ signal }) =>
       apiGet<{ items: Plan[]; total: number; anchor_currency: string }>(`/plans/catalog${query}`, signal),
   });
@@ -184,4 +196,23 @@ export function usePromocodeTargetsQuery(code: string, enabled: boolean) {
 
 export function activatePromocode(body: { code: string; target_subscription_id?: number }) {
   return apiPost<PromocodeActivation, typeof body>("/promocodes/activations", body);
+}
+
+/** What opening a promocode by link did: applied it, or left the subscription choice to the customer. */
+export interface PromocodeLinkResult {
+  // CONFIRM: a reusable code, applied by the customer's own press
+  outcome: "ACTIVATED" | "CHOOSE_TARGET" | "NO_TARGET" | "CONFIRM";
+  promocode: PromocodeActivation;
+}
+
+export function activatePromocodeByLink(code: string) {
+  return apiPost<PromocodeLinkResult, { code: string }>("/promocodes/actions/activate-by-link", { code });
+}
+
+/** An ad link's promocode; both null when the link carries none. */
+export function activateAdLinkPromocode(code: string) {
+  return apiPost<PromocodeLinkResult | { outcome: null; promocode: null }, { code: string }>(
+    "/advertising/links/actions/activate-promocode",
+    { code },
+  );
 }

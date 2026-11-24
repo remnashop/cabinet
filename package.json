@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build && rm -f dist/mockServiceWorker.js",
     "preview": "vite preview",
-    "lint": "oxlint && node scripts/check-locales.mjs",
+    "lint": "oxlint && node scripts/check-locales.mjs && knip",
     "type-check": "tsc -b",
     "test": "vitest run"
   },
@@ -33,6 +33,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "jsdom": "^29.1.1",
+    "knip": "5.88.1",
     "msw": "^2.15.0",
     "oxlint": "^1.87.0",
     "typescript": "~6.0.2",

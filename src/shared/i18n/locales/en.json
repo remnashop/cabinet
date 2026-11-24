@@ -32,18 +32,17 @@
     "payments": "Payment history",
     "notFound": "Page not found",
     "comingSoon": "Coming soon",
-    "notFoundHint": "The link may be outdated or mistyped",
-    "notFoundHome": "Back to home"
+    "notFoundHint": "The link may be outdated or mistyped"
   },
   "common": {
     "qrFailed": "Couldn't draw the QR code",
     "retry": "Retry",
+    "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
     "continue": "Continue",
     "loadFailed": "Failed to load",
     "home": "Home",
-    "backHome": "Back to the home page",
     "logout": "Log out",
     "more": "Load more",
     "lessThanMinuteAgo": "less than a minute ago",
@@ -83,7 +82,7 @@
     "bootFailed": "Couldn't sign you in",
     "unavailable": "The service is temporarily unavailable",
     "unavailableHint": "Try again later",
-    "miniAppOnly": "The cabinet opens in Telegram",
+    "miniAppOnly": "Available only in Telegram",
     "miniAppOnlyHint": "Open the bot and launch the cabinet from it",
     "providers": {
       "telegram": "Telegram",
@@ -94,21 +93,26 @@
     "openBot": "Open Telegram",
     "botHint": "The bot will send you a one-time sign-in link — open it",
     "newBotLink": "Get a new link",
-    "botLinkExpired": "This sign-in link has expired — request a new one"
+    "botLinkExpiredTitle": "This sign-in link has expired",
+    "botLinkExpiredHint": "Bot links work once and expire after 5 minutes. Get a new one on the sign-in page"
   },
   "unsubscribe": {
     "title": "Unsubscribe from promotional emails?",
     "hint": "Emails about payments and your subscription will keep coming",
     "confirm": "Unsubscribe",
     "done": "You're unsubscribed from promotional emails",
-    "failed": "Couldn't unsubscribe"
+    "failed": "Couldn't unsubscribe",
+    "invalidTitle": "This link is invalid",
+    "invalidHint": "Open the link from the email again — it may have been copied only partially"
   },
   "errors": {
     "generic": "Something went wrong",
     "network": "Can't reach the service, try again later",
     "offline": "No internet connection",
     "pageTitle": "Couldn’t open the page",
-    "newVersion": "A new version of the cabinet is out, reload the page"
+    "newVersion": "Reload the page to open the new version",
+    "retryLater": "Try again in a minute",
+    "newVersionTitle": "The cabinet has been updated"
   },
   "apiErrors": {
     "INVALID_INIT_DATA": "Couldn't sign in with Telegram. Close the app and open it again",
@@ -137,8 +141,10 @@
     "PLAN_NOT_AVAILABLE": "This plan is no longer sold",
     "PLAN_DURATION_NOT_FOUND": "This period is no longer available",
     "RENEW_PLAN_MISMATCH": "This subscription can't be renewed on this plan — use “Change”",
+    "CHANGE_SAME_PLAN": "This is already your plan — renew it instead",
     "PAYMENTS_DISABLED": "Payments are temporarily unavailable",
     "GATEWAY_NOT_AVAILABLE": "This payment method is unavailable, choose another",
+    "GATEWAY_REQUIRED": "Choose a payment method",
     "GATEWAY_CURRENCY_UNSUPPORTED": "This payment method doesn't accept this currency",
     "PAYMENT_GATEWAY_ERROR": "Couldn't start the payment. Try again in a couple of minutes or choose another payment method",
     "CAPTCHA_FAILED": "The check failed, try again",
@@ -152,6 +158,8 @@
     "PROMOCODE_NOT_AVAILABLE": "This promo code is unavailable right now",
     "PROMOCODE_NEW_USERS_ONLY": "This promo code is for new users only",
     "COOLDOWN_ACTIVE": "You can do this again a bit later",
+    "DEVICE_NAME_TOO_LONG": "The device name is too long",
+    "DEVICE_NOT_FOUND": "This device is no longer connected",
     "DEVICE_RESET_DISABLED": "Removing devices is turned off",
     "PROMOCODE_EXISTING_USERS_ONLY": "This promo code is for existing users only",
     "PROMOCODE_PLANS_NOT_APPLICABLE": "This promo code doesn't fit any of your plans",
@@ -250,7 +258,6 @@
     "unavailableTitle": "Not available yet",
     "unavailableHint": "Connecting {{platform}} isn't set up right now. Try again later or pick another device",
     "pickOther": "Pick another device",
-    "backHome": "Back to the home page",
     "otherTitle": "Set up another device",
     "otherHint": "Pick the platform of the device to connect",
     "morePlatforms": "Other platforms",
@@ -269,12 +276,15 @@
     "openFailed": "Couldn't check the link",
     "openFailedHint": "Check your connection and try again",
     "openUnverified": "The link didn't pass the check",
-    "openUnverifiedHint": "This subscription wasn't issued by your cabinet. Add a subscription only from your own cabinet"
+    "openUnverifiedHint": "This subscription wasn't issued by your cabinet. Add a subscription only from your own cabinet",
+    "notFoundHint": "It may have been deleted or belong to another account",
+    "openCabinet": "Open the cabinet"
   },
   "home": {
     "deleteCooldown": "You can delete a device again in {{wait}}",
     "deleteAllCooldown": "You can delete all devices again in {{wait}}",
     "welcome": "Welcome, {{name}}!",
+    "welcomeNoName": "Welcome!",
     "promo": "Promo code",
     "promoDesktop": "Activate promo code",
     "buy": "Buy a subscription",
@@ -287,7 +297,7 @@
       "deleted": "Subscription deleted",
       "disabled": "Subscription disabled",
       "channelPaused": "Trial paused",
-      "expiredTraffic": "Subscription expired, traffic ran out",
+      "expiredTraffic": "Time and traffic have run out",
       "expired": "Subscription expired on {{date}}",
       "trafficOut": "Traffic ran out",
       "bothSoon": "Time and traffic are running out",
@@ -304,10 +314,13 @@
       "keep": "Renew to keep access",
       "back": "Renew to get access back",
       "backShort": "Renew to regain access",
+      "grace": "Grace period until {{date}}",
+      "graceForever": "Grace period is on",
       "keepUntilTrial": "Get a subscription by {{date}} to keep access",
       "keepTrial": "Get a subscription to keep access",
       "backTrial": "Get a subscription to get access back",
-      "channelTrial": "Rejoin the channel to resume it"
+      "channelTrial": "Rejoin the channel to resume it",
+      "disabled": "Access is paused, contact support"
     },
     "noExpiry": "No end date",
     "left": "Left",
@@ -339,6 +352,11 @@
     "deleteAll": "Delete all",
     "deleteAllFrom": "Delete all from {{time}}",
     "delete": "Delete",
+    "deviceModel": "Model",
+    "deviceSystem": "System",
+    "deviceApp": "App",
+    "deviceConnected": "Connected",
+    "deviceNamePlaceholder": "Device name",
     "deleteDeviceTitle": "Delete device?",
     "deleteDeviceText": "“{{name}}” will be disconnected from the subscription and lose access. You can connect again any time",
     "deleteAllTitle": "Delete all devices?",
@@ -364,6 +382,8 @@
     "catalog": "Plans",
     "changeTitle": "Change plan",
     "from": "from {{price}}",
+    "fromPerMonth": "from {{price}}/mo",
+    "billedFor": "billed for {{period}}",
     "per": "for {{period}}",
     "titles": {
       "NEW": "Purchase",
@@ -386,7 +406,7 @@
     "paymentsOffHint": "We'll let you know once payments are back",
     "empty": "Plans aren't available yet",
     "emptyChange": "No other plans yet",
-    "planNotFound": "Plan not found or unavailable",
+    "renewUnavailable": "This plan can no longer be renewed",
     "toCatalog": "Go to plans",
     "choose": "Choose",
     "currentPlan": "Current plan",
@@ -437,7 +457,14 @@
     "total": "Total",
     "email": "Enter an email to send the receipt to",
     "emailInvalid": "Check the email address",
+    "getFree": "Get it free",
     "pay": "Pay {{amount}}",
+    "planNotFoundTitle": "Plan not found",
+    "planNotFoundHint": "It's no longer on sale or the link is outdated",
+    "renewUnavailableHint": "Choose another plan for the subscription",
+    "emptyHint": "The shop has no plans yet, check back later",
+    "emptyChangeHint": "There is nothing to switch the subscription to right now",
+    "noMethodsHint": "No payment method is set up for this plan yet",
     "recurring": {
       "consent": "Enable auto-renewal",
       "terms": "Renewal terms",
@@ -471,7 +498,8 @@
       "failed": "Payment failed"
     },
     "noOrderTitle": "Payment not found",
-    "noOrderText": "The link has no order number. Your payment history shows the payment status."
+    "noOrderText": "The link has no order number. Your payment history shows the payment status.",
+    "notFoundHint": "Your payment history shows the payment status"
   },
   "promo": {
     "title": "Promo code",
@@ -495,12 +523,17 @@
     "title": "Invite friends",
     "earnTerms": "Get {{terms}}",
     "invitedEmpty": "Nobody yet — share your link",
-    "goneUser": "Deleted account",
+    "friendN": "Friend {{n}}",
     "levelN": "Level {{level}}",
     "openQr": "Open the QR code",
     "noCode": "Your referral link isn't available yet",
     "yourLink": "Your invite link",
     "redeemShort": "Apply days",
+    "resetCode": "New link",
+    "resetCodeTitle": "Create a new link?",
+    "resetCodeWarning": "The old invite link will stop working",
+    "resetCodeConfirm": "Create",
+    "resetCodeCooldown": "You can create a new link again in {{wait}}",
     "how": {
       "title": "How does it work?",
       "share": "Share your link",
@@ -610,6 +643,22 @@
     "text": "We'll remind you to renew and tell you if something goes wrong",
     "later": "Not now"
   },
+  "installPrompt": {
+    "title": "Add the cabinet to your home screen",
+    "text": "Opens in one tap, like an app",
+    "later": "Not now",
+    "how": "Add",
+    "done": "Got it",
+    "ios": {
+      "step1": "Tap Share in Safari's toolbar",
+      "step2": "Choose “Add to Home Screen”, then “Add”",
+      "push": "Once added, open the cabinet from the home screen to turn on notifications"
+    },
+    "android": {
+      "step1": "Open the browser menu",
+      "step2": "Choose “Add to Home screen” or “Install app”, then confirm"
+    }
+  },
   "gateways": {
     "TELEGRAM_STARS": "Telegram Stars",
     "YOOKASSA": "YooKassa",
@@ -633,7 +682,8 @@
     "SEVERPAY": "SeverPay",
     "LAVA": "Lava",
     "CLOUDPAYMENTS": "CloudPayments",
-    "PAYPEAR": "PayPear"
+    "PAYPEAR": "PayPear",
+    "free": "Free"
   },
   "payments": {
     "empty": "No payments yet",
@@ -660,6 +710,8 @@
   },
   "link": {
     "emailTitle": "Connect email",
+    "requiredTitle": "Add your email",
+    "requiredHint": "An email keeps you from losing access if Telegram becomes unavailable.",
     "emailHint": "We'll send a confirmation code to this address",
     "telegramTitle": "Connect Telegram",
     "botHint": "Open the bot and tap the button — it brings you back here",
@@ -670,8 +722,6 @@
     "alreadyLinkedHint": "It's already tied to your account, nothing to do",
     "failed": "Couldn't connect the sign-in method",
     "toProfile": "To profile",
-    "botLinkExpired": "This link has expired — request a new one in your profile",
-    "botLinkElsewhere": "Open the link in the browser where you're signed in to the cabinet",
     "mergeTitle": "Another account found",
     "mergeText": "This sign-in method is already linked to another account of yours. We will merge it into the current one — everything moves here.",
     "mergeSubscriptions": "Subscriptions",
@@ -684,7 +734,9 @@
     "merged": "Accounts merged",
     "mergedHint": "Subscriptions, payments and sign-in methods are now in one account",
     "mergeCountdown_one": "The offer is valid for {{count}} minute",
-    "mergeCountdown_other": "The offer is valid for {{count}} minutes"
+    "mergeCountdown_other": "The offer is valid for {{count}} minutes",
+    "botLinkExpiredTitle": "This link has expired",
+    "botLinkExpiredHint": "Request a new one in your profile and open it in this browser"
   },
   "legal": {
     "loginNotice": "By continuing, you accept {{documents}}",

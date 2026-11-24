@@ -1,9 +1,8 @@
 import type { TFunction } from "i18next";
 
-import type { Plan, PlanAccess, Quote } from "@entities/plan/api";
+import { PUBLIC_ACCESS, type PaymentMethod, type Plan, type PlanAccess, type PurchaseType, type Quote } from "@entities/plan/api";
 import { formatGb } from "@shared/lib/format";
-
-export type PurchaseType = "NEW" | "RENEW" | "CHANGE";
+import { LINK_CODE } from "@shared/lib/link-code";
 
 /** RENEW/CHANGE only make sense for a subscription; anything else is a plain purchase.
     access: the renewed subscription for RENEW; a plan link's code (the bot's plan_<code>) for a new purchase. */
@@ -19,15 +18,15 @@ export function parseWizardParams(search: URLSearchParams): {
       type,
       subId,
       access: {
-        plan_code: null,
+        ...PUBLIC_ACCESS,
         renew_subscription_id: type === "RENEW" ? subId : null,
         change_subscription_id: type === "CHANGE" ? subId : null,
       },
     };
   }
   const code = search.get("code");
-  const plan_code = code && /^[A-Za-z0-9_-]{1,64}$/.test(code) ? code : null;
-  return { type: "NEW", subId: null, access: { plan_code, renew_subscription_id: null, change_subscription_id: null } };
+  const plan_code = code && LINK_CODE.test(code) ? code : null;
+  return { type: "NEW", subId: null, access: { ...PUBLIC_ACCESS, plan_code } };
 }
 
 /** Which "what happens to your subscription" text the summary shows, from what the quote credits: an unlimited
@@ -80,8 +79,16 @@ export function planLimits(plan: Plan, t: TFunction, locale: string): [traffic: 
   ];
 }
 
-/** A gateway's name from the locale (the bot's gateway-name list); one it doesn't know yet, "Capitalized". */
-export function gatewayLabel(type: string, t: TFunction): string {
+/** No method: a free order, or none offered (a Mini App where the shop sells nothing for Stars). The order goes without
+ *  one, and the backend records a free one in the anchor currency itself; a paid one stops at the summary. */
+export function freeOrderMethod(currency: string): PaymentMethod {
+  return { gateway_type: "", currency, requires_email: false, asks_email: false };
+}
+
+/** A gateway's name from the locale (the bot's gateway-name list); one it doesn't know yet, "Capitalized".
+ *  null: a free order, paid through no gateway. */
+export function gatewayLabel(type: string | null, t: TFunction): string {
+  if (!type) return t("gateways.free");
   return t(`gateways.${type}`, { defaultValue: type.charAt(0) + type.slice(1).toLowerCase() });
 }
 

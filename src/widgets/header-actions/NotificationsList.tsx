@@ -77,18 +77,16 @@ export function NotificationsList({
   const { data, isError, error, refetch } = feed;
   const clear = useClearNotifications();
 
+  // laid out as the empty feed, no card inside the popover's own glass
+  if (!data && isError) return <ErrorCard round popover error={error} onRetry={() => void refetch()} />;
   if (!data) {
     // the popover is the dialogs' glass: its blocks are their 12px plates, not page cards
     return (
       <DialogContext.Provider value>
-        {isError ? (
-          <ErrorCard error={error} onRetry={() => void refetch()} />
-        ) : (
-          <div className="flex flex-col gap-2 p-1.5">
-            <Skeleton className="h-12" />
-            <Skeleton className="h-12" />
-          </div>
-        )}
+        <div className="flex flex-col gap-2 p-1.5">
+          <Skeleton className="h-12" />
+          <Skeleton className="h-12" />
+        </div>
       </DialogContext.Provider>
     );
   }

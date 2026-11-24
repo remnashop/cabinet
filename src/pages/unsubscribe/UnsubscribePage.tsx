@@ -1,9 +1,10 @@
+import { House, MailX, RotateCw } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { apiPost, getErrorMessage } from "@shared/api/http";
+import { ApiError, apiPost, getErrorMessage } from "@shared/api/http";
 import { Button } from "@shared/ui/Button";
 import { ButtonLink } from "@shared/ui/ButtonLink";
 import { FullScreenMessage } from "@widgets/full-screen/FullScreen";
@@ -23,10 +24,12 @@ export function UnsubscribePage() {
     void navigate("/unsubscribe", { replace: true });
   }, [navigate]);
 
+  const badToken = !token || (action.error instanceof ApiError && action.error.code === "UNSUBSCRIBE_TOKEN_INVALID");
   let title: string;
   let text: string | null = null;
-  if (!token) {
-    title = t("apiErrors.UNSUBSCRIBE_TOKEN_INVALID");
+  if (badToken) {
+    title = t("unsubscribe.invalidTitle");
+    text = t("unsubscribe.invalidHint");
   } else if (action.isSuccess) {
     title = t("unsubscribe.done");
     text = t("unsubscribe.hint");
@@ -39,17 +42,19 @@ export function UnsubscribePage() {
   }
 
   // a scanner opening the link runs no click: only a person unsubscribes
-  const canSubmit = token !== null && !action.isSuccess;
+  const canSubmit = !badToken && !action.isSuccess;
 
   return (
-    <FullScreenMessage tone={!token ? "warning" : action.isError ? "error" : undefined} title={title} text={text}>
+    <FullScreenMessage tone={badToken ? "warning" : action.isError ? "error" : undefined} title={title} text={text}>
       <div className="flex w-full flex-col gap-2">
         {canSubmit && (
           <Button variant="glassSolid" size="lg" disabled={action.isPending} onClick={() => action.mutate(token)}>
+            {action.isError ? <RotateCw className="size-5" /> : <MailX className="size-5" />}
             {action.isError ? t("common.retry") : t("unsubscribe.confirm")}
           </Button>
         )}
-        <ButtonLink to="/" variant="glass" size="lg">
+        <ButtonLink to="/" variant={canSubmit ? "glass" : "glassSolid"} size="lg">
+          <House className="size-5" />
           {t("common.home")}
         </ButtonLink>
       </div>

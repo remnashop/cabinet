@@ -1,3 +1,4 @@
+import { RotateCw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RouterProvider } from "react-router";
@@ -33,6 +34,7 @@ export function App() {
     return (
       <FullScreenMessage tone="warning" title={t("maintenance.title")} text={t("maintenance.text")}>
         <Button variant="glassSolid" size="lg" className="w-full" onClick={() => window.location.reload()}>
+          <RotateCw className="size-5" />
           {t("common.retry")}
         </Button>
       </FullScreenMessage>
@@ -49,6 +51,7 @@ export function App() {
     return (
       <FullScreenMessage tone="error" title={t("auth.bootFailed")} text={getErrorMessage(boot.error, t("errors.generic"))}>
         <Button variant="glassSolid" size="lg" className="w-full" onClick={run}>
+          <RotateCw className="size-5" />
           {t("common.retry")}
         </Button>
       </FullScreenMessage>

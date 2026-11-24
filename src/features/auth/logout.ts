@@ -4,7 +4,7 @@ import { clearAccessToken } from "@shared/api/tokens";
 import { disablePush } from "@shared/lib/push";
 
 /** Ends the session on the server; a failed revoke still lets the caller sign out. */
-export const revokeSession = () => authApi.logout().catch(() => undefined);
+const revokeSession = () => authApi.logout().catch(() => undefined);
 
 /** Push off for this device, then the server session: the one order every sign-out follows.
  *  A failure of either must not keep the customer signed in. */

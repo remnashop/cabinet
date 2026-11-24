@@ -1,9 +1,8 @@
 import { Check, Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { useCopyLink } from "@shared/lib/use-copy-link";
 import { Ripple } from "@shared/ui/Ripple";
-
-import { useCopyLink } from "./use-copy-link";
 
 export function CopyLinkField({
   url,

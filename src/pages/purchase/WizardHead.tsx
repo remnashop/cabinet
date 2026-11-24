@@ -4,8 +4,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useQuoteQuery, type PaymentMethod, type Plan, type PlanAccess, type Quote } from "@entities/plan/api";
+import { PlanIcon } from "@entities/plan/PlanIcon";
 import { durationLabel } from "@features/purchase/wizard";
-import { formatMoney } from "@shared/lib/format";
+import { formatPrice } from "@shared/lib/format";
 import { PILL_SPRING } from "@shared/lib/motion";
 import { Ripple } from "@shared/ui/Ripple";
 
@@ -41,7 +42,12 @@ export function WizardHead(props: HeadProps) {
         <div className="relative flex items-end justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-2">
             <span className="flex min-w-0 items-center gap-1.5">
-              {plan.is_trial ? <Gift className="size-4 shrink-0" /> : <Zap className="size-4 shrink-0" />}
+              <PlanIcon
+                id={plan.icon_emoji_id}
+                glyph={plan.icon_emoji_fallback}
+                className="size-4 shrink-0"
+                fallback={plan.is_trial ? <Gift className="size-4 shrink-0" /> : <Zap className="size-4 shrink-0" />}
+              />
               <span className="truncate text-base font-bold">{plan.name}</span>
             </span>
             <PlanLimits plan={plan} />
@@ -51,7 +57,7 @@ export function WizardHead(props: HeadProps) {
               <span className="rounded-full bg-white/[0.12] px-2.5 py-1 text-xs font-semibold">{durationLabel(days, t)}</span>
               {step === 1 && price && (
                 <span className="text-2xl leading-none font-bold tabular-nums tracking-tight">
-                  {formatMoney(price.price, price.currency, i18n.language)}
+                  {formatPrice(price.price, price.currency, i18n.language)}
                 </span>
               )}
             </div>
@@ -65,7 +71,7 @@ export function WizardHead(props: HeadProps) {
 
 function Receipt({ quote }: { quote: Quote }) {
   const { t, i18n } = useTranslation();
-  const money = (amount: number | string) => formatMoney(amount, quote.currency, i18n.language);
+  const money = (amount: number | string) => formatPrice(amount, quote.currency, i18n.language);
   const { base, credit, payable, promo, discount, final } = receiptAmounts(quote);
   const lines: [label: string, amount: string, off: boolean][] = [[t("purchase.receiptPrice"), money(base), false]];
   if (credit > 0) lines.push([t("purchase.receiptCredit"), `−${money(credit)}`, false]);
@@ -108,10 +114,12 @@ function Receipt({ quote }: { quote: Quote }) {
 function DotStepper({ step, skipMethod, onStep }: HeadProps) {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
-  // the step the names were found cut on: another step (fewer ticks) or a resize tries them again; the check below,
-  // before paint, falls back if one is cut
-  const [compactAt, setCompactAt] = useState<number | null>(null);
-  const compact = compactAt === step;
+  // the step and step count the names were found cut on: another step (fewer ticks), the method step dropping out once
+  // the methods load, or a resize tries them again; the check below, before paint, falls back if one is cut
+  const steps = STEPS.map((key, i) => ({ key, i })).filter(({ i }) => !(i === 1 && skipMethod));
+  const fitKey = `${step}/${steps.length}`;
+  const [compactAt, setCompactAt] = useState<string | null>(null);
+  const compact = compactAt === fitKey;
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -121,9 +129,8 @@ function DotStepper({ step, skipMethod, onStep }: HeadProps) {
   }, []);
   useLayoutEffect(() => {
     if (compact || !ref.current) return;
-    if ([...ref.current.querySelectorAll(".truncate")].some((el) => el.scrollWidth > el.clientWidth)) setCompactAt(step);
-  }, [compact, step, t]);
-  const steps = STEPS.map((key, i) => ({ key, i })).filter(({ i }) => !(i === 1 && skipMethod));
+    if ([...ref.current.querySelectorAll(".truncate")].some((el) => el.scrollWidth > el.clientWidth)) setCompactAt(fitKey);
+  }, [compact, fitKey, t]);
   return (
     // the panel's TabBar: a 48px glass capsule with 36px tabs 6px in
     <div

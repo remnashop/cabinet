@@ -4,10 +4,16 @@ import { bootSession } from "@features/auth/boot";
 import { apiGet, cookieRefresh, setReauthenticator } from "@shared/api/http";
 import { getAccessToken } from "@shared/api/tokens";
 
-vi.mock("@shared/telegram", () => ({ getInitDataRaw: () => "signed-init-data" }));
+vi.mock("@shared/telegram", () => ({
+  getInitDataRaw: () => "signed-init-data",
+  getPlatform: () => "ios",
+}));
 
 const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -20,7 +26,10 @@ it("signs in by initData and re-signs in on 401 instead of refreshing", async ()
     const url = String(input);
     if (url === "/api/auth/telegram") {
       logins += 1;
-      expect(JSON.parse(String(init!.body))).toEqual({ init_data: "signed-init-data" });
+      expect(JSON.parse(String(init!.body))).toEqual({
+        init_data: "signed-init-data",
+        first_touch: { platform: "ios" },
+      });
       return json(200, { access_token: `a${logins}`, expires_in: 900 });
     }
     const auth = new Headers(init?.headers).get("Authorization");
@@ -32,5 +41,7 @@ it("signs in by initData and re-signs in on 401 instead of refreshing", async ()
   await expect(apiGet("/me")).resolves.toEqual({ id: 1 });
   expect(logins).toBe(2);
   expect(getAccessToken()).toBe("a2");
-  expect(fetch.mock.calls.some(([url]) => String(url) === "/api/auth/refresh")).toBe(false);
+  expect(
+    fetch.mock.calls.some(([url]) => String(url) === "/api/auth/refresh"),
+  ).toBe(false);
 });

@@ -10,6 +10,7 @@ import { ApplyAppearance } from "@entities/appearance/ApplyAppearance";
 import { detectPlatform } from "@entities/connect-guide/lib";
 import "@shared/i18n";
 import { captureAttribution } from "@shared/lib/attribution";
+import { capturePromoLink } from "@shared/lib/promo-link";
 import { getStartParam, initTelegram } from "@shared/telegram";
 
 import "@app/styles.css";
@@ -31,8 +32,19 @@ async function start(): Promise<void> {
     const viewport = document.querySelector('meta[name="viewport"]');
     viewport?.setAttribute("content", `${viewport.getAttribute("content")}, maximum-scale=1`);
   }
+  // paddings and masks give back the width the scrollbar really takes: zero for overlay scrollbars (Firefox and macOS
+  // defaults), the native width where a browser skips the 10px ::-webkit-scrollbar
+  const scrollbarProbe = document.body.appendChild(document.createElement("div"));
+  scrollbarProbe.style.cssText = "position:absolute;visibility:hidden;width:100px;height:100px;overflow:scroll";
+  document.documentElement.style.setProperty(
+    "--scrollbar-size",
+    `${scrollbarProbe.offsetWidth - scrollbarProbe.clientWidth}px`,
+  );
+  scrollbarProbe.remove();
   initTelegram(CANVAS_COLOR);
-  captureAttribution(window.location.search, getStartParam());
+  captureAttribution(window.location.href, document.referrer, getStartParam());
+  const withoutPromoLink = capturePromoLink(window.location.href, getStartParam());
+  if (withoutPromoLink) window.history.replaceState(window.history.state, "", withoutPromoLink);
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>

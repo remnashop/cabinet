@@ -10,6 +10,9 @@ import {
   cardNotice,
   daysAlert,
   daysLeft,
+  inGrace,
+  isCutOff,
+  isSwitchedOff,
   isUnlimited,
   timeLeft,
   trafficAlert,
@@ -160,4 +163,22 @@ it("an unlimited subscription never reads as expiring and can't be renewed", () 
   expect(urgency(forever, now)).toBe("ok");
   expect(daysAlert(forever, now)).toBeNull();
   expect(canRenew(forever, [{ id: forever.plan_id } as Plan])).toBe(false);
+});
+
+it("isCutOff: no access left or switched off; isSwitchedOff: the admin's two only", () => {
+  for (const notice of ["expired", "trafficOut", "expiredTraffic", "disabled", "deleted"] as const) {
+    expect(isCutOff(notice)).toBe(true);
+  }
+  for (const notice of ["bothSoon", "daysSoon", "trafficSoon", null] as const) expect(isCutOff(notice)).toBe(false);
+  expect(isSwitchedOff("disabled")).toBe(true);
+  expect(isSwitchedOff("deleted")).toBe(true);
+  expect(isSwitchedOff("expired")).toBe(false);
+});
+
+it("inGrace: an expired one with a future grace_until; absent on older backends", () => {
+  expect(inGrace(sub({ status: "EXPIRED", grace_until: "2026-10-20T12:00:00Z" }), now)).toBe(true);
+  expect(inGrace(sub({ status: "EXPIRED", grace_until: "2026-10-16T12:00:00Z" }), now)).toBe(false);
+  expect(inGrace(sub({ status: "EXPIRED", grace_until: null }), now)).toBe(false);
+  expect(inGrace(sub({ status: "EXPIRED" }), now)).toBe(false);
+  expect(inGrace(sub({ grace_until: "2026-10-20T12:00:00Z" }), now)).toBe(false);
 });

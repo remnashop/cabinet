@@ -43,6 +43,9 @@ server {
         proxy_set_header X-Cabinet-Proxy-Secret "${CABINET_PROXY_SECRET}";
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
+        # a front proxy before the backend may gzip: SSI would splice the raw bytes into
+        # index.html, and token-carrying responses stay uncompressed anyway (BREACH)
+        proxy_set_header Accept-Encoding "";
         # the backend scopes cookies to its own paths; the browser only sees /api
         proxy_cookie_path /api/v1/ /api/;
         proxy_redirect ~^(?:https?://[^/]+)?/api/v1/(.*)$ /api/$1;
@@ -61,6 +64,9 @@ server {
     # SPA: every route is index.html, never cached so a deploy is picked up
     location / {
         gzip on;
+        # index.html pulls the link-preview tags from the API, see its <head>
+        ssi on;
+        ssi_silent_errors on;
         include /etc/nginx/snippets/security-headers.conf;
         add_header Cache-Control "no-cache";
         try_files $uri /index.html;

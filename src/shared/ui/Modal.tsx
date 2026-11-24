@@ -1,12 +1,12 @@
 import { X, type LucideIcon } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { EASE_SOFT, FADE_IN, FADE_OUT } from "@shared/lib/motion";
 import { useTelegramBackButton } from "@shared/telegram";
 import { AnimatedHeight } from "@shared/ui/AnimatedHeight";
-import { DialogContext } from "@shared/ui/surface";
+import { DialogContext, FooterContext } from "@shared/ui/surface";
 import { Ripple } from "@shared/ui/Ripple";
 
 interface ModalProps {
@@ -36,12 +36,9 @@ interface ModalProps {
 }
 
 const ICON_TONE = {
-  glass: "border-glass-border bg-white/[0.05] text-foreground backdrop-blur-md",
+  glass: "border-glass-border bg-white/[0.05] text-foreground",
   danger: "border-error/30 bg-error/10 text-error",
 } as const;
-
-// undefined: not in a sheet; null: in one whose strip hasn't mounted yet
-const FooterContext = createContext<HTMLElement | null | undefined>(undefined);
 
 /** The panel's dialog footer: a strip under a line, its buttons on the right (Button glass, then glassAccent or
  *  glassDanger). Rendered by the body, so the buttons keep its state; they land outside its DOM, so a form's submit
@@ -160,7 +157,7 @@ export function Modal({
           // in the frame the glass panel frosts the page itself, so the backdrop only dims (the panel's Modal); over the
           // whole screen the page melts into the shader's glow (the panel's donate dialog), and bare content, with no
           // panel, stands on that too
-          className={`fixed inset-0 z-40 flex items-center justify-center p-4 transition-[background-color,backdrop-filter] duration-300 ${
+          className={`fixed inset-0 z-40 flex items-center justify-center p-4 pt-[calc(var(--safe-top)+16px)] pb-[calc(var(--safe-bottom)+16px)] transition-[background-color,backdrop-filter] duration-300 ${
             bare || fullScreen ? "bg-black/55 backdrop-blur-3xl" : "bg-black/30"
           }`}
           initial={{ opacity: 0 }}
@@ -195,7 +192,7 @@ export function Modal({
             initial={reduced ? false : { opacity: 0, scale: 0.94, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0, transition: FADE_IN }}
             exit={reduced ? { opacity: 0, transition: FADE_OUT } : { opacity: 0, scale: 0.94, y: 8, transition: FADE_OUT }}
-            className={`flex max-h-[calc(var(--tg-viewport-stable-height,100dvh)*0.85)] w-full ${narrow ? "max-w-sm" : "max-w-2xl"} flex-col rounded-dialog outline-none glass-dialog`}
+            className={`flex max-h-[min(calc(var(--tg-viewport-stable-height,100dvh)*0.85),100%)] w-full ${narrow ? "max-w-sm" : "max-w-2xl"} flex-col rounded-dialog outline-none glass-dialog`}
           >
             <div className="flex shrink-0 items-center gap-3 border-b border-white/[0.08] p-4">
               {(Icon || glyph) && (

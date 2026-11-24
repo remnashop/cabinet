@@ -1,3 +1,4 @@
+import { LogIn } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -54,10 +55,11 @@ export function BotSignInPage() {
     // missing token is plainly an expired link
     <FullScreenMessage
       tone={exchange.isError ? "error" : "warning"}
-      title={t(exchange.isError ? "auth.bootFailed" : "auth.botLinkExpired")}
-      text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : null}
+      title={t(exchange.isError ? "auth.bootFailed" : "auth.botLinkExpiredTitle")}
+      text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : t("auth.botLinkExpiredHint")}
     >
-      <ButtonLink to="/login" variant="glass" size="lg" className="w-full">
+      <ButtonLink to="/login" variant="glassSolid" size="lg" className="w-full">
+        <LogIn className="size-5" />
         {t("auth.backToLogin")}
       </ButtonLink>
     </FullScreenMessage>

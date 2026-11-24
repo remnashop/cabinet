@@ -6,8 +6,9 @@ import { useTranslation } from "react-i18next";
 import { legalLocale, useShownLegalLocale } from "@entities/legal/api";
 import { authApi, completeLogin, type CaptchaConfig } from "@features/auth/api";
 import { CaptchaWidget } from "@features/auth/ui/CaptchaWidget";
-import { getErrorMessage } from "@shared/api/http";
+import { ApiError, getErrorMessage } from "@shared/api/http";
 import { DialogFooter } from "@shared/ui/Modal";
+import { useInsideDialog } from "@shared/ui/surface";
 import { CodeInput } from "@shared/ui/CodeInput";
 import { Button } from "@shared/ui/Button";
 import { ConfirmDialog } from "@shared/ui/ConfirmDialog";
@@ -17,9 +18,11 @@ import { FormError } from "@shared/ui/FormError";
 
 const RESEND_SECONDS = 60;
 
+const CODE_LENGTH = 6;
+
 const emailError = (input: HTMLInputElement) =>
   input.validity.valueMissing ? "auth.emailRequired" : input.validity.valid ? null : "auth.emailInvalid";
-const CODE_LENGTH = 6;
+const EMAIL_FIELD_CODES = new Set(["EMAIL_DOMAIN_NOT_ALLOWED", "EMAIL_TAKEN"]);
 
 /** The two calls of an email-code flow; verify also finishes it (signs in, or links in the profile). */
 export interface EmailCodeFlow {
@@ -37,6 +40,7 @@ export function EmailLogin({
   captcha = null,
   emailHint,
   onCancel,
+  cancelLabel,
 }: {
   flow?: EmailCodeFlow;
   /** asked before every code, the resend too */
@@ -45,8 +49,10 @@ export function EmailLogin({
   emailHint?: string;
   /** in a dialog: closes it. The buttons then go to its footer (DialogFooter), cancel first, as every dialog's */
   onCancel?: () => void;
+  /** the cancel button's text, "Cancel" by default */
+  cancelLabel?: string;
 }) {
-  const dialog = onCancel !== undefined;
+  const dialog = useInsideDialog();
   const formId = useId();
   const legal = useShownLegalLocale();
   const flow = customFlow ?? signInFlow(legal);
@@ -78,6 +84,7 @@ export function EmailLogin({
       setCooldown(RESEND_SECONDS);
     },
   });
+  const fieldError = sendCode.error instanceof ApiError && EMAIL_FIELD_CODES.has(sendCode.error.code ?? "");
   // signing in flips the session; GuestOnly on /login then navigates to ?next=
   const verify = useMutation({ mutationFn: (value: string) => flow.verify(email.trim(), value) });
 
@@ -106,21 +113,25 @@ export function EmailLogin({
               setEmail(e.target.value);
               // re-checked while typing once shown, gone when the value passes
               if (invalid) setInvalid(emailError(e.target));
+              if (fieldError) sendCode.reset();
             }}
             onInvalid={(e) => {
               e.preventDefault();
               setInvalid(emailError(e.currentTarget));
             }}
-            aria-invalid={invalid !== null}
+            aria-invalid={invalid !== null || fieldError}
             className="w-full"
           />
           {invalid && <FormError className="px-3 text-left">{t(invalid)}</FormError>}
+          {!invalid && fieldError && (
+            <FormError className="px-3 text-left">{getErrorMessage(sendCode.error, t("errors.generic"))}</FormError>
+          )}
           {captcha && <CaptchaWidget config={captcha} round={captchaRound} onToken={setCaptchaToken} />}
           {/* outside a dialog DialogFooter leaves them in place */}
           <DialogFooter>
-            {dialog && (
+            {onCancel && (
               <Button variant="glass" onClick={onCancel}>
-                {t("common.cancel")}
+                {cancelLabel ?? t("common.cancel")}
               </Button>
             )}
             <Button
@@ -133,7 +144,7 @@ export function EmailLogin({
               {t("auth.sendCode")}
             </Button>
           </DialogFooter>
-          {sendCode.isError && <FormError>{getErrorMessage(sendCode.error, t("errors.generic"))}</FormError>}
+          {sendCode.isError && !fieldError && <FormError>{getErrorMessage(sendCode.error, t("errors.generic"))}</FormError>}
         </form>
       </StepTransition>
     );

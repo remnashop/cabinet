@@ -1,10 +1,10 @@
-import { Clock, CreditCard, Unplug } from "lucide-react";
+import { Clock, CreditCard, House, ReceiptText, RefreshCw, RotateCw, Unplug } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { retryPath } from "@features/purchase/wizard";
-import { getErrorMessage } from "@shared/api/http";
+import { ApiError, getErrorMessage } from "@shared/api/http";
 import { haptic } from "@shared/telegram";
 import { AlertMark } from "@shared/ui/AlertMark";
 import { Button } from "@shared/ui/Button";
@@ -17,6 +17,7 @@ const TONE = {
   primary: ["bg-primary/30", "border-primary/40"],
   success: ["bg-success/30", "border-success/40"],
   error: ["bg-error/25", "border-error/40"],
+  warning: ["bg-warning/25", "border-warning/40"],
   muted: ["bg-white/10", "border-white/20"],
 } as const;
 
@@ -54,8 +55,8 @@ function StatusArt({
       <span className="relative flex">
         {tone === "success" ? (
           <SuccessCheck />
-        ) : tone === "error" ? (
-          <AlertMark tone="error" />
+        ) : tone === "error" || tone === "warning" ? (
+          <AlertMark tone={tone} />
         ) : (
           <span className={`flex size-16 items-center justify-center rounded-full border ${DISC[tone]}`}>{children}</span>
         )}
@@ -69,7 +70,8 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
   const navigate = useNavigate();
   const home = (
     <Button variant="glass" size="lg" className="w-full" onClick={() => void navigate("/", { replace: true })}>
-      {t("common.backHome")}
+      <House className="size-5" />
+      {t("common.home")}
     </Button>
   );
   const heading = (title: string, text: string) => (
@@ -116,14 +118,30 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
     const canceled = transaction?.status === "CANCELED";
     return (
       <>
-        <StatusArt tone="error" />
+        <StatusArt tone={canceled ? "warning" : "error"} />
         {heading(
           t(canceled ? "payment.canceledTitle" : "payment.failed"),
           t(canceled ? "payment.canceledText" : "payment.failedText"),
         )}
         <div className="flex w-full flex-col gap-2">
           <Button variant="glassSolid" size="lg" className="w-full" onClick={() => void navigate(transaction ? retryPath(transaction) : "/purchase", { replace: true })}>
+            <RotateCw className="size-5" />
             {t("payment.retry")}
+          </Button>
+          {home}
+        </div>
+      </>
+    );
+  }
+  if (status === "error" && error instanceof ApiError && error.code === "PAYMENT_ORDER_NOT_FOUND") {
+    return (
+      <>
+        <StatusArt tone="warning" />
+        {heading(t("payment.noOrderTitle"), t("payment.notFoundHint"))}
+        <div className="flex w-full flex-col gap-2">
+          <Button variant="glassSolid" size="lg" className="w-full" onClick={() => void navigate("/profile/payments", { replace: true })}>
+            <ReceiptText className="size-5" />
+            {t("pages.payments")}
           </Button>
           {home}
         </div>
@@ -147,6 +165,7 @@ export function PaymentStatusView({ status, transaction, error, retry }: ReturnT
       {heading(t("payment.timeoutTitle"), t("payment.timeout"))}
       <div className="flex w-full flex-col gap-2">
         <Button variant="glassSolid" size="lg" className="w-full" onClick={retry}>
+          <RefreshCw className="size-5" />
           {t("payment.checkAgain")}
         </Button>
         {home}

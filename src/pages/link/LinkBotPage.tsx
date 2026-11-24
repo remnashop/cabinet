@@ -1,3 +1,4 @@
+import { CircleUser } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -48,10 +49,11 @@ export function LinkBotPage() {
   return (
     <FullScreenMessage
       tone={exchange.isError ? "error" : "warning"}
-      title={t(exchange.isError ? "link.failed" : "link.botLinkExpired")}
-      text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : t("link.botLinkElsewhere")}
+      title={t(exchange.isError ? "link.failed" : "link.botLinkExpiredTitle")}
+      text={exchange.isError ? getErrorMessage(exchange.error, t("errors.generic")) : t("link.botLinkExpiredHint")}
     >
-      <ButtonLink to="/profile" variant="glass" size="lg" className="w-full">
+      <ButtonLink to="/profile" variant="glassSolid" size="lg" className="w-full">
+        <CircleUser className="size-5" />
         {t("link.toProfile")}
       </ButtonLink>
     </FullScreenMessage>

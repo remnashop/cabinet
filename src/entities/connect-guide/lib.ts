@@ -1,6 +1,6 @@
 import type { ConnectApp, ConnectGuide, ConnectPlatform, ConnectStep, PlatformId } from "./api";
 
-export const SUBSCRIPTION_LINK_TOKEN = "{{SUBSCRIPTION_LINK}}";
+const SUBSCRIPTION_LINK_TOKEN = "{{SUBSCRIPTION_LINK}}";
 
 export function buildDeepLink(template: string, encode: "raw" | "component", subscriptionUrl: string): string {
   return template.replace(SUBSCRIPTION_LINK_TOKEN, encode === "component" ? encodeURIComponent(subscriptionUrl) : subscriptionUrl);

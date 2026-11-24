@@ -1,12 +1,14 @@
+import { Settings2, ShoppingCart } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
-import { useCatalogQuery, usePaymentMethodsQuery, type PaymentMethod, type Plan } from "@entities/plan/api";
+import { useCatalogQuery, usePaymentMethodsQuery, useQuoteQuery, type PaymentMethod, type Plan } from "@entities/plan/api";
+import { useCabinetSettingsQuery } from "@entities/shop/api";
 import { useSubscriptionsQuery, useTrialQuery, type Trial } from "@entities/subscription/api";
 import { planTermsChanged } from "@entities/subscription/lib";
 import { startPayment } from "@features/payment/start-payment";
-import { parseDaysParam, parseWizardParams } from "@features/purchase/wizard";
+import { freeOrderMethod, parseDaysParam, parseWizardParams } from "@features/purchase/wizard";
 import { ButtonLink } from "@shared/ui/ButtonLink";
 import { ErrorCard } from "@shared/ui/ErrorCard";
 import { PageEmpty } from "@shared/ui/PageEmpty";
@@ -17,6 +19,7 @@ import { PageHeader } from "@widgets/page-header/PageHeader";
 import { DurationStep } from "./steps/DurationStep";
 import { MethodStep } from "./steps/MethodStep";
 import { SummaryStep } from "./steps/SummaryStep";
+import { PaymentsOffScreen } from "./WarningBanner";
 import { WizardHead } from "./WizardHead";
 
 /** A paid trial as a plan: the catalog leaves trials out, its one duration comes priced with the trial. */
@@ -47,6 +50,8 @@ export function PlanWizardPage() {
   const trial = useTrialQuery();
   const methods = usePaymentMethodsQuery();
   const subscriptions = useSubscriptionsQuery();
+  // unknown while loading: the steps meanwhile, the checkout itself refuses
+  const paymentsOff = useCabinetSettingsQuery().data?.payments_enabled === false;
   // ?days= (buying again after a failed payment): the duration is taken, the wizard opens on the method
   const [chosenDays, setDays] = useState<number | null>(() => parseDaysParam(search));
   const [chosenStep, setStep] = useState<0 | 1 | 2>(() => (parseDaysParam(search) === null ? 0 : 1));
@@ -62,9 +67,24 @@ export function PlanWizardPage() {
   const trialOffer = catalogPlan ? undefined : trialPlan(trial.data, planId);
   const plan = catalogPlan ?? trialOffer;
   const renewed = type === "RENEW" ? subscriptions.data?.items.find((s) => s.id === subId) : undefined;
-  // one method is no choice: it's taken, and the wizard skips its step
-  const onlyMethod = methods.data?.items.length === 1 ? methods.data.items[0] : null;
-  const method = chosenMethod ?? onlyMethod;
+  // the duration step's own quote (same cache): an order that costs nothing has no method to choose
+  const quotedDays = chosenDays ?? trialOffer?.durations[0].days ?? null;
+  const anchorQuote = useQuoteQuery(
+    quotedDays !== null && catalog.data
+      ? { plan_id: planId, duration_days: quotedDays, currency: catalog.data.anchor_currency, ...access }
+      : null,
+  );
+  const isFree = anchorQuote.data !== undefined && Number(anchorQuote.data.final_price) === 0;
+  // one method is no choice: it's taken, and the wizard skips its step. A free order, or none offered at all (a Mini App
+  // where the shop sells nothing in Telegram), goes on without one; the summary refuses a paid order with none
+  const onlyMethod =
+    catalog.data && (isFree || methods.data?.items.length === 0)
+      ? freeOrderMethod(catalog.data.anchor_currency)
+      : methods.data?.items.length === 1
+        ? methods.data.items[0]
+        : null;
+  // a method picked for a paid duration before going back to a free one doesn't stick
+  const method = isFree ? onlyMethod : (chosenMethod ?? onlyMethod);
   const skipMethod = onlyMethod !== null;
   // a trial has one duration: it's taken, the wizard opens on the method (the summary with the method taken), and back
   // from there leaves for home
@@ -101,15 +121,34 @@ export function PlanWizardPage() {
       </>
     );
   }
+  if (paymentsOff) {
+    return (
+      <>
+        {header}
+        <PaymentsOffScreen />
+      </>
+    );
+  }
   if (!plan) {
     return (
       <>
         {header}
-        <PageEmpty warning text={t("purchase.planNotFound")}>
-          <ButtonLink to={exitTo} variant="glass" className="mt-1">
-            {type === "RENEW" ? t("common.home") : t("purchase.toCatalog")}
-          </ButtonLink>
-        </PageEmpty>
+        {type === "RENEW" ? (
+          // the plan no longer renews (or never could, an imported one): a plan change takes its place
+          <PageEmpty warning title={t("purchase.renewUnavailable")} text={t("purchase.renewUnavailableHint")}>
+            <ButtonLink to={`/purchase?type=CHANGE&sub=${subId}`} variant="glassSolid" size="lg" className="w-full">
+              <Settings2 className="size-5" />
+              {t("home.changePlanDesktop")}
+            </ButtonLink>
+          </PageEmpty>
+        ) : (
+          <PageEmpty warning title={t("purchase.planNotFoundTitle")} text={t("purchase.planNotFoundHint")}>
+            <ButtonLink to={exitTo} variant="glassSolid" size="lg" className="w-full">
+              <ShoppingCart className="size-5" />
+              {t("purchase.toCatalog")}
+            </ButtonLink>
+          </PageEmpty>
+        )}
       </>
     );
   }

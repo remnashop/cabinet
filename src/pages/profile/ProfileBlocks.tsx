@@ -94,7 +94,7 @@ function IdentityAction({
 function IdentityRows({ actions }: { actions: ProfileActions }) {
   const { t } = useTranslation();
   const data = useIdentityRows();
-  if (data.state === "error") return <ErrorCard round error={data.error} onRetry={data.retry} />;
+  if (data.state === "error") return <ErrorCard round block error={data.error} onRetry={data.retry} />;
   // one row's height; the card eases to the real rows
   if (data.state === "loading") return <Skeleton round className="h-15" />;
   return (
@@ -156,8 +156,9 @@ export function ProfileBlocks({ me, actions, linkError }: { me: Me; actions: Pro
         )}
         <ActionTile round icon={Languages} label={actions.languageName} onClick={actions.onLanguage} />
       </div>
+      <PushToggle />
       <div className="flex flex-col gap-2">
-        <Card round>
+        <Card round variant="list">
           <EventList>
             <IdentityRows actions={actions} />
           </EventList>
@@ -177,7 +178,6 @@ export function ProfileBlocks({ me, actions, linkError }: { me: Me; actions: Pro
         </Card>
         {linkError && <FormError className="px-5 lg:px-4">{linkError}</FormError>}
       </div>
-      <PushToggle />
     </>
   );
 }
