@@ -5,7 +5,9 @@ import i18n from "@shared/i18n";
 
 import {
   durationUnit,
+  freeOrderMethod,
   gatewayLabel,
+  methodLabel,
   isValidEmail,
   parseDaysParam,
   parseWizardParams,
@@ -64,6 +66,14 @@ it("names gateways from the locale, an unknown one Capitalized", () => {
   expect(gatewayLabel("YOOKASSA", t)).toBe("YooKassa");
   expect(gatewayLabel("TELEGRAM_STARS", t)).toBe("Telegram Stars");
   expect(gatewayLabel("NEWPAY", t)).toBe("Newpay");
+});
+
+it("names a method as the shop does, its gateway on an older backend", () => {
+  const t = i18n.getFixedT("ru");
+  const method = { gateway_type: "YOOKASSA", currency: "RUB", requires_email: false };
+  expect(methodLabel({ ...method, name: "Карта / СБП" }, t)).toBe("Карта / СБП");
+  expect(methodLabel(method, t)).toBe("YooKassa");
+  expect(methodLabel(freeOrderMethod("RUB"), t)).toBe(t("gateways.free"));
 });
 
 it("retryPath reopens the same plan and duration, a renewal or change for its subscription", () => {
