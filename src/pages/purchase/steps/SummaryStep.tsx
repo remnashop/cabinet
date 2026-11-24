@@ -9,7 +9,7 @@ import { LegalNotice } from "@entities/legal/LegalNotice";
 import { useMeQuery } from "@entities/session/api";
 import { AwaitPaymentButton } from "@features/payment/AwaitPaymentButton";
 import { StarsInvoiceError, UnsafePaymentUrlError } from "@features/payment/start-payment";
-import { gatewayLabel, isValidEmail, typeNoticeKey } from "@features/purchase/wizard";
+import { paymentMethodText, isValidEmail, typeNoticeKey } from "@features/purchase/wizard";
 import { getErrorMessage } from "@shared/api/http";
 import { formatMoney } from "@shared/lib/format";
 import { haptic } from "@shared/telegram";
@@ -51,6 +51,8 @@ export function SummaryStep({
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
+  const paymentText = paymentMethodText(method, locale, t);
+  const hasPresentation = Boolean(method.gateway_type && Object.keys(method.presentation ?? {}).length);
   const me = useMeQuery();
   // the total always comes from the backend's quote, never from the catalog prices
   const quote = useQuoteQuery({
@@ -130,15 +132,22 @@ export function SummaryStep({
         if (canPay) pay();
       }}
     >
+      {hasPresentation && (
+        <Card round>
+          <InfoRow icon={method.gateway_type === "TELEGRAM_STARS" ? Star : CreditCard}
+            label={t("purchase.method")} value={paymentText.name} bright />
+          {paymentText.description && <p className="mt-2 break-words text-sm text-muted-foreground">{paymentText.description}</p>}
+        </Card>
+      )}
       {me.data && !me.data.email && method.asks_email !== false && (
         <Card round>
           <div className="flex flex-col gap-3">
-            <InfoRow
+            {!hasPresentation && <InfoRow
               icon={method.gateway_type === "TELEGRAM_STARS" ? Star : CreditCard}
               label={t("purchase.method")}
-              value={gatewayLabel(method.gateway_type, t)}
+              value={paymentText.name}
               bright
-            />
+            />}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="receipt-email" className="px-3 text-xs text-foreground">
                 {t("purchase.email")}

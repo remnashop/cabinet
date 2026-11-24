@@ -10,7 +10,7 @@ import {
   type Quote,
 } from "@entities/plan/api";
 import { GATEWAY_LOGOS } from "@entities/plan/gateway-logos";
-import { gatewayLabel } from "@features/purchase/wizard";
+import { paymentMethodText } from "@features/purchase/wizard";
 import { formatMoney } from "@shared/lib/format";
 import { AlertMark } from "@shared/ui/AlertMark";
 import { ButtonLink } from "@shared/ui/ButtonLink";
@@ -55,7 +55,7 @@ export function MethodStep({
   access: PlanAccess;
   onSelect: (method: PaymentMethod) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const methods = usePaymentMethodsQuery();
   const prices = plan.durations.find((d) => d.days === days)?.prices ?? [];
   const quotes = useQuoteQueries(prices.map((p) => ({ plan_id: plan.id, duration_days: days, currency: p.currency, ...access })));
@@ -78,6 +78,7 @@ export function MethodStep({
       </h2>
       {methods.data.items.map((m) => {
         const price = prices.find((p) => p.currency === m.currency);
+        const text = paymentMethodText(m, i18n.language, t);
         return (
           <OptionRow
             round
@@ -96,7 +97,12 @@ export function MethodStep({
                   <CreditCard className="size-4" />
                 </span>
               )}
-              <span className="text-sm font-semibold">{gatewayLabel(m.gateway_type, t)}</span>
+              <span className="min-w-0">
+                <span className="block break-words text-sm font-semibold">{text.name}</span>
+                {text.description && (
+                  <span className="block break-words text-xs text-muted-foreground">{text.description}</span>
+                )}
+              </span>
             </span>
           </OptionRow>
         );
