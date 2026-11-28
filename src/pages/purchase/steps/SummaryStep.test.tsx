@@ -20,7 +20,16 @@ const QUOTE = {
   final_price: "100",
   currency: "RUB",
 };
+const TERMS = {
+  terms_id: "a".repeat(64),
+  summary: "Charges up to 100 RUB every 30 days",
+  text: "Full renewal terms",
+  amount_limit: "100",
+  currency: "RUB",
+  duration_days: 30,
+};
 const fetchQuote = vi.hoisted(() => vi.fn());
+const fetchTerms = vi.hoisted(() => vi.fn());
 
 // vitest hoists these above the imports; the quote is a real query so invalidation can be observed
 vi.mock("@entities/plan/api", async () => {
@@ -28,6 +37,8 @@ vi.mock("@entities/plan/api", async () => {
   return {
     createCheckout: vi.fn(async () => ({ order_id: 1, confirmation_url: null })),
     useQuoteQuery: (input: object) => useQuery({ queryKey: ["quote", input], queryFn: fetchQuote }),
+    useRecurringTermsQuery: (input: object | null) =>
+      useQuery({ queryKey: ["recurring-terms", input], queryFn: fetchTerms, enabled: input !== null }),
   };
 });
 vi.mock("@entities/session/api", () => ({ useMeQuery: () => ({ data: { email: null } }) }));
@@ -67,12 +78,14 @@ async function render(
   access: PlanAccess = { plan_code: null, renew_subscription_id: type === "RENEW" ? subId : null, change_subscription_id: null },
   replacesOrderId: number | null = null,
   asksEmail = true,
+  recurring: { recurring_available?: boolean; recurring_required?: boolean } = {},
 ) {
   const method: PaymentMethod = {
     gateway_type: "YOOKASSA",
     currency: "RUB",
     requires_email: requiresEmail,
     asks_email: asksEmail,
+    ...recurring,
   };
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   await act(async () => {
@@ -97,6 +110,7 @@ const checkoutBody = () => vi.mocked(createCheckout).mock.calls[0][0];
 beforeEach(() => {
   vi.mocked(createCheckout).mockClear();
   fetchQuote.mockReset().mockResolvedValue(QUOTE);
+  fetchTerms.mockReset().mockResolvedValue({ terms: TERMS });
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);
@@ -257,6 +271,43 @@ describe("SummaryStep", () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "a@b.co");
       input.dispatchEvent(new Event("input", { bubbles: true }));
     });
+    await until(() => expect(payButton().disabled).toBe(false));
+  });
+});
+
+describe("SummaryStep auto-renewal", () => {
+  const consentToggle = () =>
+    [...container.querySelectorAll("button")].find((b) => b.textContent?.includes("Enable auto-renewal"))!;
+
+  it("starts unchecked and sends consent only once it is ticked", async () => {
+    await render("NEW", null, false, undefined, undefined, null, true, { recurring_available: true });
+    await until(() => expect(container.textContent).toContain(TERMS.summary));
+    await until(() => expect(payButton().disabled).toBe(false));
+    await act(async () => consentToggle().click());
+    await act(async () => payButton().click());
+    await until(() => expect(createCheckout).toHaveBeenCalled());
+    expect(checkoutBody()).toMatchObject({ recurring_consent: true, recurring_terms_id: TERMS.terms_id });
+  });
+
+  it("pays without consent when the customer leaves it off", async () => {
+    await render("NEW", null, false, undefined, undefined, null, true, { recurring_available: true });
+    await until(() => expect(container.textContent).toContain(TERMS.summary));
+    await until(() => expect(payButton().disabled).toBe(false));
+    await act(async () => payButton().click());
+    await until(() => expect(createCheckout).toHaveBeenCalled());
+    expect(checkoutBody().recurring_terms_id).toBeUndefined();
+    expect(checkoutBody().recurring_consent).toBeUndefined();
+  });
+
+  it("keeps pay disabled for a recurring-only method until the customer consents", async () => {
+    await render("NEW", null, false, undefined, undefined, null, true, {
+      recurring_available: true,
+      recurring_required: true,
+    });
+    await until(() => expect(container.textContent).toContain(TERMS.summary));
+    await tick();
+    expect(payButton().disabled).toBe(true);
+    await act(async () => consentToggle().click());
     await until(() => expect(payButton().disabled).toBe(false));
   });
 });

@@ -25,6 +25,8 @@ vi.mock("@entities/shop/api", () => ({
   useCabinetSettingsQuery: () => ({ isPending: false, isError: false, data: { max_active_subscriptions: null } }),
 }));
 vi.mock("@entities/subscription/api", () => ({
+  useAutoRenewQuery: () => ({ data: undefined }),
+  useSetAutoRenew: () => ({ mutate: () => undefined, isPending: false, error: null }),
   useActivateTrial: () => ({}),
   useTrialQuery: () => ({}),
   useSubscriptionsQuery: () => ({

@@ -36,6 +36,8 @@ import { pickSelected } from "@widgets/subscription-cards/select";
 
 import { LogoArt } from "./EmptyArt";
 
+import { AutoRenewCard } from "./AutoRenewCard";
+
 function Header() {
   const { t } = useTranslation();
   const me = useMeQuery();
@@ -344,6 +346,9 @@ export function SubscriptionPage() {
           <PushPromptCard />
           {/* a phone's browser, once per browser */}
           <InstallPromptCard />
+          <div className="mt-5">
+            <AutoRenewCard key={selected.id} subscriptionId={selected.id} />
+          </div>
           <div className="mt-5 lg:flex lg:flex-1 lg:flex-col lg:*:flex-1">
             <DevicesCard key={selected.id} subscription={selected} canConnect={!cutOff} />
           </div>
